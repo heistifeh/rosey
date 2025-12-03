@@ -1,13 +1,23 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: #f63d68;
+  --color-dark-bg: #1a1a1a;
+  --color-primary-bg: #111112;
+  --color-dark-surface: #2c2c2c;
+  --color-dark-border: #3a3a3a;
+  --color-border-gray: #a4a7ae;
+  --color-primary-text: #fcfcfd;
+  --color-text-gray: #e9eaeb;
+  --color-input-bg: #222222;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -23,4 +33,16 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.manrope {
+  font-family: "Manrope", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+.petemoss {
+  font-family: "Petemoss", cursive;
+  font-weight: 400;
+  font-style: normal;
 }
