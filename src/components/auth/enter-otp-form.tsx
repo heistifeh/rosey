@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/src/components/ui/button";
-import { CodeInput } from "@/src/components/ui/code-input";
+import { Button } from "@/components/ui/button";
+import { CodeInput } from "@/components/ui/code-input";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";

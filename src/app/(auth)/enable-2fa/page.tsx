@@ -1,4 +1,4 @@
-import { Enable2FAForm } from "@/src/components/auth/enable-2fa-form";
+import { Enable2FAForm } from "@/components/auth/enable-2fa-form";
 
 export default function Enable2FAPage() {
   return <Enable2FAForm />;
