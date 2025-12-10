@@ -31,8 +31,10 @@ export function RatesForm() {
   ];
 
   const handleTabClick = (value: string) => {
-    if (value === "general" || value === "profile") {
-      router.push("/general-information");
+    if (value === "general") {
+      router.push("/general-information?tab=general");
+    } else if (value === "profile") {
+      router.push("/general-information?tab=profile");
     } else if (value === "rates") {
       // Already on rates page
       return;

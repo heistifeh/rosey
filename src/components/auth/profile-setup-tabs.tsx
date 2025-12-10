@@ -3,12 +3,20 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { GeneralInformationFormContent } from "./general-information-form-content";
 import { ProfileSetupFormContent } from "./profile-setup-form-content";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function ProfileSetupTabs() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("general");
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(tabParam || "general");
+
+  useEffect(() => {
+    if (tabParam && (tabParam === "general" || tabParam === "profile")) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   const progressSteps = [
     { number: 1, label: "General Information", value: "general" },
