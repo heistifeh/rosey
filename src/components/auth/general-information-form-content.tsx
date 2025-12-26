@@ -61,7 +61,7 @@ export function GeneralInformationFormContent({
             <div className="flex flex-col gap-2 md:min-h-[92px]">
               <Label
                 htmlFor="workingName"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 Working Name <span className="text-primary">*</span>
               </Label>
@@ -76,7 +76,7 @@ export function GeneralInformationFormContent({
             <div className="flex flex-col gap-2 md:min-h-[120px]">
               <Label
                 htmlFor="profileType"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 Profile Type <span className="text-primary">*</span>
               </Label>
@@ -100,7 +100,7 @@ export function GeneralInformationFormContent({
             <div className="flex flex-col gap-2 md:min-h-[120px]">
               <Label
                 htmlFor="genderPresentation"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 Gender Presentation
               </Label>
@@ -121,7 +121,7 @@ export function GeneralInformationFormContent({
             <div className="flex flex-col gap-2 md:min-h-[148px]">
               <Label
                 htmlFor="transgenderStatus"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 Transgender Status
               </Label>
@@ -156,7 +156,7 @@ export function GeneralInformationFormContent({
             <div className="flex flex-col gap-2 md:min-h-[92px]">
               <Label
                 htmlFor="age"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 Age <span className="text-primary">*</span>
               </Label>
@@ -171,7 +171,7 @@ export function GeneralInformationFormContent({
             <div className="flex flex-col gap-2 md:min-h-[148px]">
               <Label
                 htmlFor="appearOnOtherProfiles"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 Appear on other profiles
               </Label>
@@ -202,7 +202,7 @@ export function GeneralInformationFormContent({
             <div className="flex flex-col gap-2 md:min-h-[148px]">
               <Label
                 htmlFor="catersTo"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 Caters to <span className="text-primary">*</span>
               </Label>
@@ -240,7 +240,7 @@ export function GeneralInformationFormContent({
             <div className="flex flex-col gap-2 md:min-h-[92px]">
               <Label
                 htmlFor="profileUsername"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 Profile Username <span className="text-primary">*</span>
               </Label>
@@ -257,7 +257,7 @@ export function GeneralInformationFormContent({
             <div className="flex flex-col gap-2 md:min-h-[120px]">
               <Label
                 htmlFor="gender"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 Gender <span className="text-primary">*</span>
               </Label>
@@ -287,7 +287,7 @@ export function GeneralInformationFormContent({
             <div className="flex flex-col gap-2 md:min-h-[120px]">
               <Label
                 htmlFor="pronouns"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 Pronouns <span className="text-primary">*</span>
               </Label>
@@ -320,7 +320,7 @@ export function GeneralInformationFormContent({
             <div className="flex flex-col gap-2 md:min-h-[148px]">
               <Label
                 htmlFor="appearExclusivelyInTransOnly"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 Appear exclusively in trans-only searches
               </Label>
@@ -347,7 +347,7 @@ export function GeneralInformationFormContent({
             <div className="flex flex-col gap-2 md:min-h-[92px]">
               <Label
                 htmlFor="displayedAge"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 Displayed age
               </Label>
@@ -374,7 +374,7 @@ export function GeneralInformationFormContent({
             <div className="flex flex-col gap-2 md:min-h-[148px]">
               <Label
                 htmlFor="temporaryProfileHiding"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 Temporary Profile Hiding
               </Label>
@@ -406,7 +406,7 @@ export function GeneralInformationFormContent({
             <div className="flex flex-col gap-2 md:min-h-[148px]">
               <Label
                 htmlFor="homeLocations"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 Home locations <span className="text-primary">*</span>
               </Label>

@@ -74,7 +74,7 @@
 //             <div className="flex flex-col gap-2">
 //               <Label
 //                 htmlFor="about"
-//                 className="text-[14px] font-semibold text-[#FCFCFD]"
+//                 className="text-[14px] font-semibold text-primary-text"
 //               >
 //                 About <span className="text-primary">*</span>
 //               </Label>
@@ -98,7 +98,7 @@
 //                 <div className="flex flex-col gap-2 md:min-h-[120px]">
 //                   <Label
 //                     htmlFor="tagline"
-//                     className="text-[14px] font-semibold text-[#FCFCFD]"
+//                     className="text-[14px] font-semibold text-primary-text"
 //                   >
 //                     Tagline
 //                   </Label>
@@ -117,7 +117,7 @@
 //                 <div className="flex flex-col gap-2 md:min-h-[120px]">
 //                   <Label
 //                     htmlFor="ethnicityCategory"
-//                     className="text-[14px] font-semibold text-[#FCFCFD]"
+//                     className="text-[14px] font-semibold text-primary-text"
 //                   >
 //                     Ethnicity Category
 //                   </Label>
@@ -145,7 +145,7 @@
 //                 <div className="flex flex-col gap-2 md:min-h-[92px]">
 //                   <Label
 //                     htmlFor="eyeColor"
-//                     className="text-[14px] font-semibold text-[#FCFCFD]"
+//                     className="text-[14px] font-semibold text-primary-text"
 //                   >
 //                     Eye Color
 //                   </Label>
@@ -171,7 +171,7 @@
 //                 <div className="flex flex-col gap-2 md:min-h-[92px]">
 //                   <Label
 //                     htmlFor="hairColor"
-//                     className="text-[14px] font-semibold text-[#FCFCFD]"
+//                     className="text-[14px] font-semibold text-primary-text"
 //                   >
 //                     Hair Color
 //                   </Label>
@@ -201,7 +201,7 @@
 //                 <div className="flex flex-col gap-2 md:min-h-[120px]">
 //                   <Label
 //                     htmlFor="height"
-//                     className="text-[14px] font-semibold text-[#FCFCFD]"
+//                     className="text-[14px] font-semibold text-primary-text"
 //                   >
 //                     Height
 //                   </Label>
@@ -257,7 +257,7 @@
 //                 <div className="flex flex-col gap-2 md:min-h-[120px]">
 //                   <Label
 //                     htmlFor="languages"
-//                     className="text-[14px] font-semibold text-[#FCFCFD]"
+//                     className="text-[14px] font-semibold text-primary-text"
 //                   >
 //                     Languages
 //                   </Label>
@@ -292,7 +292,7 @@
 //                 <div className="flex flex-col gap-2 md:min-h-[92px]">
 //                   <Label
 //                     htmlFor="bodyType"
-//                     className="text-[14px] font-semibold text-[#FCFCFD]"
+//                     className="text-[14px] font-semibold text-primary-text"
 //                   >
 //                     Body Type
 //                   </Label>
@@ -322,7 +322,7 @@
 //                 <div className="flex flex-col gap-2 md:min-h-[92px]">
 //                   <Label
 //                     htmlFor="friendly420"
-//                     className="text-[14px] font-semibold text-[#FCFCFD]"
+//                     className="text-[14px] font-semibold text-primary-text"
 //                   >
 //                     420-Friendly
 //                   </Label>
@@ -441,7 +441,7 @@ export function ProfileSetupForm() {
             <div className="flex flex-col gap-2">
               <Label
                 htmlFor="about"
-                className="text-[14px] font-semibold text-[#FCFCFD]"
+                className="text-[14px] font-semibold text-primary-text"
               >
                 About <span className="text-primary">*</span>
               </Label>
@@ -465,7 +465,7 @@ export function ProfileSetupForm() {
                 <div className="flex flex-col gap-2 min-h-[120px]">
                   <Label
                     htmlFor="tagline"
-                    className="text-[14px] font-semibold text-[#FCFCFD]"
+                    className="text-[14px] font-semibold text-primary-text"
                   >
                     Tagline
                   </Label>
@@ -484,7 +484,7 @@ export function ProfileSetupForm() {
                 <div className="flex flex-col gap-2 min-h-[120px]">
                   <Label
                     htmlFor="ethnicityCategory"
-                    className="text-[14px] font-semibold text-[#FCFCFD]"
+                    className="text-[14px] font-semibold text-primary-text"
                   >
                     Ethnicity Category
                   </Label>
@@ -512,7 +512,7 @@ export function ProfileSetupForm() {
                 <div className="flex flex-col gap-2 min-h-[92px]">
                   <Label
                     htmlFor="eyeColor"
-                    className="text-[14px] font-semibold text-[#FCFCFD]"
+                    className="text-[14px] font-semibold text-primary-text"
                   >
                     Eye Color
                   </Label>
@@ -538,7 +538,7 @@ export function ProfileSetupForm() {
                 <div className="flex flex-col gap-2 min-h-[92px]">
                   <Label
                     htmlFor="hairColor"
-                    className="text-[14px] font-semibold text-[#FCFCFD]"
+                    className="text-[14px] font-semibold text-primary-text"
                   >
                     Hair Color
                   </Label>
@@ -568,7 +568,7 @@ export function ProfileSetupForm() {
                 <div className="flex flex-col gap-2 min-h-[120px]">
                   <Label
                     htmlFor="height"
-                    className="text-[14px] font-semibold text-[#FCFCFD]"
+                    className="text-[14px] font-semibold text-primary-text"
                   >
                     Height
                   </Label>
@@ -624,7 +624,7 @@ export function ProfileSetupForm() {
                 <div className="flex flex-col gap-2 min-h-[120px]">
                   <Label
                     htmlFor="languages"
-                    className="text-[14px] font-semibold text-[#FCFCFD]"
+                    className="text-[14px] font-semibold text-primary-text"
                   >
                     Languages
                   </Label>
@@ -659,7 +659,7 @@ export function ProfileSetupForm() {
                 <div className="flex flex-col gap-2 min-h-[92px]">
                   <Label
                     htmlFor="bodyType"
-                    className="text-[14px] font-semibold text-[#FCFCFD]"
+                    className="text-[14px] font-semibold text-primary-text"
                   >
                     Body Type
                   </Label>
@@ -689,7 +689,7 @@ export function ProfileSetupForm() {
                 <div className="flex flex-col gap-2 min-h-[92px]">
                   <Label
                     htmlFor="friendly420"
-                    className="text-[14px] font-semibold text-[#FCFCFD]"
+                    className="text-[14px] font-semibold text-primary-text"
                   >
                     420-Friendly
                   </Label>
