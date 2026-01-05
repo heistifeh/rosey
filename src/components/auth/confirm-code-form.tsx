@@ -13,7 +13,7 @@ export function ConfirmCodeForm() {
   };
 
   const handleActivate = () => {
-    console.log("Activate button clicked");
+    router.push("/setup-account");
   };
 
   return (

@@ -164,7 +164,7 @@ export default function ProviderLayout({
         </div>
       </header>
 
-      {showNotification && pathname !== "/dashboard/profile" && pathname !== "/dashboard/photos" && pathname !== "/dashboard/wallet" && pathname !== "/dashboard/wallet/transactions" && pathname !== "/dashboard/ad-management" && (
+      {showNotification && pathname !== "/dashboard/profile" && pathname !== "/dashboard/photos" && pathname !== "/dashboard/wallet" && pathname !== "/dashboard/wallet/transactions" && pathname !== "/dashboard/ad-management" && pathname !== "/dashboard/ad-management/pause-ad" && (
         <div className="flex justify-center px-4 md:px-8 lg:px-12  pt-10">
           <div className="bg-[#552833] border border-primary rounded-2xl px-4 md:px-6 py-3 flex items-center justify-between max-w-4xl w-full">
             <p className="text-primary-text text-sm md:text-base">

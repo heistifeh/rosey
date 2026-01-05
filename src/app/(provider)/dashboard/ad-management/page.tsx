@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { RenewAdModal } from "@/components/modals/renew-ad-modal";
+import { RenewAdSuccessModal } from "@/components/modals/renew-ad-success-modal";
 import {
   MapPin,
   Calendar,
@@ -78,11 +80,25 @@ const chartData = [
 
 export default function AdManagementPage() {
   const [hasAds, setHasAds] = useState(true);
+  const [isRenewModalOpen, setIsRenewModalOpen] = useState(false);
+  const [isRenewSuccessOpen, setIsRenewSuccessOpen] = useState(false);
 
   return (
     <div className="w-full flex justify-center items-center md:-mx-8 lg:-mx-12 px-4 md:px-[180px] pt-8 bg-primary-bg">
       <div className="max-w-[1200px] mx-auto w-full min-w-0">
-        <div className="flex flex-col gap-6 md:gap-8">
+        <div className="flex flex-col gap-6 md:gap-[70px]">
+          <RenewAdModal
+            isOpen={isRenewModalOpen}
+            onClose={() => setIsRenewModalOpen(false)}
+            onConfirm={() => {
+              setIsRenewModalOpen(false);
+              setIsRenewSuccessOpen(true);
+            }}
+          />
+          <RenewAdSuccessModal
+            isOpen={isRenewSuccessOpen}
+            onClose={() => setIsRenewSuccessOpen(false)}
+          />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 bg-input-bg rounded-2xl p-2">
             {(hasAds ? kpiData : emptyKpiData).map((stat, idx) => (
               <div
@@ -137,144 +153,164 @@ export default function AdManagementPage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-            <div className="bg-input-bg rounded-2xl p-6 flex flex-col gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            <section className=" flex flex-col gap-4">
               <h2 className="text-xl md:text-2xl font-semibold text-primary-text">
                 Ads
               </h2>
-
-              {hasAds ? (
-                <div className="bg-primary-bg rounded-2xl p-6 relative">
-                  <button
-                    onClick={() => setHasAds(false)}
-                    className="absolute top-4 right-4 text-text-gray-opacity hover:text-primary-text transition-colors"
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </button>
-                  <div className="flex items-start gap-4 mb-6">
-                    <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center shrink-0">
-                      <Megaphone className="h-8 w-8 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="px-3 py-1 bg-[#12B76A3D] text-[#32D583] rounded-full text-xs md:text-sm font-medium">
-                          Active
-                        </span>
+              <div className="bg-input-bg rounded-2xl p-6 flex flex-col gap-6 h-[400px]">
+                {hasAds ? (
+                  <div className=" rounded-3xl relative h-full flex flex-col justify-between">
+                    <button
+                      onClick={() => setHasAds(false)}
+                      className="absolute top-4 right-4 text-text-gray-opacity hover:text-primary-text transition-colors"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                    <div className="flex flex-col items-start gap-4 mb-6">
+                      <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center shrink-0">
+                        <Image
+                          src="/images/volumn.png"
+                          alt="Volume"
+                          width={100}
+                          height={100}
+                          // className="h-8 w-8"
+                        />
                       </div>
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-text-gray-opacity" />
-                          <span className="text-sm text-text-gray-opacity">
-                            Location Coverage
-                          </span>
-                          <span className="px-3 py-1 bg-primary/20 text-primary rounded-full text-xs font-medium">
-                            3 States
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-4 -mt-[31px] -mr-[50px]">
+                          <span className="px-3 py-1 bg-[#12B76A3D] text-[#32D583] rounded-full text-xs md:text-sm font-medium">
+                            Active
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-text-gray-opacity" />
-                          <span className="text-sm text-text-gray-opacity">
-                            Ad Expires in
-                          </span>
-                          <span className="px-3 py-1 bg-primary/20 text-primary rounded-full text-xs font-medium">
-                            90 Days
-                          </span>
+                        <div className="flex flex-col gap-3">
+                          <div className="flex gap-2 flex-col">
+                            <div className=" flex gap-1">
+                              <MapPin className="h-4 w-4 text-primary" />
+                              <span className="text-sm text-text-gray-opacity">
+                                Location Coverage
+                              </span>
+                            </div>
+                            <span className="px-3 py-1 bg-primary/20 text-primary rounded-full text-xs font-medium  w-fit border border-[#F63D68]">
+                              3 States
+                            </span>
+                          </div>
+                          <div className="flex flex-col  gap-2">
+                            <section className=" flex gap-1">
+                              <Calendar className="h-4 w-4 text-primary" />
+                              <span className="text-sm text-text-gray-opacity">
+                                Ad Expires in
+                              </span>
+                            </section>
+                            <span className="px-3 py-1 bg-primary/20 text-primary rounded-full text-xs font-medium w-fit border border-[#F63D68]">
+                              90 Days
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
+                    <div className="flex flex-col gap-3">
+                      <Button className="bg-primary hover:bg-primary/90 text-primary-text w-full">
+                        Pause Ad
+                      </Button>
+                      <Button
+                        className="bg-primary-bg hover:bg-primary-bg text-primary-text w-full"
+                        onClick={() => setIsRenewModalOpen(true)}
+                      >
+                        Renew Ad
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-3">
-                    <Button className="bg-primary hover:bg-primary/90 text-primary-text w-full">
-                      Pause Ad
+                ) : (
+                  <div className="bg-primary-bg rounded-2xl p-8 md:p-12 flex flex-col items-center justify-center gap-6 h-full">
+                    <div className="w-24 h-24 bg-primary/20 rounded-2xl flex items-center justify-center">
+                      <Megaphone className="h-12 w-12 text-primary" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg md:text-xl font-semibold text-primary-text mb-2">
+                        You haven't created any ads yet.
+                      </p>
+                      <p className="text-sm md:text-base text-text-gray-opacity">
+                        Create your first ad to start getting views and profile
+                        clicks.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => setHasAds(true)}
+                      className="bg-primary hover:bg-primary/90 text-primary-text px-8 py-6 text-base"
+                    >
+                      Create Ad
                     </Button>
-                    <Button className="bg-input-bg hover:bg-input-bg/80 text-primary-text w-full border border-dark-border">
-                      Renew Ad
-                    </Button>
                   </div>
-                </div>
-              ) : (
-                <div className="bg-primary-bg rounded-2xl p-8 md:p-12 flex flex-col items-center justify-center gap-6 min-h-[400px]">
-                  <div className="w-24 h-24 bg-primary/20 rounded-2xl flex items-center justify-center">
-                    <Megaphone className="h-12 w-12 text-primary" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-lg md:text-xl font-semibold text-primary-text mb-2">
-                      You haven't created any ads yet.
-                    </p>
-                    <p className="text-sm md:text-base text-text-gray-opacity">
-                      Create your first ad to start getting views and profile
-                      clicks.
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => setHasAds(true)}
-                    className="bg-primary hover:bg-primary/90 text-primary-text px-8 py-6 text-base"
-                  >
-                    Create Ad
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            <div className="bg-input-bg rounded-2xl p-6 flex flex-col gap-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl md:text-2xl font-semibold text-primary-text">
-                  Ad Views
-                </h2>
-                <Select defaultValue="7days">
-                  <SelectTrigger className="w-[140px] h-9">
-                    <SelectValue placeholder="Last 7 days" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7days">Last 7 days</SelectItem>
-                    <SelectItem value="30days">Last 30 days</SelectItem>
-                    <SelectItem value="90days">Last 90 days</SelectItem>
-                  </SelectContent>
-                </Select>
+                )}
               </div>
+            </section>
 
-              {hasAds ? (
-                <div className="bg-primary-bg rounded-2xl p-6 h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData}>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke="#3a3a3a"
-                        vertical={false}
-                      />
-                      <XAxis
-                        dataKey="day"
-                        stroke="#8E8E93"
-                        tick={{ fill: "#8E8E93", fontSize: 12 }}
-                        axisLine={false}
-                        tickLine={false}
-                      />
-                      <YAxis
-                        stroke="#8E8E93"
-                        tick={{ fill: "#8E8E93", fontSize: 12 }}
-                        axisLine={false}
-                        tickLine={false}
-                        domain={[0, 2500]}
-                        ticks={[500, 1000, 1500, 2000, 2500]}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="views"
-                        stroke="#f63d68"
-                        strokeWidth={2}
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+            <section className=" flex flex-col gap-6">
+              <h2 className="text-xl md:text-2xl font-semibold text-primary-text">
+                Ad Views
+              </h2>
+              <div className="bg-input-bg rounded-2xl pr-6 pb-2 flex flex-col gap-6 flex-1">
+                <div className="flex justify-end">
+                  {/* <h2 className="text-xl md:text-2xl font-semibold text-primary-text">
+                  Ad Views
+                </h2> */}
+                  <Select defaultValue="7days">
+                    <SelectTrigger className="w-[140px]  px-2! py-2!">
+                      <SelectValue placeholder="Last 7 days" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="7days">Last 7 days</SelectItem>
+                      <SelectItem value="30days">Last 30 days</SelectItem>
+                      <SelectItem value="90days">Last 90 days</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              ) : (
-                <div className="bg-primary-bg rounded-2xl p-6 h-[400px] flex items-center justify-center">
-                  <p className="text-text-gray-opacity text-center">
-                    Your ad performance will appear here once you create an ad.
-                  </p>
-                </div>
-              )}
-            </div>
+
+                {hasAds ? (
+                  <div className="bg-input-bg rounded-2xl h-full flex-1">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData}>
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="#3a3a3a"
+                          vertical={false}
+                        />
+                        <XAxis
+                          dataKey="day"
+                          stroke="#8E8E93"
+                          tick={{ fill: "#8E8E93", fontSize: 12 }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          stroke="#8E8E93"
+                          tick={{ fill: "#8E8E93", fontSize: 12 }}
+                          axisLine={false}
+                          tickLine={false}
+                          domain={[0, 2500]}
+                          ticks={[500, 1000, 1500, 2000, 2500]}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="views"
+                          stroke="#f63d68"
+                          strokeWidth={2}
+                          dot={false}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="bg-primary-bg rounded-2xl p-6 h-[400px] flex items-center justify-center">
+                    <p className="text-text-gray-opacity text-center">
+                      Your ad performance will appear here once you create an
+                      ad.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </section>
           </div>
         </div>
       </div>

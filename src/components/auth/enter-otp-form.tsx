@@ -26,7 +26,7 @@ export function EnterOtpForm() {
   };
 
   const handleConfirm = () => {
-    console.log("Confirm button clicked");
+    router.push("/enable-2fa");
   };
 
   const handleResend = () => {

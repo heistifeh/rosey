@@ -23,7 +23,7 @@ export function ScanQrCodeForm() {
   };
 
   const handleProceed = () => {
-    console.log("Proceed clicked");
+    router.push("/confirm-code");
   };
 
   return (

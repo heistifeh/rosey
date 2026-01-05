@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, use } from "react";
@@ -305,6 +305,7 @@ export default function ProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const [activeNav, setActiveNav] = useState("Home");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("Overview");
 
   const resolvedParams = use(params);
@@ -321,9 +322,66 @@ export default function ProfilePage({
   const tabs = ["Overview", "Availability", "Photos", "Contact", "Reviews"];
 
   return (
-    <section className="flex flex-col min-h-screen bg-primary-bg">
-      <header className="flex px-4 md:px-[60px] pt-4 md:pt-[60px] pb-6">
-        <section className="flex justify-between bg-primary-text rounded-[200px] px-4 py-5 w-full ">
+    <section className="flex flex-col min-h-screen bg-primary-bg overflow-x-hidden">
+      <header className="flex px-4 pt-4 pb-6 md:px-[60px] md:pt-[60px]">
+        <div className="w-full md:hidden">
+          <section className="flex w-full items-center justify-between rounded-[200px] bg-primary-text px-4 py-3">
+            <Link href="/" className="inline-flex items-center">
+              <span className="text-primary text-3xl font-normal petemoss">
+                Rosey
+              </span>
+            </Link>
+            <button
+              type="button"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/70 text-[#1a1a1a]"
+              aria-label="Toggle menu"
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          </section>
+          {isMobileMenuOpen && (
+            <div className="mt-3 rounded-[24px] bg-primary-text p-4 shadow-lg">
+              <div className="flex flex-col gap-3">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => {
+                      setActiveNav(link.label);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`rounded-[200px] px-4 py-2 text-sm font-medium ${
+                      activeNav === link.label
+                        ? "bg-primary text-primary-text"
+                        : "bg-tag-bg text-primary-text"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <div className="flex items-center gap-2 rounded-[200px] border border-[#E5E5EA] px-3 py-3">
+                  <Search size={16} color={"#8E8E93"} />
+                  <input
+                    type="text"
+                    placeholder="Search"
+                    className="w-full bg-transparent text-sm text-gray-700 placeholder:text-[#8E8E93] focus:outline-none"
+                  />
+                </div>
+                <div className="flex items-center justify-center rounded-[200px] bg-primary px-6 py-3">
+                  <p className="text-primary-text text-sm font-semibold">
+                    Login
+                  </p>
+                  <p className="text-primary-text text-sm font-semibold">/</p>
+                  <p className="text-primary-text text-sm font-semibold">
+                    Signup
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <section className="hidden w-full justify-between rounded-[200px] bg-primary-text px-4 py-5 md:flex">
           <Link href="/" className="inline-flex items-center">
             <span className="text-primary text-3xl md:text-[32px] font-normal petemoss">
               Rosey

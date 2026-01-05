@@ -26,9 +26,9 @@ export function ProfileHeroSection({
   tabs,
 }: ProfileHeroSectionProps) {
   return (
-    <div className="mb-6 mt-[30px] bg-primary-bg">
-      <div className="relative rounded-3xl overflow-hidden ">
-        <div className="relative h-[400px] overflow-hidden">
+    <div className="mb-6 mt-6 bg-primary-bg md:mt-[30px]">
+      <div className="relative overflow-hidden rounded-3xl">
+        <div className="relative h-[220px] overflow-hidden sm:h-[280px] md:h-[400px]">
           <Image
             src={profile.image}
             alt={profile.name}
@@ -46,7 +46,7 @@ export function ProfileHeroSection({
       </div>
 
       <div className="flex flex-col items-center">
-        <div className="relative w-24 h-24 md:w-[300px] md:h-[300px] rounded-full overflow-hidden border-4 border-transparent mb-10 mt-[-150px]">
+        <div className="relative h-24 w-24 -mt-14 mb-6 rounded-full border-4 border-transparent overflow-hidden sm:h-28 sm:w-28 sm:-mt-16 md:h-[300px] md:w-[300px] md:mb-10 md:mt-[-150px]">
           <Image
             src={profile.image}
             alt={profile.name}
@@ -55,49 +55,49 @@ export function ProfileHeroSection({
             sizes="(max-width: 768px) 96px, 300px"
           />
         </div>
-        <article className=" flex gap-2 items-center justify-center mb-4">
-          <h1 className="text-2xl md:text-4xl font-semibold text-primary-text ">
+        <article className="flex flex-wrap items-center justify-center gap-2 mb-3 md:mb-4">
+          <h1 className="text-2xl font-semibold text-primary-text md:text-4xl">
             {profile.name}
           </h1>
-          <div className="flex items-center gap-1 py-2 px-3 bg-input-bg rounded-full">
+          <div className="flex items-center gap-1 rounded-full bg-input-bg px-3 py-1.5 text-sm md:py-2">
             <Circle className="h-2 w-2 fill-current text-emerald-400" />
-            <span className=" text-primary-text font-normal text-base">
+            <span className="text-primary-text font-normal md:text-base">
               {profile.status}
             </span>
           </div>
         </article>
-        <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-text-gray-opacity mb-10">
+        <div className="mb-8 flex flex-col items-center justify-center gap-2 text-sm text-text-gray-opacity sm:flex-row sm:flex-wrap md:mb-10 md:gap-3">
           {/* <div className="flex items-center gap-1">
             <Circle className="h-2 w-2 fill-current text-emerald-400" />
             <span>{profile.status}</span>
           </div> */}
-          <div className="flex items-center gap-1 text-primary-text font-normal text-base">
+          <div className="flex items-center gap-1 text-primary-text font-normal text-sm md:text-base">
             <MapPin className="h-4 w-4" />
-            <span className=" text-primary-text font-normal text-base">
+            <span className="text-primary-text font-normal">
               {profile.location}
             </span>
           </div>
           <div className="flex items-center gap-1">
             <Venus className="h-4 w-4  text-primary-text" />
-            <span className="text-primary-text font-normal text-base">
+            <span className="text-primary-text font-normal text-sm md:text-base">
               {profile.gender}
             </span>
           </div>
           <div className="flex items-center gap-1 text-primary-text">
             <Clock className="h-4 w-4" />
-            <span className=" text-primary-text font-normal text-base">
+            <span className="text-primary-text font-normal text-sm md:text-base">
               Last active {profile.lastActive}
             </span>
           </div>
         </div>
       </div>
-      <div className="flex gap-6 mb-4 justify-between">
-        <div className="flex gap-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex gap-4 overflow-x-auto pb-2 md:gap-6 md:overflow-visible md:pb-0 scrollbar-hide">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => onTabChange(tab)}
-              className={`text-base font-medium transition-colors relative pb-2 ${
+              className={`relative shrink-0 pb-2 text-sm font-medium transition-colors md:text-base ${
                 activeTab === tab ? "text-primary" : "text-[#8E8E93]"
               }`}
             >
@@ -108,7 +108,7 @@ export function ProfileHeroSection({
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2 ml-2">
+        <div className="flex items-center gap-2 md:ml-2">
           <button className="p-2 rounded-full bg-primary-bg text-text-gray-opacity hover:bg-input-bg transition-colors">
             <Heart className="h-4 w-4" />
           </button>

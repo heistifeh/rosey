@@ -639,7 +639,7 @@
 
 "use client";
 
-import { Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -716,17 +716,76 @@ const featuredArticles = [
 
 export default function BlogPage() {
   const [activeNav, setActiveNav] = useState("Blog");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navLinks = [
     { label: "Home", href: "/" },
     { label: "Blog", href: "/blog" },
   ];
+  const mobileNavLinks = navLinks.filter((link) => link.label !== "Blog");
 
   return (
-    <section className="flex flex-col min-h-screen bg-input-bg">
+    <section className="flex flex-col min-h-screen bg-input-bg overflow-x-hidden">
       {/* Header */}
-      <header className="flex px-4 md:px-[60px] pt-4 md:pt-[60px] pb-20">
-        <section className="flex justify-between bg-primary-text rounded-[200px] px-4 py-5 w-full">
+      <header className="flex px-4 pt-4 pb-20 md:px-[60px] md:pt-[60px]">
+        <div className="w-full md:hidden">
+          <section className="flex w-full items-center justify-between rounded-[200px] bg-primary-text px-4 py-3">
+            <Link href="/" className="inline-flex items-center">
+              <span className="text-primary text-3xl font-normal petemoss">
+                Rosey
+              </span>
+            </Link>
+            <button
+              type="button"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/70 text-[#1a1a1a]"
+              aria-label="Toggle menu"
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          </section>
+          {isMobileMenuOpen && (
+            <div className="mt-3 rounded-[24px] bg-primary-text p-4 shadow-lg">
+              <div className="flex flex-col gap-3">
+                {mobileNavLinks.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => {
+                      setActiveNav(link.label);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`rounded-[200px] px-4 py-2 text-sm font-medium ${
+                      activeNav === link.label
+                        ? "bg-primary text-primary-text"
+                        : "bg-tag-bg text-primary-text"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <div className="flex items-center gap-2 rounded-[200px] border border-[#E5E5EA] px-3 py-3">
+                  <Search size={16} color={"#8E8E93"} />
+                  <input
+                    type="text"
+                    placeholder="Search"
+                    className="w-full bg-transparent text-sm text-gray-700 placeholder:text-[#8E8E93] focus:outline-none"
+                  />
+                </div>
+                <div className="flex items-center justify-center rounded-[200px] bg-primary px-6 py-3">
+                  <p className="text-primary-text text-sm font-semibold">
+                    Login
+                  </p>
+                  <p className="text-primary-text text-sm font-semibold">/</p>
+                  <p className="text-primary-text text-sm font-semibold">
+                    Signup
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <section className="hidden w-full justify-between rounded-[200px] bg-primary-text px-4 py-5 md:flex">
           <Link href="/" className="inline-flex items-center">
             <span className="text-primary text-3xl md:text-[32px] font-normal petemoss">
               Rosey
@@ -771,20 +830,20 @@ export default function BlogPage() {
       </header>
 
       {/* Hero Section */}
-      <div className="flex flex-col items-center  px-4 md:px-[60px] ">
-        <div className=" flex flex-col gap-[24px]">
-          <p className=" text-text-gray-opacity font-semibold text-[24px] text-center">
+      <div className="flex flex-col items-center px-4 md:px-[60px]">
+        <div className="flex flex-col gap-4 md:gap-[24px]">
+          <p className="text-text-gray-opacity font-semibold text-base md:text-[24px] text-center">
             Blog
           </p>
-          <div className="flex items-center gap-4 md:gap-8">
+          <div className="flex items-center gap-3 md:gap-8">
             <Image
               src="/svg/flower.svg"
               alt=""
               width={32}
               height={32}
-              className="h-6 w-6 md:h-8 md:w-8"
+              className="h-5 w-5 md:h-8 md:w-8"
             />
-            <h1 className="text-3xl md:text-5xl lg:text-[72px] font-semibold text-primary-text text-center">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-[72px] font-semibold text-primary-text text-center leading-tight">
               Insights, Stories & Guidance for Modern Companionship
             </h1>
             <Image
@@ -792,13 +851,13 @@ export default function BlogPage() {
               alt=""
               width={32}
               height={32}
-              className="h-6 w-6 md:h-8 md:w-8"
+              className="h-5 w-5 md:h-8 md:w-8"
             />
           </div>
         </div>
 
         {/* Search Bar */}
-        <div className="w-full max-w-2xl pt-8 md:pt-16">
+        <div className="w-full max-w-2xl pt-6 md:pt-16">
           <div className="relative flex items-center">
             <Search
               className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-text-gray-opacity z-10"
@@ -816,8 +875,8 @@ export default function BlogPage() {
         </div>
 
         {/* Categories */}
-        <div className=" flex text-primary pt-4 ">
-          <p className=" text-base font-normal ">
+        <div className="flex text-primary pt-4">
+          <p className="text-sm md:text-base font-normal text-center">
             <span className="text-primary-text">Categories: </span>
             Interviews, Articles, Sex Talk, LifeStyle
           </p>
@@ -825,14 +884,14 @@ export default function BlogPage() {
       </div>
 
       {/* Hot Section */}
-      <div className="px-4 md:px-[60px] py-20">
-        <h2 className="text-2xl md:text-3xl font-semibold text-primary-text mb-6 md:mb-8 flex items-center gap-2">
+      <div className="px-4 md:px-[60px] py-12 md:py-20">
+        <h2 className="text-xl md:text-3xl font-semibold text-primary-text mb-4 md:mb-8 flex items-center gap-2">
           Hot 🔥
         </h2>
         <div className="flex flex-col md:flex-row gap-4 md:gap-6">
           {/* Large Featured Article - Left Side */}
           <article className="flex-1 flex flex-col bg-primary-bg rounded-3xl overflow-hidden">
-            <div className="relative w-full aspect-video">
+            <div className="relative w-full aspect-[4/3] md:aspect-video">
               <Image
                 src={hotArticles[0].image}
                 alt={hotArticles[0].title}
@@ -840,23 +899,23 @@ export default function BlogPage() {
                 className="object-cover"
               />
             </div>
-            <div className="flex flex-col gap-4 p-6">
+            <div className="flex flex-col gap-3 p-5 md:gap-4 md:p-6">
               <div className="flex flex-col gap-2">
-                <h3 className="text-2xl font-semibold text-primary-text">
+                <h3 className="text-lg md:text-2xl font-semibold text-primary-text">
                   {hotArticles[0].title}
                 </h3>
-                <p className="text-base font-normal text-text-gray-opacity">
+                <p className="text-sm md:text-base font-normal text-text-gray-opacity">
                   {hotArticles[0].description}
                 </p>
               </div>
               <div className="flex items-center justify-between">
                 <Link
                   href="#"
-                  className="text-primary text-base font-medium underline"
+                  className="text-primary text-sm md:text-base font-medium underline"
                 >
                   Read Article
                 </Link>
-                <span className="text-base text-text-gray-opacity">
+                <span className="text-sm md:text-base text-text-gray-opacity">
                   {hotArticles[0].readTime}
                 </span>
               </div>
@@ -868,9 +927,9 @@ export default function BlogPage() {
             {hotArticles.slice(1).map((article) => (
               <article
                 key={article.id}
-                className="flex flex-row bg-primary-bg rounded-3xl overflow-hidden h-[calc(50%-12px)]"
+                className="flex flex-col md:flex-row bg-primary-bg rounded-3xl overflow-hidden md:h-[calc(50%-12px)]"
               >
-                <div className="relative w-[40%] shrink-0">
+                <div className="relative w-full md:w-[40%] shrink-0 aspect-[4/3] md:aspect-auto">
                   <Image
                     src={article.image}
                     alt={article.title}
@@ -878,9 +937,9 @@ export default function BlogPage() {
                     className="object-cover"
                   />
                 </div>
-                <div className="flex flex-col gap-2 p-6 grow justify-between">
+                <div className="flex flex-col gap-2 p-5 md:p-6 grow justify-between">
                   <div className="flex flex-col gap-2">
-                    <h3 className="text-lg font-semibold text-primary-text">
+                    <h3 className="text-base md:text-lg font-semibold text-primary-text">
                       {article.title}
                     </h3>
                     <p className="text-sm font-normal text-text-gray-opacity line-clamp-2">

@@ -9,11 +9,11 @@ export function Enable2FAForm() {
   const router = useRouter();
 
   const handleSetup2FA = () => {
-    console.log("Setup 2FA clicked");
+    router.push("/scan-qr");
   };
 
   const handleSkip = () => {
-    console.log("Skip clicked");
+    router.push("/setup-account");
   };
 
   return (

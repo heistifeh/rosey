@@ -11,7 +11,7 @@ export function VerifyIdentityForm() {
   };
 
   const handleSkip = () => {
-    console.log("Skip clicked");
+    router.push("/capture-photo");
   };
 
   const instructions = [

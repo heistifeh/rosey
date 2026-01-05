@@ -25,12 +25,12 @@ export function SimilarProfilesSection({
       <h2 className="text-xl font-semibold text-primary-text mb-4">
         Similar Profile
       </h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         {profiles.slice(0, 6).map((profile) => (
           <Link
             key={profile.id}
             href={`/profile/${profile.id}`}
-            className="flex flex-col bg-primary-bg rounded-xl overflow-hidden border border-dark-border hover:opacity-90 transition-opacity"
+            className="flex min-w-0 flex-col rounded-xl border border-dark-border bg-primary-bg overflow-hidden transition-opacity hover:opacity-90"
           >
             <div className="relative aspect-square w-full">
               <Image
@@ -42,22 +42,22 @@ export function SimilarProfilesSection({
               />
             </div>
             <div className="p-3">
-              <div className="flex justify-between items-center mb-2">
-                <p className="text-sm font-semibold text-primary-text">
+              <div className="flex items-start justify-between gap-2 mb-2 min-w-0">
+                <p className="text-sm font-semibold text-primary-text leading-snug min-w-0">
                   {profile.name}
                 </p>
-                <p className="text-base font-semibold text-primary-text">
+                <p className="text-sm sm:text-base font-semibold text-primary-text whitespace-nowrap">
                   {profile.price}
                 </p>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1">
+              <div className="flex flex-col items-start gap-2 text-xs sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-1 min-w-0">
                   <MapPin className="h-3 w-3 text-text-gray-opacity" />
-                  <span className="text-xs text-text-gray-opacity">
+                  <span className="text-xs text-text-gray-opacity truncate">
                     {profile.location}
                   </span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 whitespace-nowrap">
                   <Circle className="h-2 w-2 fill-current text-emerald-400" />
                   <span className="text-xs text-primary-text">
                     {profile.status}
@@ -76,4 +76,3 @@ export function SimilarProfilesSection({
     </section>
   );
 }
-

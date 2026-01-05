@@ -55,10 +55,10 @@ export function RatesForm() {
 
   return (
     <div className="flex flex-col flex-1 w-full overflow-y-auto">
-      <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 md:gap-8 py-6 px-0 md:pt-20 pt-10 items-center justify-center">
+      <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 md:gap-8 py-6 px-4 md:px-0 md:pt-20 pt-10 items-center justify-center">
         <div className="flex flex-col gap-6 md:gap-8">
           <div className="flex justify-center w-full">
-            <div className="flex gap-2 md:gap-4 px-4 py-2 rounded-[200px] w-full max-w-full overflow-x-auto justify-center">
+            <div className="flex gap-2 md:gap-4 px-4 py-2 rounded-[200px] w-full max-w-full overflow-x-auto scrollbar-hide justify-start md:justify-center">
               {progressSteps.map((step) => (
                 <button
                   key={step.number}
