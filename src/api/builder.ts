@@ -1,4 +1,5 @@
-import { LOGINAPI, API, setAuthCookie } from "./axios-config";
+import { LOGINAPI, API, setAuthCookie, getAccessToken } from "./axios-config";
+import axios from "axios";
 import { SignInPayload, SignUpPayload } from "@/types/types";
 
 export const apiBuilder = {
@@ -100,34 +101,47 @@ export const apiBuilder = {
         data,
         {
           headers: {
-            Prefer: "resolution=merge-duplicates",
+            Prefer: "resolution=merge-duplicates, return=representation",
           },
         }
       ).then((response) => response.data),
     createImage: (data: {
-      user_id: string;
+      profile_id: string;
       public_url: string;
+      path: string;
       is_primary: boolean;
     }) =>
-      API.post(`https://axhkwqaxbnsguxzrfsfj.supabase.co/rest/v1/images`, data).then(
-        (response) => response.data
-      ),
+      API.post(`https://axhkwqaxbnsguxzrfsfj.supabase.co/rest/v1/images`, {
+        profile_id: data.profile_id,
+        public_url: data.public_url,
+        path: data.path,
+        is_primary: data.is_primary,
+      }).then((response) => response.data),
   },
   storage: {
     uploadImage: async (file: File, userId: string) => {
       const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "");
       const fileName = `${userId}/${Date.now()}-${cleanName}`;
-      const bucket = "profile_images";
+      const bucket = "provider-images";
       const supabaseUrl = "https://axhkwqaxbnsguxzrfsfj.supabase.co";
+      const token = getAccessToken();
+      const apiKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-      await API.post(`${supabaseUrl}/storage/v1/object/${bucket}/${fileName}`, file, {
+      if (!token) throw new Error("Authentication required for upload");
+
+      await axios.post(`${supabaseUrl}/storage/v1/object/${bucket}/${fileName}`, file, {
         headers: {
-          "Content-Type": file.type,
+          "Content-Type": file.type || "application/octet-stream",
           "x-upsert": "true",
+          "Authorization": `Bearer ${token}`,
+          "apikey": apiKey,
         },
       });
 
-      return `${supabaseUrl}/storage/v1/object/public/${bucket}/${fileName}`;
+      return {
+        publicUrl: `${supabaseUrl}/storage/v1/object/public/${bucket}/${fileName}`,
+        path: fileName,
+      };
     },
   },
 };

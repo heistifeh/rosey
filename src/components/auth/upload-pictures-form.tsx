@@ -33,15 +33,21 @@ export function UploadPicturesForm() {
   const [isUploading, setIsUploading] = useState(false);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async ({ profile, images }: { profile: any; images: string[] }) => {
+    mutationFn: async ({ profile, images }: { profile: any; images: { publicUrl: string; path: string }[] }) => {
       // 1. Create/Update Profile
-      await apiBuilder.profiles.createProfile(profile);
+      const result = await apiBuilder.profiles.createProfile(profile);
+
+      const profileId = result?.[0]?.id;
+      if (!profileId) {
+        throw new Error("Failed to retrieve profile ID");
+      }
 
       // 2. Create Image Records
-      const imagePromises = images.map((url, index) =>
+      const imagePromises = images.map((img, index) =>
         apiBuilder.profiles.createImage({
-          user_id: profile.user_id,
-          public_url: url,
+          profile_id: profileId,
+          public_url: img.publicUrl,
+          path: img.path,
           is_primary: index === 0,
         })
       );
@@ -52,9 +58,15 @@ export function UploadPicturesForm() {
       clearData();
       router.push("/dashboard");
     },
-    onError: (error) => {
-      console.error(error);
-      toast.error("Failed to create profile");
+    onError: (error: any) => {
+      console.error("Mutation Error:", error);
+      const msg = error?.response?.data?.message || error?.message || "Unknown error";
+
+      if (msg.includes("profiles_username_key") || msg.includes("duplicate key")) {
+        toast.error("Username is already taken. Please go back and change it.");
+      } else {
+        toast.error(`Error: ${msg}`);
+      }
       setIsUploading(false);
     },
   });
@@ -126,11 +138,11 @@ export function UploadPicturesForm() {
       }
 
       // 1. Upload Images
-      const imageUrls: string[] = [];
+      const uploadedImagesData: { publicUrl: string; path: string }[] = [];
       for (const file of selectedFiles) {
         try {
-          const url = await apiBuilder.storage.uploadImage(file, userId);
-          imageUrls.push(url);
+          const result = await apiBuilder.storage.uploadImage(file, userId);
+          uploadedImagesData.push(result);
         } catch (err) {
           console.error("Failed to upload image", file.name, err);
           toast.error(`Failed to upload ${file.name}`);
@@ -181,7 +193,7 @@ export function UploadPicturesForm() {
       };
 
       // 4. Submit
-      mutate({ profile: profilePayload, images: imageUrls });
+      mutate({ profile: profilePayload, images: uploadedImagesData });
     } catch (error) {
       console.error(error);
       setIsUploading(false);
