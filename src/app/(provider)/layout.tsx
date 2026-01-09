@@ -21,7 +21,9 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetClose,
+
 } from "@/components/ui/sheet";
+import { LocationSelector } from "@/components/dashboard/location-selector";
 
 export default function ProviderLayout({
   children,
@@ -77,11 +79,10 @@ export default function ProviderLayout({
                         <SheetClose key={item.href} asChild>
                           <Link
                             href={item.href}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                              isActive
-                                ? "bg-primary text-primary-text"
-                                : "text-text-gray-opacity hover:bg-primary-bg"
-                            }`}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
+                              ? "bg-primary text-primary-text"
+                              : "text-text-gray-opacity hover:bg-primary-bg"
+                              }`}
                           >
                             <Icon className="h-5 w-5" />
                             <span className="text-sm font-medium">
@@ -115,11 +116,10 @@ export default function ProviderLayout({
                   >
                     <Link
                       href={item.href}
-                      className={`flex items-center gap-2 text-sm font-medium transition-colors ${
-                        isActive
-                          ? "text-primary"
-                          : "text-[#8E8E93] hover:text-primary-text"
-                      }`}
+                      className={`flex items-center gap-2 text-sm font-medium transition-colors ${isActive
+                        ? "text-primary"
+                        : "text-[#8E8E93] hover:text-primary-text"
+                        }`}
                     >
                       <Icon className="h-4 w-4" />
                       <span>{item.label}</span>
@@ -132,12 +132,30 @@ export default function ProviderLayout({
               })}
             </nav>
 
-            <div className="flex items-center gap-2">
-              <div className="rounded-full bg-primary-bg flex items-center justify-center p-3">
-                <BellDot size={24} className="text-primary-text" />
+            <div className="flex items-center gap-4 lg:gap-6">
+              <div className="hidden lg:block w-[280px]">
+                <LocationSelector />
               </div>
-              <div className="hidden md:flex items-center gap-2 px-4 py-3 bg-primary-bg rounded-full">
-                <div className="relative h-10 w-10 rounded-full overflow-hidden">
+
+              <div className="flex items-center gap-2">
+                <div className="rounded-full bg-primary-bg flex items-center justify-center p-3">
+                  <BellDot size={24} className="text-primary-text" />
+                </div>
+                <div className="hidden md:flex items-center gap-2 px-4 py-3 bg-primary-bg rounded-full">
+                  <div className="relative h-10 w-10 rounded-full overflow-hidden">
+                    <Image
+                      src="/images/girl1.png"
+                      alt="Profile"
+                      width={40}
+                      height={40}
+                      className="object-cover"
+                    />
+                  </div>
+                  <p className="text-primary-text font-normal text-base">
+                    Nicki Minaj
+                  </p>
+                </div>
+                <div className="md:hidden relative h-10 w-10 rounded-full overflow-hidden">
                   <Image
                     src="/images/girl1.png"
                     alt="Profile"
@@ -146,18 +164,6 @@ export default function ProviderLayout({
                     className="object-cover"
                   />
                 </div>
-                <p className="text-primary-text font-normal text-base">
-                  Nicki Minaj
-                </p>
-              </div>
-              <div className="md:hidden relative h-10 w-10 rounded-full overflow-hidden">
-                <Image
-                  src="/images/girl1.png"
-                  alt="Profile"
-                  width={40}
-                  height={40}
-                  className="object-cover"
-                />
               </div>
             </div>
           </div>

@@ -4,11 +4,21 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
+import { useProfileStore } from "@/hooks/use-profile-store";
 
 export function AvailabilityForm() {
   const router = useRouter();
+  const { saveData, getData } = useProfileStore();
   const [selectedDays, setSelectedDays] = useState<string[]>(["Monday"]);
+
+  useEffect(() => {
+    const savedData = getData("availability");
+    if (savedData?.selectedDays) {
+      setSelectedDays(savedData.selectedDays);
+    }
+  }, [getData]);
 
   const progressSteps = [
     {
@@ -58,7 +68,10 @@ export function AvailabilityForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Selected days (unavailable):", selectedDays);
+    // Save to local storage under "availability" key
+    saveData("availability", { selectedDays });
+    toast.success("Availability saved");
+    // Redirect to the final step: Upload Pictures
     router.push("/upload-pictures");
   };
 
@@ -72,11 +85,10 @@ export function AvailabilityForm() {
                 <button
                   key={step.number}
                   onClick={() => handleTabClick(step.value)}
-                  className={`px-3 py-2 sm:px-4 rounded-[200px] border text-primary-text text-xs sm:text-sm font-medium shrink-0 cursor-pointer ${
-                    step.isActive
-                      ? "bg-primary text-white border-primary"
-                      : "bg-tag-bg border-primary"
-                  }`}
+                  className={`px-3 py-2 sm:px-4 rounded-[200px] border text-primary-text text-xs sm:text-sm font-medium shrink-0 cursor-pointer ${step.isActive
+                    ? "bg-primary text-white border-primary"
+                    : "bg-tag-bg border-primary"
+                    }`}
                 >
                   {step.number}. {step.label}
                 </button>
@@ -103,16 +115,14 @@ export function AvailabilityForm() {
                   <div
                     key={day}
                     onClick={() => handleDayToggle(day)}
-                    className={`flex items-center justify-between px-4 py-4 rounded-lg cursor-pointer transition-colors ${
-                      isSelected
-                        ? "bg-tag-bg border border-primary"
-                        : "bg-input-bg border border-transparent hover:border-primary/50"
-                    }`}
+                    className={`flex items-center justify-between px-4 py-4 rounded-lg cursor-pointer transition-colors ${isSelected
+                      ? "bg-tag-bg border border-primary"
+                      : "bg-input-bg border border-transparent hover:border-primary/50"
+                      }`}
                   >
                     <span
-                      className={`text-sm sm:text-base font-medium ${
-                        isSelected ? "text-white" : "text-primary-text"
-                      }`}
+                      className={`text-sm sm:text-base font-medium ${isSelected ? "text-white" : "text-primary-text"
+                        }`}
                     >
                       {day}
                     </span>
@@ -124,11 +134,10 @@ export function AvailabilityForm() {
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleDayToggle(day)}
-                        className={`h-[18px] w-[18px] rounded-[4px] border cursor-pointer ${
-                          isSelected
-                            ? "border-transparent bg-primary"
-                            : "border-border-gray bg-transparent"
-                        }`}
+                        className={`h-[18px] w-[18px] rounded-[4px] border cursor-pointer ${isSelected
+                          ? "border-transparent bg-primary"
+                          : "border-border-gray bg-transparent"
+                          }`}
                         style={{ appearance: "none" }}
                       />
                       {isSelected && (

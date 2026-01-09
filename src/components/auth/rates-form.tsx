@@ -4,14 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useProfileStore } from "@/hooks/use-profile-store";
+import { toast } from "react-hot-toast";
 
 export function RatesForm() {
   const router = useRouter();
+  const { saveData, getData } = useProfileStore();
   const [formData, setFormData] = useState({
     baseHourlyRates: "",
     baseCurrency: "",
   });
+
+  useEffect(() => {
+    const savedData = getData("rates");
+    if (savedData) {
+      setFormData((prev) => ({ ...prev, ...savedData }));
+    }
+  }, [getData]);
 
   const progressSteps = [
     {
@@ -49,7 +59,8 @@ export function RatesForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+    saveData("rates", formData);
+    toast.success("Progress saved");
     router.push("/availability");
   };
 
@@ -63,11 +74,10 @@ export function RatesForm() {
                 <button
                   key={step.number}
                   onClick={() => handleTabClick(step.value)}
-                  className={`px-3 py-2 sm:px-4 rounded-[200px] border text-primary-text text-xs sm:text-sm font-medium shrink-0 cursor-pointer ${
-                    step.isActive
+                  className={`px-3 py-2 sm:px-4 rounded-[200px] border text-primary-text text-xs sm:text-sm font-medium shrink-0 cursor-pointer ${step.isActive
                       ? "bg-primary text-white border-primary"
                       : "bg-tag-bg border-primary"
-                  }`}
+                    }`}
                 >
                   {step.number}. {step.label}
                 </button>

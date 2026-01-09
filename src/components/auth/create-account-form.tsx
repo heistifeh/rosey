@@ -42,9 +42,8 @@ export function CreateAccountForm() {
       }),
     mutationKey: ["auth", "signUp"],
     onSuccess: () => {
-      toast.success("Account created. Check your email for confirmation.");
+      toast.success("Account created successfully");
       reset();
-      router.push("/enter-otp");
     },
     onError: (error) => {
       errorMessageHandler(error as ErrorType);
@@ -52,7 +51,19 @@ export function CreateAccountForm() {
   });
 
   const onSubmit = (values: CreateAccountValues) => {
-    mutate(values);
+    mutate(values, {
+      onSuccess: () => {
+        router.push("/general-information");
+      },
+    });
+  };
+
+  const onClientSubmit = (values: CreateAccountValues) => {
+    mutate(values, {
+      onSuccess: () => {
+        router.push("/");
+      },
+    });
   };
 
   return (
@@ -201,8 +212,10 @@ export function CreateAccountForm() {
                 type="button"
                 className="w-full rounded-[200px] text-[#FCFCFD] font-semibold text-base bg-[#222222] hover:bg-[#1a1a1a]"
                 size="default"
+                onClick={handleSubmit(onClientSubmit)}
+                disabled={isSubmitting || isLoading}
               >
-                Sign Up as a Client Instead
+                Sign Up as a Provider Instead
               </Button>
             </div>
           </form>

@@ -4,30 +4,80 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { CloudUpload, Upload, Trash2 } from "lucide-react";
+import { CloudUpload, Upload, Trash2, Loader2 } from "lucide-react";
+import { apiBuilder } from "@/api/builder";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
+import { useProfileStore } from "@/hooks/use-profile-store";
+
+const getUserId = () => {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(?:^|; )rosey-auth=([^;]*)`));
+  if (!match) return null;
+  try {
+    const data = JSON.parse(decodeURIComponent(match[1]));
+    return data?.user?.id;
+  } catch {
+    return null;
+  }
+};
 
 export function UploadPicturesForm() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const { getAllData, clearData } = useProfileStore();
+
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]); // Previews
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // Actual files
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async ({ profile, images }: { profile: any; images: string[] }) => {
+      // 1. Create/Update Profile
+      await apiBuilder.profiles.createProfile(profile);
+
+      // 2. Create Image Records
+      const imagePromises = images.map((url, index) =>
+        apiBuilder.profiles.createImage({
+          user_id: profile.user_id,
+          public_url: url,
+          is_primary: index === 0,
+        })
+      );
+      await Promise.all(imagePromises);
+    },
+    onSuccess: () => {
+      toast.success("Profile created successfully!");
+      clearData();
+      router.push("/dashboard");
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error("Failed to create profile");
+      setIsUploading(false);
+    },
+  });
 
   const handleFileSelect = (files: FileList | null) => {
     if (!files) return;
 
     const newImages: string[] = [];
+    const newFiles: File[] = [];
     const remainingSlots = 9 - uploadedImages.length;
 
     Array.from(files)
       .slice(0, remainingSlots)
       .forEach((file) => {
         if (file.type.startsWith("image/")) {
+          newFiles.push(file);
           const reader = new FileReader();
           reader.onload = (e) => {
             const result = e.target?.result as string;
             newImages.push(result);
-            if (newImages.length === Math.min(files.length, remainingSlots)) {
+            if (newImages.length === newFiles.length) {
               setUploadedImages((prev) => [...prev, ...newImages]);
+              setSelectedFiles((prev) => [...prev, ...newFiles]);
             }
           };
           reader.readAsDataURL(file);
@@ -57,17 +107,86 @@ export function UploadPicturesForm() {
 
   const handleDeleteImage = (index: number) => {
     setUploadedImages((prev) => prev.filter((_, i) => i !== index));
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleBrowseClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Uploaded images:", uploadedImages);
-    // Handle completion - could navigate to dashboard or success page
-    // router.push("/dashboard");
+    setIsUploading(true);
+
+    try {
+      const userId = getUserId();
+      if (!userId) {
+        toast.error("Session expired. Please login again.");
+        return;
+      }
+
+      // 1. Upload Images
+      const imageUrls: string[] = [];
+      for (const file of selectedFiles) {
+        try {
+          const url = await apiBuilder.storage.uploadImage(file, userId);
+          imageUrls.push(url);
+        } catch (err) {
+          console.error("Failed to upload image", file.name, err);
+          toast.error(`Failed to upload ${file.name}`);
+        }
+      }
+
+      // 2. Aggregate Data
+      const allData = getAllData();
+
+      // Helper to parse ints
+      const parseIntSafe = (val: string) => {
+        const parsed = parseInt(val);
+        return isNaN(parsed) ? null : parsed;
+      };
+
+      // 3. Construct Profile Payload
+      const profilePayload = {
+        user_id: userId,
+        working_name: allData.workingName,
+        username: allData.profileUsername,
+        profile_type: allData.profileType,
+        gender: allData.gender,
+        gender_presentation: allData.genderPresentation,
+        pronouns: allData.pronouns ? [allData.pronouns] : [],
+        trans_status: allData.transgenderStatus,
+        trans_only: allData.appearExclusivelyInTransOnly === "Yes",
+        age: parseIntSafe(allData.age),
+        displayed_age:
+          allData.displayedAge === "Show actual age"
+            ? parseIntSafe(allData.age)
+            : null,
+        appear_on_other_profiles: allData.appearOnOtherProfiles !== "Disabled",
+        temporary_hide_days:
+          parseIntSafe(allData.temporaryProfileHiding) || null,
+        caters_to: allData.catersTo
+          ? allData.catersTo.split(",").map((s: string) => s.trim())
+          : [],
+        home_locations: allData.homeLocations
+          ? allData.homeLocations.split(",").map((s: string) => s.trim())
+          : [],
+        city: allData.homeLocations
+          ? allData.homeLocations.split(",")[0].trim()
+          : null,
+        state: allData.homeLocations
+          ? allData.homeLocations.split(",")[0].trim()
+          : null, // Fallback
+        country: "Nigeria", // Default
+      };
+
+      // 4. Submit
+      mutate({ profile: profilePayload, images: imageUrls });
+    } catch (error) {
+      console.error(error);
+      setIsUploading(false);
+      toast.error("Something went wrong");
+    }
   };
 
   return (
@@ -92,9 +211,8 @@ export function UploadPicturesForm() {
             className="flex flex-col gap-6 md:gap-8 w-full max-w-4xl mx-auto"
           >
             <div
-              className={`rounded-[24px] px-6 py-[46px] text-center transition-colors w-full max-w-[436px] mx-auto ${
-                isDragging ? "border-primary bg-primary/10" : " bg-input-bg"
-              }`}
+              className={`rounded-[24px] px-6 py-[46px] text-center transition-colors w-full max-w-[436px] mx-auto ${isDragging ? "border-primary bg-primary/10" : " bg-input-bg"
+                }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -161,10 +279,18 @@ export function UploadPicturesForm() {
             <div className="flex justify-center pt-8">
               <Button
                 type="submit"
-                className="w-full max-w-[443px] px-8 py-3 rounded-[200px] bg-primary text-white font-semibold text-base cursor-pointer"
+                disabled={isUploading || isPending}
+                className="w-full max-w-[443px] px-8 py-3 rounded-[200px] bg-primary text-white font-semibold text-base cursor-pointer disabled:opacity-50"
                 size="default"
               >
-                Complete
+                {isUploading || isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Completing...
+                  </>
+                ) : (
+                  "Complete"
+                )}
               </Button>
             </div>
           </form>

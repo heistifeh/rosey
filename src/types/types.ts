@@ -49,3 +49,15 @@ export type AuthResponse = {
   user: AuthUser;
   weak_password: null;
 };
+
+export type SignInPayload = {
+  email: string;
+  password: string;
+  [key: string]: unknown;
+};
+
+export type SignUpPayload = {
+  email: string;
+  password: string;
+  [key: string]: unknown;
+};

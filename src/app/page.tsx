@@ -17,6 +17,18 @@ import { AvailableNowSection } from "@/components/home/available-now-section";
 export default function Home() {
   const [activeNav, setActiveNav] = useState("Home");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [filters, setFilters] = useState<{
+    gender: string;
+    priceRange?: string;
+    location?: {
+      city: string;
+      country: string;
+      city_slug: string;
+      country_slug: string;
+    };
+  }>({
+    gender: "Female",
+  });
 
   const navLinks = [
     { label: "Home", href: "/" },
@@ -113,11 +125,10 @@ export default function Home() {
                     key={link.label}
                     href={link.href}
                     onClick={() => setActiveNav(link.label)}
-                    className={`text-base font-medium transition-colors ${
-                      activeNav === link.label
+                    className={`text-base font-medium transition-colors ${activeNav === link.label
                         ? "bg-primary rounded-[200px] py-2 px-[33px] text-primary-text"
                         : "text-[#8E8E93]"
-                    }`}
+                      }`}
                   >
                     {link.label}
                   </Link>
@@ -146,11 +157,11 @@ export default function Home() {
             </section>
           </header>
 
-          <HeroSection />
+          <HeroSection filters={filters} setFilters={setFilters} />
           {/* <AvailableNowSection /> */}
         </div>
       </main>
-      <AvailableNowSection />
+      <AvailableNowSection filters={filters} setFilters={setFilters} />
       <RecentlyActiveSection />
       <TestimonialsSection />
       <BookingGuideSection />

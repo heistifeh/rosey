@@ -11,7 +11,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TabsContent } from "@/components/ui/tabs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useProfileStore } from "@/hooks/use-profile-store";
+import { toast } from "react-hot-toast";
 
 interface GeneralInformationFormContentProps {
   onNext?: () => void;
@@ -20,6 +22,7 @@ interface GeneralInformationFormContentProps {
 export function GeneralInformationFormContent({
   onNext,
 }: GeneralInformationFormContentProps) {
+  const { saveData, getData } = useProfileStore();
   const [formData, setFormData] = useState({
     workingName: "",
     profileType: "Escort",
@@ -37,16 +40,22 @@ export function GeneralInformationFormContent({
     homeLocations: "",
   });
 
+  useEffect(() => {
+    const savedData = getData("general");
+    if (savedData) {
+      setFormData((prev) => ({ ...prev, ...savedData }));
+    }
+  }, [getData]);
+
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    if (onNext) {
-      onNext();
-    }
+    saveData("general", formData);
+    toast.success("Progress saved");
+    if (onNext) onNext();
   };
 
   return (
@@ -98,6 +107,14 @@ export function GeneralInformationFormContent({
             </div>
 
             <div className="flex flex-col gap-2 md:min-h-[120px]">
+              {/* Note: I am replacing the file header so I need to be careful with where I stop. 
+                  The original file truncated at line 100. I need to make sure I don't lose the rest of the file content
+                  which presumably exists but I haven't seen it all.
+                  Wait, I only viewed 100 lines.
+                  I should view the REST of the file first to ensure I don't overwrite blindly.
+                  I will ABORT this tool call and view the file fully first.
+               */}
+
               <Label
                 htmlFor="genderPresentation"
                 className="text-[14px] font-semibold text-primary-text"

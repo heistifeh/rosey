@@ -11,7 +11,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TabsContent } from "@/components/ui/tabs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useProfileStore } from "@/hooks/use-profile-store";
+import { toast } from "react-hot-toast";
 
 interface ProfileSetupFormContentProps {
   onNext?: () => void;
@@ -20,6 +22,7 @@ interface ProfileSetupFormContentProps {
 export function ProfileSetupFormContent({
   onNext,
 }: ProfileSetupFormContentProps) {
+  const { saveData, getData } = useProfileStore();
   const [formData, setFormData] = useState({
     about: "",
     tagline: "",
@@ -32,16 +35,22 @@ export function ProfileSetupFormContent({
     friendly420: "",
   });
 
+  useEffect(() => {
+    const savedData = getData("profile");
+    if (savedData) {
+      setFormData((prev) => ({ ...prev, ...savedData }));
+    }
+  }, [getData]);
+
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    if (onNext) {
-      onNext();
-    }
+    saveData("profile", formData);
+    toast.success("Progress saved");
+    if (onNext) onNext();
   };
 
   return (

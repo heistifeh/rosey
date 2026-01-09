@@ -11,7 +11,7 @@ const readCookie = (name: string): string | null => {
   return match ? decodeURIComponent(match[1]) : null;
 };
 
-const getAccessToken = (): string | null => {
+export const getAccessToken = (): string | null => {
   const raw = readCookie(AUTH_COOKIE_KEY);
   if (!raw) return null;
   try {
@@ -21,13 +21,26 @@ const getAccessToken = (): string | null => {
   }
 };
 
+export const setAuthCookie = (data: any) => {
+  if (typeof document === "undefined") return;
+  const cookieValue = encodeURIComponent(JSON.stringify(data));
+  // Default to 7 days if no expiry provided
+  const maxAge = data.expires_in ? data.expires_in : 604800;
+  document.cookie = `${AUTH_COOKIE_KEY}=${cookieValue}; path=/; max-age=${maxAge}; samesite=lax`;
+};
+
+export const clearAuthCookie = () => {
+  if (typeof document === "undefined") return;
+  document.cookie = `${AUTH_COOKIE_KEY}=; path=/; max-age=0`;
+};
+
 export const LOGINAPI = axios.create({
   baseURL: API_BASE_URL,
   headers: SUPABASE_ANON_KEY
     ? {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      }
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    }
     : undefined,
 });
 
@@ -35,9 +48,9 @@ export const API = axios.create({
   baseURL: API_BASE_URL,
   headers: SUPABASE_ANON_KEY
     ? {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      }
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    }
     : undefined,
 });
 
