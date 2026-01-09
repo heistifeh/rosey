@@ -6,7 +6,7 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import { CloudUpload, Upload, Trash2, Loader2 } from "lucide-react";
 import { apiBuilder } from "@/api/builder";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import { useProfileStore } from "@/hooks/use-profile-store";
 
@@ -24,6 +24,7 @@ const getUserId = () => {
 
 export function UploadPicturesForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { getAllData, clearData } = useProfileStore();
 
@@ -55,6 +56,7 @@ export function UploadPicturesForm() {
     },
     onSuccess: () => {
       toast.success("Profile created successfully!");
+      queryClient.invalidateQueries({ queryKey: ["profiles"] });
       clearData();
       router.push("/dashboard");
     },
@@ -159,6 +161,23 @@ export function UploadPicturesForm() {
       };
 
       // 3. Construct Profile Payload
+      // Helper to slugify
+      const slugify = (text: string) => {
+        return text
+          .toString()
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, "-")
+          .replace(/[^\w-]+/g, "")
+          .replace(/--+/g, "-");
+      };
+
+      const city = allData.homeLocations
+        ? allData.homeLocations.split(",")[0].trim()
+        : null;
+      const country = "Nigeria";
+
+      // 3. Construct Profile Payload
       const profilePayload = {
         user_id: userId,
         working_name: allData.workingName,
@@ -183,13 +202,28 @@ export function UploadPicturesForm() {
         home_locations: allData.homeLocations
           ? allData.homeLocations.split(",").map((s: string) => s.trim())
           : [],
-        city: allData.homeLocations
-          ? allData.homeLocations.split(",")[0].trim()
-          : null,
-        state: allData.homeLocations
-          ? allData.homeLocations.split(",")[0].trim()
-          : null, // Fallback
-        country: "Nigeria", // Default
+        city: city,
+        state: city, // Fallback
+        country: country,
+
+        // Required for Listing visibility
+        city_slug: city ? slugify(city) : null,
+        country_slug: slugify(country),
+        is_active: true,
+        onboarding_completed: true,
+
+        // Listing details
+        tagline: allData.tagline,
+        about: allData.about,
+        base_hourly_rate: parseIntSafe(allData.baseHourlyRates),
+        base_currency: (allData.baseCurrency || "NGN").substring(0, 3).toUpperCase(),
+        available_days: allData.availableDays || [],
+        ethnicity_category: allData.ethnicityCategory,
+        body_type: allData.bodyType,
+        // height: allData.height,
+        // hair_color: allData.hairColor,
+        // eye_color: allData.eyeColor,
+        languages: allData.languages ? [allData.languages] : [],
       };
 
       // 4. Submit

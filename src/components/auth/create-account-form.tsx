@@ -215,7 +215,7 @@ export function CreateAccountForm() {
                 onClick={handleSubmit(onClientSubmit)}
                 disabled={isSubmitting || isLoading}
               >
-                Sign Up as a Provider Instead
+                Sign Up as a Client Instead
               </Button>
             </div>
           </form>
