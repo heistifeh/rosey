@@ -11,6 +11,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 type LoginValues = {
   email: string;
@@ -51,6 +53,8 @@ export function LoginForm() {
   const onSubmit = (values: LoginValues) => {
     mutate(values);
   };
+
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -127,14 +131,29 @@ export function LoginForm() {
                   >
                     Password
                   </Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    aria-invalid={Boolean(errors.password)}
-                    {...register("password", {
-                      required: "Password is required",
-                    })}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      aria-invalid={Boolean(errors.password)}
+                      className="pr-12"
+                      {...register("password", {
+                        required: "Password is required",
+                      })}
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-3 flex items-center text-white/70"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                   {errors.password && (
                     <span className="text-xs text-red-500">
                       {errors.password.message}
@@ -163,7 +182,7 @@ export function LoginForm() {
           <div className="text-center text-base font-normal">
             <span className="text-text-gray">Don&apos;t have an Account? </span>
             <Link
-              href="/auth/create-account"
+              href="/create-account"
               className="text-primary hover:underline font-medium"
             >
               Create account

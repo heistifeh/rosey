@@ -3,8 +3,10 @@
 import { Menu, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { HeroSection } from "@/components/home/hero-section";
+import { useAuthStore } from "@/stores/auth-store";
 
 import { RecentlyActiveSection } from "@/components/home/recently-active-section";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
@@ -29,6 +31,24 @@ export default function Home() {
   }>({
     gender: "Female",
   });
+
+  const user = useAuthStore((state) => state.user);
+  const clearUser = useAuthStore((state) => state.clearUser);
+  const router = useRouter();
+
+  useEffect(() => {
+    console.log("Current user details:", user);
+  }, [user]);
+
+  const handleAuthAction = () => {
+    if (user) {
+      clearUser();
+      router.push("/");
+      return;
+    }
+
+    router.push("/login");
+  };
 
   const navLinks = [
     { label: "Home", href: "/" },
@@ -92,16 +112,27 @@ export default function Home() {
                         className="w-full bg-transparent text-sm text-gray-700 placeholder:text-[#8E8E93] focus:outline-none"
                       />
                     </div>
-                    <div className="flex items-center justify-center rounded-[200px] bg-primary px-6 py-3">
-                      <p className="text-primary-text text-sm font-semibold">
-                        Login
-                      </p>
-                      <p className="text-primary-text text-sm font-semibold">
-                        /
-                      </p>
-                      <p className="text-primary-text text-sm font-semibold">
-                        Signup
-                      </p>
+                    <div className="flex items-center justify-center gap-3 cursor-pointer">
+                      <button
+                        type="button"
+                        onClick={handleAuthAction}
+                        className="rounded-[200px] bg-primary px-6 py-3 text-sm font-semibold text-primary-text cursor-pointer"
+                      >
+                        {user ? "Sign out" : "Login"}
+                      </button>
+                      {!user && (
+                        <>
+                          <p className="text-primary-text text-sm font-semibold">
+                            /
+                          </p>
+                          <Link
+                            href="/create-account"
+                            className="cursor-pointer text-primary-text text-sm font-semibold"
+                          >
+                            Signup
+                          </Link>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -135,7 +166,7 @@ export default function Home() {
                 ))}
               </div>
 
-              <section className=" flex items-center gap-2">
+              <section className="flex items-center gap-2">
                 <div className="flex items-center gap-2 rounded-[200px] px-3 py-3  border border-[#E5E5EA] w-[290px]">
                   <Search size={16} color={"#8E8E93"} />
                   <input
@@ -144,14 +175,22 @@ export default function Home() {
                     className="w-32 bg-transparent text-sm text-gray-700 placeholder:text-[#8E8E93] focus:outline-none"
                   />
                 </div>
-                <div className=" flex items-center  bg-primary rounded-[200px] px-[31px] py-[13px]">
-                  <p className="text-primary-text text-base font-semibold">
-                    Login
-                  </p>
-                  <p className="text-primary-text text-base font-semibold">/</p>
-                  <p className="text-primary-text text-base font-semibold">
-                    Signup
-                  </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAuthAction}
+                    className="cursor-pointer rounded-[200px] bg-primary px-[31px] py-[13px] text-primary-text text-base font-semibold"
+                  >
+                    {user ? "Sign out" : "Login"}
+                  </button>
+                  {!user && (
+                    <Link
+                      href="/create-account"
+                      className="cursor-pointer text-primary-text text-base font-semibold"
+                    >
+                      Signup
+                    </Link>
+                  )}
                 </div>
               </section>
             </section>
