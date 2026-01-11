@@ -13,7 +13,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { apiBuilder } from "@/api/builder";
 
-const tabs = ["Female", "Male", "Trans", "Non-Binary"];
+const tabs = ["All", "Female", "Male", "Trans", "Non-Binary"];
 
 interface AvailableNowSectionProps {
   filters: {
@@ -26,27 +26,34 @@ interface AvailableNowSectionProps {
       country_slug: string;
     };
   };
-  setFilters: React.Dispatch<React.SetStateAction<{
-    gender: string;
-    priceRange?: string;
-    location?: {
-      city: string;
-      country: string;
-      city_slug: string;
-      country_slug: string;
-    };
-  }>>;
+  setFilters: React.Dispatch<
+    React.SetStateAction<{
+      gender: string;
+      priceRange?: string;
+      location?: {
+        city: string;
+        country: string;
+        city_slug: string;
+        country_slug: string;
+      };
+    }>
+  >;
 }
 
-export function AvailableNowSection({ filters, setFilters }: AvailableNowSectionProps) {
-  const { data: profiles, isLoading } = useQuery({
+export function AvailableNowSection({
+  filters,
+  setFilters,
+}: AvailableNowSectionProps) {
+  const { data: profiles, isLoading } = useQuery<[]>({
     queryKey: ["profiles", filters],
-    queryFn: () => apiBuilder.profiles.getProfiles({
-      gender: filters.gender,
-      priceRange: filters.priceRange,
-      citySlug: filters.location?.city_slug,
-      countrySlug: filters.location?.country_slug
-    }),
+    queryFn: async () =>
+      (await apiBuilder.profiles.getProfiles({
+        gender: filters.gender,
+        priceRange: filters.priceRange,
+        citySlug: filters.location?.city_slug,
+        countrySlug: filters.location?.country_slug,
+        applyDefaults: true,
+      })) ?? [],
   });
 
   return (
@@ -59,10 +66,11 @@ export function AvailableNowSection({ filters, setFilters }: AvailableNowSection
             <button
               key={tab}
               onClick={() => setFilters((prev) => ({ ...prev, gender: tab }))}
-              className={`flex-1 min-w-[80px] md:flex-none md:min-w-0 px-3 py-1.5 md:px-6 md:py-2.5 text-xs md:text-sm font-medium rounded-full transition whitespace-nowrap cursor-pointer ${filters.gender === tab
+              className={`flex-1 min-w-[80px] md:flex-none md:min-w-0 px-3 py-1.5 md:px-6 md:py-2.5 text-xs md:text-sm font-medium rounded-full transition whitespace-nowrap cursor-pointer ${
+                filters.gender === tab
                   ? "bg-primary text-primary-text"
                   : "bg-primary-bg text-primary-text hover:bg-[#2a2a2d]"
-                }`}
+              }`}
             >
               {tab}
             </button>
@@ -81,69 +89,75 @@ export function AvailableNowSection({ filters, setFilters }: AvailableNowSection
         </div>
 
         <div className="flex gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
-          {isLoading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex h-full flex-col overflow-hidden p-2.5 md:p-3 rounded-[20px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[220px] sm:min-w-0 animate-pulse"
-              >
-                <div className="relative h-[200px] w-full overflow-hidden rounded-[16px] bg-[#2a2a2d]" />
-                <div className="flex flex-1 flex-col justify-between gap-3 md:gap-[22px] pt-3 md:pt-[22px]">
-                  <div className="h-6 w-3/4 bg-[#2a2a2d] rounded" />
-                  <div className="h-4 w-1/2 bg-[#2a2a2d] rounded" />
-                </div>
-              </div>
-            ))
-          ) : (
-            profiles?.map((profile: any, index: number) => (
-              <Link
-                key={profile.id}
-                href={`/profile/${profile.id}`}
-                className="flex h-full flex-col overflow-hidden p-2.5 md:p-3 rounded-[20px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[220px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity"
-              >
-                <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
-                  <Image
-                    src={profile.images?.[0]?.public_url || "/images/girl1.png"}
-                    alt={profile.working_name}
-                    fill
-                    className="object-cover object-center"
-                    sizes="(max-width: 768px) 100vw, 25vw"
-                    priority={index < 4}
-                  />
-                </div>
-
-                <div className="flex flex-1 flex-col justify-between gap-3 md:gap-[22px] pt-3 md:pt-[22px]">
-                  <div className="flex  justify-between gap-2 items-center">
-                    <p className="text-base md:text-lg lg:text-[24px] font-normal text-primary-text">
-                      {profile.working_name}
-                    </p>
-                    <p className="text-xl md:text-2xl lg:text-[36px] font-semibold text-primary-text">
-                      {profile.base_currency}{profile.base_hourly_rate}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-2.5 w-2.5 md:h-3 md:w-3" />
-                      <span className="text-xs md:text-sm lg:text-[16px] font-normal text-text-gray-opacity">
-                        {profile.city}, {profile.country}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 md:gap-2 bg-input-bg rounded-[200px] px-2 py-1 md:px-3 md:py-2">
-                      <Circle
-                        className={`h-1.5 w-1.5 md:h-2 md:w-2 fill-current text-emerald-400`}
-                      />
-                      <span className="text-xs md:text-sm lg:text-[16px] font-normal text-primary-text">
-                        Available Now
-                      </span>
-                    </div>
+          {isLoading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex h-full flex-col overflow-hidden p-2.5 md:p-3 rounded-[20px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[220px] sm:min-w-0 animate-pulse"
+                >
+                  <div className="relative h-[200px] w-full overflow-hidden rounded-[16px] bg-[#2a2a2d]" />
+                  <div className="flex flex-1 flex-col justify-between gap-3 md:gap-[22px] pt-3 md:pt-[22px]">
+                    <div className="h-6 w-3/4 bg-[#2a2a2d] rounded" />
+                    <div className="h-4 w-1/2 bg-[#2a2a2d] rounded" />
                   </div>
                 </div>
-              </Link>
-            )))}
+              ))
+            : profiles?.map((profile: any, index: number) => (
+                <Link
+                  key={profile.id}
+                  href={`/profile/${profile.username || profile.id}`}
+                  className={`flex h-full flex-col overflow-hidden p-3 md:p-4 rounded-[24px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[280px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity`}
+                >
+                  <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
+                    <Image
+                      src={
+                        profile.images?.[0]?.public_url || "/images/girl1.png"
+                      }
+                      alt={profile.working_name}
+                      fill
+                      className="object-cover object-center"
+                      sizes="(max-width: 768px) 100vw, 25vw"
+                      priority={index < 4}
+                    />
+                  </div>
+
+                  <div className="flex flex-1 flex-col justify-between gap-3 md:gap-[22px] pt-3 md:pt-[22px]">
+                    <div className="flex  justify-between gap-2 items-center">
+                      <p className="text-base md:text-lg lg:text-[24px] font-normal text-primary-text">
+                        {profile.working_name}
+                      </p>
+                      <p className="text-xl md:text-2xl lg:text-[36px] font-semibold text-primary-text">
+                        {profile.base_currency}
+                        {profile.base_hourly_rate}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-2.5 w-2.5 md:h-3 md:w-3" />
+                        <span className="text-xs md:text-sm lg:text-[16px] font-normal text-text-gray-opacity">
+                          {profile.city}, {profile.country}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 md:gap-2 bg-input-bg rounded-[200px] px-2 py-1 md:px-3 md:py-2">
+                        <Circle
+                          className={`h-1.5 w-1.5 md:h-2 md:w-2 fill-current text-emerald-400`}
+                        />
+                        <span className="text-xs md:text-sm lg:text-[16px] font-normal text-primary-text">
+                          Available Now
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
           {!isLoading && (!profiles || profiles.length === 0) && (
             <div className="col-span-full py-10 text-center text-text-gray-opacity">
-              No profiles found for {filters.gender}.
+              No profiles found
+              {filters.gender && filters.gender !== "All"
+                ? ` for ${filters.gender}`
+                : ""}
+              .
             </div>
           )}
         </div>

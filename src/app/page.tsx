@@ -31,7 +31,7 @@ export default function Home() {
       country_slug: string;
     };
   }>({
-    gender: "Female",
+    gender: "All",
   });
 
   useCurrentUser();
