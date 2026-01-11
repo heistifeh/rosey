@@ -99,7 +99,7 @@ export function RecentlyActiveSection() {
           </button>
         </div>
 
-        <div className="flex gap-6 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
+        <div className="flex gap-6 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
           {profiles.map((profile, index) => (
             <Link
               key={profile.id}

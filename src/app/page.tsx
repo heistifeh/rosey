@@ -79,9 +79,9 @@ export default function Home() {
                   <Image
                     src="/images/logo.svg"
                     alt="Rosey"
-                    width={121}
-                    height={35}
-                    className="h-auto"
+                    width={47}
+                    height={25}
+                    // className="h-auto"
                     priority
                   />
                 </Link>

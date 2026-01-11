@@ -80,12 +80,14 @@ export function AvailableNowSection({ filters, setFilters }: AvailableNowSection
           </button>
         </div>
 
-        <div className="flex gap-6 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
+        <div className="flex gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
           {isLoading ? (
-            // Simple Skeleton Loading
             Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="flex h-full flex-col overflow-hidden p-3 md:p-4 rounded-[24px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[280px] sm:min-w-0 animate-pulse">
-                <div className="relative aspect-3/4 w-full overflow-hidden rounded-[16px] bg-[#2a2a2d]" />
+              <div
+                key={i}
+                className="flex h-full flex-col overflow-hidden p-2.5 md:p-3 rounded-[20px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[220px] sm:min-w-0 animate-pulse"
+              >
+                <div className="relative h-[200px] w-full overflow-hidden rounded-[16px] bg-[#2a2a2d]" />
                 <div className="flex flex-1 flex-col justify-between gap-3 md:gap-[22px] pt-3 md:pt-[22px]">
                   <div className="h-6 w-3/4 bg-[#2a2a2d] rounded" />
                   <div className="h-4 w-1/2 bg-[#2a2a2d] rounded" />
@@ -97,9 +99,9 @@ export function AvailableNowSection({ filters, setFilters }: AvailableNowSection
               <Link
                 key={profile.id}
                 href={`/profile/${profile.id}`}
-                className={`flex h-full flex-col overflow-hidden p-3 md:p-4 rounded-[24px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[280px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity`}
+                className="flex h-full flex-col overflow-hidden p-2.5 md:p-3 rounded-[20px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[220px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity"
               >
-                <div className="relative aspect-3/4 w-full overflow-hidden rounded-[16px]">
+                <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
                   <Image
                     src={profile.images?.[0]?.public_url || "/images/girl1.png"}
                     alt={profile.working_name}
