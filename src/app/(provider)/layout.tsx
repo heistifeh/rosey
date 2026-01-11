@@ -21,10 +21,10 @@ import {
   SheetTitle,
   SheetTrigger,
   SheetClose,
-
 } from "@/components/ui/sheet";
 import { LocationSelector } from "@/components/dashboard/location-selector";
-
+import { useProfile } from "@/hooks/use-profile";
+import { useCurrentUser } from "@/hooks/use-current-user";
 export default function ProviderLayout({
   children,
 }: {
@@ -32,6 +32,11 @@ export default function ProviderLayout({
 }) {
   const pathname = usePathname();
   const [showNotification, setShowNotification] = useState(true);
+  useCurrentUser();
+  const { data: profile, isLoading: profileLoading } = useProfile();
+
+  console.log("💁", profile);
+  
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: Bell },

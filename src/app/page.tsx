@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { HeroSection } from "@/components/home/hero-section";
 import { useAuthStore } from "@/stores/auth-store";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 import { RecentlyActiveSection } from "@/components/home/recently-active-section";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
@@ -15,6 +16,7 @@ import { BlogSection } from "@/components/home/blog-section";
 import { FAQSection } from "@/components/home/faq-section";
 import { FooterSection } from "@/components/home/footer-section";
 import { AvailableNowSection } from "@/components/home/available-now-section";
+import { apiBuilder } from "@/api/builder";
 
 export default function Home() {
   const [activeNav, setActiveNav] = useState("Home");
@@ -32,13 +34,27 @@ export default function Home() {
     gender: "Female",
   });
 
+  useCurrentUser();
   const user = useAuthStore((state) => state.user);
   const clearUser = useAuthStore((state) => state.clearUser);
   const router = useRouter();
 
-  useEffect(() => {
-    console.log("Current user details:", user);
-  }, [user]);
+  console.log(user);
+
+  //  useEffect(() => {
+  //   const load = async () => {
+  //     const user = await apiBuilder.auth.getCurrentUser();
+  //     if (!user) {
+  //       // not logged in → redirect or show login
+  //       return;
+  //     }
+
+  //     console.log("Current user id:", user);
+  //     // use user.id to fetch /rest/v1/profiles?user_id=eq.${user.id}
+  //   };
+
+  //   load();
+  // }, []);
 
   const handleAuthAction = () => {
     if (user) {
@@ -156,10 +172,11 @@ export default function Home() {
                     key={link.label}
                     href={link.href}
                     onClick={() => setActiveNav(link.label)}
-                    className={`text-base font-medium transition-colors ${activeNav === link.label
+                    className={`text-base font-medium transition-colors ${
+                      activeNav === link.label
                         ? "bg-primary rounded-[200px] py-2 px-[33px] text-primary-text"
                         : "text-[#8E8E93]"
-                      }`}
+                    }`}
                   >
                     {link.label}
                   </Link>
