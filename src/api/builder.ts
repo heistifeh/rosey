@@ -1,6 +1,13 @@
-import { LOGINAPI, API, setAuthCookie, getAccessToken } from "./axios-config";
+import {
+  LOGINAPI,
+  API,
+  setAuthCookie,
+  getAccessToken,
+  getUserId,
+  getStoredUser,
+} from "./axios-config";
 import axios from "axios";
-import { SignInPayload, SignUpPayload } from "@/types/types";
+import { SignInPayload, SignUpPayload, Profile } from "@/types/types";
 
 export const apiBuilder = {
   auth: {
@@ -16,6 +23,14 @@ export const apiBuilder = {
         }
         return response.data;
       }),
+    getCurrentUser: () => {
+      const user = getStoredUser();
+      const id = user?.id ?? getUserId();
+      if (!id) {
+        return Promise.resolve(null);
+      }
+      return Promise.resolve(user ?? { id });
+    },
   },
   locations: {
     getLocations: (query: string) => {
@@ -87,7 +102,7 @@ export const apiBuilder = {
 
       params.append("caters_to", "cs.{Male}");
 
-      return API.get(
+      return API.get<Profile[]>(
         `https://axhkwqaxbnsguxzrfsfj.supabase.co/rest/v1/profiles?${params.toString()}`
       ).then((response) => response.data);
     },
@@ -117,6 +132,27 @@ export const apiBuilder = {
         path: data.path,
         is_primary: data.is_primary,
       }).then((response) => response.data),
+    getProfileByUserId: (userId: string) => {
+      const params = new URLSearchParams();
+      params.append("select", "*");
+      params.append("user_id", `eq.${userId}`);
+      return API.get<Profile[]>(
+        `https://axhkwqaxbnsguxzrfsfj.supabase.co/rest/v1/profiles?${params.toString()}`
+      ).then((response) => response.data?.[0] ?? null);
+    },
+    getMyProfile: () => {
+      const userId = getUserId();
+      if (!userId) {
+        return Promise.resolve(null);
+      }
+      const params = new URLSearchParams();
+      params.append("select", "*");
+      params.append("user_id", `eq.${userId}`);
+      params.append("limit", "1");
+      return API.get<Profile[]>(
+        `https://axhkwqaxbnsguxzrfsfj.supabase.co/rest/v1/profiles?${params.toString()}`
+      ).then((response) => response.data?.[0] ?? null);
+    },
   },
   storage: {
     uploadImage: async (file: File, userId: string) => {

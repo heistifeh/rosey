@@ -61,3 +61,40 @@ export type SignUpPayload = {
   password: string;
   [key: string]: unknown;
 };
+
+export type ProfileImage = {
+  id: string;
+  profile_id: string;
+  public_url: string;
+  path?: string;
+  is_primary: boolean;
+};
+
+export type Profile = {
+  id: string;
+  user_id: string;
+  working_name?: string;
+  username?: string;
+  tagline?: string;
+  name?: string;
+  base_hourly_rate?: number;
+  base_currency?: string;
+  body_type?: string;
+  ethnicity_category?: string;
+  available_days?: string[] | null;
+  city?: string;
+  country?: string;
+  city_slug?: string;
+  country_slug?: string;
+  gender?: string;
+  bio?: string;
+  location?: string;
+  price?: string;
+  status?: string;
+  is_active?: boolean;
+  onboarding_completed?: boolean;
+  images?: ProfileImage[];
+  created_at?: string;
+  updated_at?: string;
+  [key: string]: unknown;
+};

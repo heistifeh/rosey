@@ -1,7 +1,12 @@
 "use client";
 
-import { CheckCircle2, XCircle, Link as LinkIcon } from "lucide-react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { apiBuilder } from "@/api/builder";
+import { useAuthStore } from "@/stores/auth-store";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 interface ChecklistItem {
   id: string;
@@ -10,6 +15,25 @@ interface ChecklistItem {
 }
 
 export default function DashboardPage() {
+  // const userId = useAuthStore((state) => state.user?.id);
+
+  const user = useAuthStore((state) => state.user);
+  const userId = user?.id;
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["user-profile", userId],
+    enabled: Boolean(userId),
+    staleTime: 1000 * 60 * 5,
+    queryFn: () => apiBuilder.profiles.getProfileByUserId(userId!),
+  });
+  useCurrentUser();
+
+  useEffect(() => {
+    console.log("Provider dashboard current user:", user);
+    if (profile) {
+      console.log("Provider dashboard user profile:", profile);
+    }
+  }, [user, profile]);
+
   const links = [
     "Getting Verified on Rosey",
     "Profile photo guidelines",

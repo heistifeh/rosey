@@ -11,15 +11,32 @@ const readCookie = (name: string): string | null => {
   return match ? decodeURIComponent(match[1]) : null;
 };
 
-export const getAccessToken = (): string | null => {
+const parseAuthCookie = () => {
   const raw = readCookie(AUTH_COOKIE_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw)?.access_token ?? null;
+    return JSON.parse(raw);
   } catch {
     return null;
   }
 };
+
+export const getAccessToken = (): string | null => {
+  const parsed = parseAuthCookie();
+  return parsed?.access_token ?? null;
+};
+
+export const getUserId = (): string | null => {
+  const parsed = parseAuthCookie();
+  return parsed?.user?.id ?? null;
+};
+
+export const getStoredUser = () => {
+  const parsed = parseAuthCookie();
+  return parsed?.user ?? null;
+};
+
+export const getAuthData = () => parseAuthCookie();
 
 export const setAuthCookie = (data: any) => {
   if (typeof document === "undefined") return;

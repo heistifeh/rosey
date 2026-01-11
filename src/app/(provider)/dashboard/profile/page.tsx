@@ -3,6 +3,10 @@
 import { Shield, ShieldAlert, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { useAuthStore } from "@/stores/auth-store";
+import { useQuery } from "@tanstack/react-query";
+import { apiBuilder } from "@/api/builder";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 const securityList = [
   {
@@ -20,6 +24,15 @@ const securityList = [
 ];
 
 export default function ProfilePage() {
+  const user = useAuthStore((state) => state.user);
+  const userId = user?.id;
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ["user-profile", userId],
+    enabled: Boolean(userId),
+    staleTime: 1000 * 60 * 5,
+    queryFn: () => apiBuilder.profiles.getProfileByUserId(userId!),
+  });
+  useCurrentUser();
   return (
     <div className="flex items-center justify-center mx-auto px-4 md:px-[180px] pt-8">
       <div className="w-full max-w-6xl">
