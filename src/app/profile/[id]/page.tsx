@@ -195,7 +195,7 @@ const getDefaultProfileData = (baseProfile: (typeof allProfiles)[0]) => ({
   },
   reviews: [
     {
-      text: "I just have to say how much more I appreciate Discover Escort compared to other platforms. Everything feels so much more organized and intuitive, which makes navigating the site an absolute breeze.",
+      text: "I just have to say how much more I appreciate Rosey compared to other platforms. Everything feels so much more organized and intuitive, which makes navigating the site an absolute breeze.",
       date: "October 2025",
     },
     {

@@ -52,7 +52,7 @@ export function SetupAccountForm() {
             <Link href="/" className="inline-flex items-center">
               <Image
                 src="/images/logo.svg"
-                alt="Discover Escort"
+                alt="Rosey"
                 width={150}
                 height={40}
                 className="h-auto"
@@ -66,7 +66,7 @@ export function SetupAccountForm() {
               <h2 className="text-2xl font-semibold text-white">
                 Welcome to{" "}
                 <span className="text-primary petemoss text-[40px]">
-                  Discover Escorts
+                  Rosey
                 </span>
               </h2>
               <p className="text-text-gray text-sm font-normal">
@@ -210,18 +210,18 @@ export function SetupAccountForm() {
                 <h2 className="text-2xl xl:text-4xl font-semibold text-white">
                   Welcome to{" "}
                   <span className="text-primary petemoss text-[60px] font-normal">
-                {" "}  Discover Escorts
+                {" "}  Rosey
                 </span>
                 </h2>
                 <span className="text-primary petemoss text-[60px] font-normal">
-                  Discover Escorts
+                  Rosey
                 </span>
               </article> */}
                 <h2 className="text-2xl xl:text-4xl font-semibold text-white">
                   Welcome to{" "}
                   <span className="text-primary petemoss text-[50px] font-normal">
                     {" "}
-                    Discover Escorts
+                    Rosey
                   </span>
                 </h2>
                 <p className="text-white text-base xl:text-lg font-normal leading-relaxed">

@@ -11,7 +11,7 @@ export default function AuthLayout({
       <Link href="/" className="inline-flex items-center">
         <Image
           src="/images/logo.svg"
-          alt="Discover Escort"
+          alt="Rosey"
           width={150}
           height={40}
           className="h-auto"

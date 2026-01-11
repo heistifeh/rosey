@@ -11,7 +11,7 @@ interface ChecklistItem {
 
 export default function DashboardPage() {
   const links = [
-    "Getting Verified on Discover escort",
+    "Getting Verified on Rosey",
     "Profile photo guidelines",
     "Promoting yourself",
     "Code of Conduct",

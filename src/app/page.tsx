@@ -78,7 +78,7 @@ export default function Home() {
                 <Link href="/" className="inline-flex items-center">
                   <Image
                     src="/images/logo.svg"
-                    alt="Discover Escort"
+                    alt="Rosey"
                     width={121}
                     height={35}
                     className="h-auto"
@@ -142,7 +142,7 @@ export default function Home() {
               <Link href="/" className="inline-flex items-center">
                 <Image
                   src="/images/logo.svg"
-                  alt="Discover Escort"
+                  alt="Rosey"
                   width={121}
                   height={35}
                   className="h-auto"

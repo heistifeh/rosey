@@ -7,7 +7,7 @@
 // const testimonials = [
 //   {
 //     id: 1,
-//     text: "I just have to say how much more I appreciate Discover Escort compared to other platforms. Everything feels so much more organized and intuitive, which makes navigating the site an absolute breeze. The clientele has been noticeably better, more respectful, and more genuine, which really elevates the whole experience. I also love how streamlined the entire process is—from setting up a profile to connecting with clients, everything is smooth and stress-free. And on top of all that, it's more affordable than similar sites, which makes it even easier to rely on long-term. Truly, I'm loving the platform more and more every day. ❤️❤️",
+//     text: "I just have to say how much more I appreciate Rosey compared to other platforms. Everything feels so much more organized and intuitive, which makes navigating the site an absolute breeze. The clientele has been noticeably better, more respectful, and more genuine, which really elevates the whole experience. I also love how streamlined the entire process is—from setting up a profile to connecting with clients, everything is smooth and stress-free. And on top of all that, it's more affordable than similar sites, which makes it even easier to rely on long-term. Truly, I'm loving the platform more and more every day. ❤️❤️",
 //     platform: "Via Twitter",
 //     author: "@JaneDoe",
 //   },
@@ -51,8 +51,7 @@
 //             Testimonials From Satisfied Companions
 //           </h2>
 //           <p className="max-w-3xl text-sm text-gray-400 md:text-base leading-relaxed pb-4">
-//             We truly value the voices of those who use and appreciate Discover
-//             Escort. Here's a look at some of the experiences and kind words
+//             We truly value the voices of those who use and appreciate Rosey. Here's a look at some of the experiences and kind words
 //             people have shared about our platform.
 //           </p>
 //         </div>
@@ -199,27 +198,27 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const testimonials = [
   {
     id: 1,
-    text: "I just have to say how much more I appreciate Discover Escort compared to other platforms. Everything feels so much more organized and intuitive, which makes navigating the site an absolute breeze. The clientele has been noticeably better, more respectful, and more genuine, which really elevates the whole experience. I also love how streamlined the entire process is—from setting up a profile to connecting with clients, everything is smooth and stress-free. And on top of all that, it's more affordable than similar sites, which makes it even easier to rely on long-term. Truly, I'm loving the platform more and more every day.❤️❤️",
+    text: "I just have to say how much more I appreciate Rosey compared to other platforms. Everything feels so much more organized and intuitive, which makes navigating the site an absolute breeze. The clientele has been noticeably better, more respectful, and more genuine, which really elevates the whole experience. I also love how streamlined the entire process is—from setting up a profile to connecting with clients, everything is smooth and stress-free. And on top of all that, it's more affordable than similar sites, which makes it even easier to rely on long-term. Truly, I'm loving the platform more and more every day.❤️❤️",
     source: " Via Twitter",
   },
   {
     id: 2,
-    text: "Discover Escort has completely transformed how I connect with clients. The platform is user-friendly, secure, and the support team is always responsive. I've seen a significant increase in quality bookings since joining.",
+    text: "Rosey has completely transformed how I connect with clients. The platform is user-friendly, secure, and the support team is always responsive. I've seen a significant increase in quality bookings since joining.",
     source: " Via Twitter",
   },
   {
     id: 3,
-    text: "As someone who's been in this industry for years, I can confidently say Discover Escort is the best platform I've used. The features are intuitive, the community is respectful, and the overall experience is unmatched.",
+    text: "As someone who's been in this industry for years, I can confidently say Rosey is the best platform I've used. The features are intuitive, the community is respectful, and the overall experience is unmatched.",
     source: "Via Twitter",
   },
   {
     id: 4,
-    text: "The verification process on Discover Escort gives me peace of mind. I know I'm connecting with genuine clients, and the platform's design makes everything so easy to manage.",
+    text: "The verification process on Rosey gives me peace of mind. I know I'm connecting with genuine clients, and the platform's design makes everything so easy to manage.",
     source: " Via Twitter",
   },
   {
     id: 5,
-    text: "I love how Discover Escort prioritizes safety and professionalism. The platform feels secure, and I've had nothing but positive experiences with the clients I've met through it.",
+    text: "I love how Rosey prioritizes safety and professionalism. The platform feels secure, and I've had nothing but positive experiences with the clients I've met through it.",
     source: " Via Twitter",
   },
 ];
@@ -251,8 +250,8 @@ export function TestimonialsSection() {
             Testimonials From Satisfied Companions
           </h2>
           <p className="max-w-2xl text-sm md:text-base text-primary-text/80">
-            We truly value the voices of those who use and appreciate Discover
-            Escort. Here's a look at some of the experiences and kind words
+            We truly value the voices of those who use and appreciate Rosey.
+            Here's a look at some of the experiences and kind words
             people have shared about our platform.
           </p>
         </div>

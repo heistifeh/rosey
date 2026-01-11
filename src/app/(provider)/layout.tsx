@@ -64,7 +64,7 @@ export default function ProviderLayout({
                   <SheetHeader className="p-6 border-b border-dark-border">
                     <SheetTitle className="text-left">
                       <span className="text-primary text-3xl font-normal petemoss">
-                        Discover Escort
+                        Rosey
                       </span>
                     </SheetTitle>
                   </SheetHeader>

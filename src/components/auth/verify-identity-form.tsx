@@ -21,11 +21,11 @@ export function VerifyIdentityForm() {
     },
     {
       number: 2,
-      text: "The working name you signed up to Discover Escort with.",
+      text: "The working name you signed up to Rosey with.",
     },
     {
       number: 3,
-      text: "The email address you used to sign up to Discover Escort with.",
+      text: "The email address you used to sign up to Rosey with.",
     },
     {
       number: 4,
@@ -33,7 +33,7 @@ export function VerifyIdentityForm() {
     },
     {
       number: 5,
-      text: 'The phrase "I am signing up for Discover Escort"',
+      text: 'The phrase "I am signing up for Rosey"',
     },
   ];
 

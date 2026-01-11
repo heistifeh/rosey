@@ -159,7 +159,7 @@ export function AvailableNowSection({ filters, setFilters }: AvailableNowSection
 // const testimonials = [
 //   {
 //     id: 1,
-//     text: "I just have to say how much more I appreciate Discover Escort compared to other platforms. Everything feels so much more organized and intuitive, which makes navigating the site an absolute breeze. The clientele has been noticeably better, more respectful, and more genuine, which really elevates the whole experience. I also love how streamlined the entire process is—from setting up a profile to connecting with clients, everything is smooth and stress-free. And on top of all that, it's more affordable than similar sites, which makes it even easier to rely on long-term. Truly, I'm loving the platform more and more every day. ❤️❤️",
+//     text: "I just have to say how much more I appreciate Rosey compared to other platforms. Everything feels so much more organized and intuitive, which makes navigating the site an absolute breeze. The clientele has been noticeably better, more respectful, and more genuine, which really elevates the whole experience. I also love how streamlined the entire process is—from setting up a profile to connecting with clients, everything is smooth and stress-free. And on top of all that, it's more affordable than similar sites, which makes it even easier to rely on long-term. Truly, I'm loving the platform more and more every day. ❤️❤️",
 //     platform: "Via Twitter",
 //     author: "@JaneDoe",
 //   },
@@ -203,8 +203,7 @@ export function AvailableNowSection({ filters, setFilters }: AvailableNowSection
 //             Testimonials From Satisfied Companions
 //           </h2>
 //           <p className="max-w-3xl text-sm text-gray-400 md:text-base">
-//             We truly value the voices of those who use and appreciate Discover
-//             Escort. Here's a look at some of the experiences and kind words
+//             We truly value the voices of those who use and appreciate Rosey. Here's a look at some of the experiences and kind words
 //             people have shared about our platform.
 //           </p>
 //         </div>
