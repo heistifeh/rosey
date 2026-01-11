@@ -11,9 +11,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TabsContent } from "@/components/ui/tabs";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useProfileStore } from "@/hooks/use-profile-store";
 import { toast } from "react-hot-toast";
+import { loadGooglePlacesScript } from "@/lib/google-places";
 
 interface GeneralInformationFormContentProps {
   onNext?: () => void;
@@ -47,9 +48,64 @@ export function GeneralInformationFormContent({
     }
   }, [getData]);
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = useCallback((field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  }, []);
+
+  const homeLocationRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<any>(null);
+
+  useEffect(() => {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLEMAP_API_KEY;
+    if (!apiKey || typeof window === "undefined") {
+      return;
+    }
+
+    let active = true;
+
+    loadGooglePlacesScript(apiKey).then(() => {
+      if (!active || typeof window === "undefined") {
+        return;
+      }
+
+      const google = (window as typeof window & { google?: any }).google;
+      if (!google?.maps?.places || !homeLocationRef.current) {
+        return;
+      }
+
+      if (autocompleteRef.current) {
+        return;
+      }
+
+      const autocomplete = new google.maps.places.Autocomplete(
+        homeLocationRef.current,
+        { types: ["(regions)"] }
+      );
+
+      autocomplete.setFields(["formatted_address"]);
+
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        if (place?.formatted_address) {
+          handleChange("homeLocations", place.formatted_address);
+        }
+      });
+
+      autocompleteRef.current = autocomplete;
+    });
+
+    return () => {
+      active = false;
+
+      if (autocompleteRef.current) {
+        const google = (window as typeof window & { google?: any }).google;
+        google?.maps?.event?.clearInstanceListeners(
+          autocompleteRef.current
+        );
+        autocompleteRef.current = null;
+      }
+    };
+  }, [handleChange]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,14 +163,6 @@ export function GeneralInformationFormContent({
             </div>
 
             <div className="flex flex-col gap-2 md:min-h-[120px]">
-              {/* Note: I am replacing the file header so I need to be careful with where I stop. 
-                  The original file truncated at line 100. I need to make sure I don't lose the rest of the file content
-                  which presumably exists but I haven't seen it all.
-                  Wait, I only viewed 100 lines.
-                  I should view the REST of the file first to ensure I don't overwrite blindly.
-                  I will ABORT this tool call and view the file fully first.
-               */}
-
               <Label
                 htmlFor="genderPresentation"
                 className="text-[14px] font-semibold text-primary-text"
@@ -429,14 +477,14 @@ export function GeneralInformationFormContent({
               </Label>
               <Input
                 id="homeLocations"
+                ref={homeLocationRef}
                 type="text"
                 value={formData.homeLocations}
                 onChange={(e) => handleChange("homeLocations", e.target.value)}
               />
               <p className="text-[12px] font-normal text-text-gray-opacity">
-                If your account is inactive for a set time, your profile will be
-                hidden automatically. You can make it visible again by logging
-                into your dashboard and republishing.
+                Start typing to pull suggestions from Google Places; select the
+                result that matches your home city or region.
               </p>
             </div>
           </div>

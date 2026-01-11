@@ -3,16 +3,11 @@
 import {
   Search,
   MapPinned,
-  MapPin,
   CircleDollarSign,
   SlidersHorizontal,
   Venus,
-  Loader2,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { apiBuilder } from "@/api/builder";
-import { useDebounce } from "@/hooks/use-debounce";
 import {
   Select,
   SelectContent,
@@ -20,6 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  loadGooglePlacesScript,
+  getAddressComponentValue,
+  slugifyLocation,
+} from "@/lib/google-places";
 
 interface HeroSectionProps {
   filters: {
@@ -47,17 +47,96 @@ interface HeroSectionProps {
 export function HeroSection({ filters, setFilters }: HeroSectionProps) {
   const [locationInput, setLocationInput] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLocationOpen, setIsLocationOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const locationInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<any>(null);
 
-  const locationsQuery = useDebounce(locationInput, 300);
+  useEffect(() => {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLEMAP_API_KEY;
+    if (
+      !apiKey ||
+      typeof window === "undefined" ||
+      !locationInputRef.current
+    ) {
+      return;
+    }
 
-  const { data: fetchedLocations, isLoading } = useQuery({
-    queryKey: ["locations", locationsQuery],
-    queryFn: () => apiBuilder.locations.getLocations(locationsQuery),
-    enabled: isLocationOpen || locationsQuery.length > 0,
-    staleTime: 1000 * 60 * 5,
-  });
+    let active = true;
+
+    loadGooglePlacesScript(apiKey).then(() => {
+      if (!active || typeof window === "undefined" || !locationInputRef.current) {
+        return;
+      }
+
+      const google = (window as typeof window & { google?: any }).google;
+      if (!google?.maps?.places) {
+        return;
+      }
+
+      if (autocompleteRef.current) {
+        return;
+      }
+
+      const autocomplete = new google.maps.places.Autocomplete(
+        locationInputRef.current,
+        { types: ["(regions)"] }
+      );
+
+      autocomplete.setFields(["address_components", "formatted_address"]);
+
+      const handlePlaceChanged = () => {
+        const place = autocomplete.getPlace();
+        const city = getAddressComponentValue(place?.address_components, [
+          "locality",
+          "postal_town",
+          "administrative_area_level_2",
+          "administrative_area_level_1",
+        ]);
+        const country = getAddressComponentValue(place?.address_components, [
+          "country",
+        ]);
+        const display = [city, country].filter(Boolean).join(", ");
+
+        if (display) {
+          setLocationInput(display);
+        } else if (place?.formatted_address) {
+          setLocationInput(place.formatted_address);
+        }
+
+        if (!city && !country) {
+          return;
+        }
+
+        const cityValue = city ?? country ?? "";
+        const countryValue = country ?? city ?? "";
+
+        setFilters((prev) => ({
+          ...prev,
+          location: {
+            city: cityValue,
+            country: countryValue,
+            city_slug: slugifyLocation(cityValue),
+            country_slug: slugifyLocation(countryValue),
+          },
+        }));
+      };
+
+      autocomplete.addListener("place_changed", handlePlaceChanged);
+
+      autocompleteRef.current = autocomplete;
+    });
+
+    return () => {
+      active = false;
+
+      if (autocompleteRef.current) {
+        const google = (window as typeof window & { google?: any }).google;
+        google?.maps?.event?.clearInstanceListeners(
+          autocompleteRef.current
+        );
+        autocompleteRef.current = null;
+      }
+    };
+  }, [setFilters]);
 
   const genders = ["All", "Male", "Female", "Transgender", "Non-binary"];
 
@@ -82,17 +161,6 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
 
   };
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsLocationOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   // Sync locationInput with filters.location if filters.location changes externally
   useEffect(() => {
     if (filters.location) {
@@ -101,20 +169,6 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
       setLocationInput("");
     }
   }, [filters.location]);
-
-  const handleLocationSelect = (loc: any) => {
-    setLocationInput(`${loc.city}, ${loc.country}`);
-    setFilters((prev) => ({
-      ...prev,
-      location: {
-        city: loc.city,
-        country: loc.country,
-        city_slug: loc.city_slug,
-        country_slug: loc.country_slug,
-      },
-    }));
-    setIsLocationOpen(false);
-  };
 
   return (
     <section className="flex flex-1 items-center justify-center px-4 pb-10 pt-6">
@@ -133,52 +187,20 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
 
         <div className="flex w-full flex-col items-stretch gap-3 rounded-[32px] bg-input-bg px-4 py-4 backdrop-blur-md md:inline-flex md:w-auto md:flex-row md:items-center md:justify-center md:gap-3 md:rounded-full md:px-4 md:py-3 z-20">
 
-          <div className="relative w-full md:w-auto min-w-[180px]" ref={dropdownRef}>
-            <div
-              className="flex items-center gap-2 h-auto w-full rounded-full bg-[#575757] px-4 py-2 text-base font-normal text-white border-0 hover:bg-[#6a6a6a] transition-colors cursor-text"
-              onClick={() => setIsLocationOpen(true)}
-            >
+          <div className="relative w-full md:w-auto min-w-[180px]">
+            <div className="flex items-center gap-2 h-auto w-full rounded-full bg-[#575757] px-4 py-2 text-base font-normal text-white border-0 hover:bg-[#6a6a6a] transition-colors cursor-text">
               <MapPinned className="h-4 w-4 text-white shrink-0" />
               <input
+                ref={locationInputRef}
                 type="text"
                 placeholder="Choose Location"
                 value={locationInput}
                 onChange={(e) => {
                   setLocationInput(e.target.value);
-                  setIsLocationOpen(true);
                 }}
                 className="bg-transparent border-none outline-none text-white placeholder:text-text-gray w-full text-sm md:text-base p-0"
               />
-              {isLoading && <Loader2 className="h-3 w-3 animate-spin text-white shrink-0" />}
             </div>
-
-            {isLocationOpen && fetchedLocations && (
-              <div className="absolute top-full mt-2 w-full bg-[#1a1a1a] border border-[#333] rounded-xl shadow-xl overflow-hidden max-h-[300px] overflow-y-auto z-50 left-0">
-                {fetchedLocations?.length === 0 && !isLoading ? (
-                  <div className="p-3 text-center text-sm text-gray-400">
-                    No locations found
-                  </div>
-                ) : (
-                  fetchedLocations?.map((loc: any, idx: number) => (
-                    <button
-                      key={`${loc.city_slug}-${idx}`}
-                      onClick={() => handleLocationSelect(loc)}
-                      className="w-full text-left px-4 py-3 hover:bg-[#333] transition-colors flex items-center gap-2 group border-b border-[#333] last:border-0"
-                    >
-                      <MapPin className="h-3 w-3 text-gray-400 group-hover:text-primary transition-colors" />
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-gray-200">
-                          {loc.city}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {loc.country}
-                        </span>
-                      </div>
-                    </button>
-                  ))
-                )}
-              </div>
-            )}
           </div>
 
 
