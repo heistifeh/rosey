@@ -1,9 +1,11 @@
-"use client";
+ "use client";
 
 import { Menu, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, use } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { apiBuilder } from "@/api/builder";
 import { FooterSection } from "@/components/home/footer-section";
 import { ProfileHeroSection } from "@/components/home/profile-hero-section";
 import { ProfileBioSection } from "@/components/home/profile-bio-section";
@@ -299,6 +301,162 @@ const similarProfiles = [
   },
 ];
 
+const WEEK_DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+] as const;
+
+type WeekDay = (typeof WEEK_DAYS)[number];
+
+type AvailabilityEntry =
+  | string
+  | {
+      day?: string;
+      time?: string;
+    };
+
+type SupabaseProfile = {
+  working_name?: string;
+  username?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  base_currency?: string;
+  base_hourly_rate?: number | string;
+  images?: { public_url: string; is_primary?: boolean }[];
+  about?: string;
+  pronouns?: string[];
+  age?: number;
+  displayed_age?: number | null;
+  height?: string;
+  height_cm?: number | null;
+  hair_color?: string | null;
+  eye_color?: string | null;
+  languages?: string[];
+  caters_to?: string[];
+  available_days?: AvailabilityEntry[];
+};
+
+const mergeProfileData = (
+  fallbackProfile: ReturnType<typeof getDefaultProfileData>,
+  supabaseProfile: SupabaseProfile | null
+) => {
+  if (!supabaseProfile) return fallbackProfile;
+
+  const images = supabaseProfile.images ?? [];
+  const heroImage =
+    images.find((img) => img.is_primary)?.public_url ??
+    images[0]?.public_url ??
+    fallbackProfile.image;
+  const photos = images.length
+    ? images.map((img) => img.public_url).filter(Boolean)
+    : fallbackProfile.photos;
+  const locationParts = [supabaseProfile.city, supabaseProfile.country].filter(
+    Boolean
+  );
+  const price =
+    supabaseProfile.base_currency && supabaseProfile.base_hourly_rate
+      ? `${supabaseProfile.base_currency}${supabaseProfile.base_hourly_rate}`
+      : fallbackProfile.price;
+
+  const baseDetails = fallbackProfile.details;
+  const pronouns = supabaseProfile.pronouns
+    ?.filter(Boolean)
+    .join(", ")
+    .trim();
+  const languages = supabaseProfile.languages
+    ?.filter(Boolean)
+    .join(", ")
+    .trim();
+  const catersTo = supabaseProfile.caters_to
+    ?.filter(Boolean)
+    .join(", ")
+    .trim();
+  const detailAge =
+    supabaseProfile.displayed_age ?? supabaseProfile.age ?? baseDetails.age;
+      const height =
+        supabaseProfile.height ??
+        (supabaseProfile.height_cm ? `${supabaseProfile.height_cm} cm` : undefined) ??
+        baseDetails.height;
+
+  const normalizedLocation = locationParts.join(", ");
+
+  const normalizeDayName = (value?: string): WeekDay | undefined => {
+    if (!value) return undefined;
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+
+    const candidate = trimmed.split(/[\s,:-]+/)[0];
+    if (!candidate) return undefined;
+
+    const matched = WEEK_DAYS.find(
+      (day) =>
+        day.toLowerCase() === candidate.toLowerCase() ||
+        day.toLowerCase().startsWith(candidate.toLowerCase())
+    );
+    return matched;
+  };
+
+  const availability = { ...fallbackProfile.availability };
+  if (Array.isArray(supabaseProfile.available_days)) {
+    supabaseProfile.available_days.forEach((entry) => {
+      let dayValue: string | undefined;
+      let timeValue = "All Day";
+
+      if (typeof entry === "string") {
+        const [dayPart, ...rest] = entry.split(":");
+        dayValue = dayPart;
+        if (rest.length) {
+          const joined = rest.join(":").trim();
+          if (joined) {
+            timeValue = joined;
+          }
+        }
+      } else if (entry && typeof entry === "object") {
+        dayValue = entry.day;
+        if (entry.time) {
+          timeValue = entry.time;
+        }
+      }
+
+      const normalizedDay = normalizeDayName(dayValue);
+      if (normalizedDay) {
+        availability[normalizedDay] = timeValue;
+      }
+    });
+  }
+
+  const mergedDetails = {
+    ...baseDetails,
+    basedIn: normalizedLocation || baseDetails.basedIn,
+    colorsTo: baseDetails.colorsTo,
+    catersTo: catersTo || undefined,
+    pronouns: pronouns || baseDetails.pronouns,
+    age: detailAge,
+    height: height || baseDetails.height,
+    hairColor: supabaseProfile.hair_color ?? baseDetails.hairColor,
+    eyeColor: supabaseProfile.eye_color ?? baseDetails.eyeColor,
+    languages: languages || baseDetails.languages,
+  };
+
+  return {
+    ...fallbackProfile,
+    name: supabaseProfile.working_name ?? fallbackProfile.name,
+    image: heroImage,
+    photos,
+    location: normalizedLocation || fallbackProfile.location,
+    price,
+    bio: supabaseProfile.about ?? fallbackProfile.bio,
+    details: mergedDetails,
+    availability,
+  };
+};
+
 export default function ProfilePage({
   params,
 }: {
@@ -309,10 +467,16 @@ export default function ProfilePage({
   const [activeTab, setActiveTab] = useState("Overview");
 
   const resolvedParams = use(params);
-  const profileId = parseInt(resolvedParams.id);
-  const baseProfile =
-    allProfiles.find((p) => p.id === profileId) || allProfiles[0];
-  const profile = getDefaultProfileData(baseProfile);
+  const username = resolvedParams.id;
+
+  const { data: supabaseProfile } = useQuery({
+    queryKey: ["profile-detail", username],
+    queryFn: () => apiBuilder.profiles.getProfileByUsername(username),
+    enabled: Boolean(username),
+  });
+
+  const fallbackProfile = getDefaultProfileData(allProfiles[0]);
+  const profile = mergeProfileData(fallbackProfile, supabaseProfile);
 
   const navLinks = [
     { label: "Home", href: "/" },

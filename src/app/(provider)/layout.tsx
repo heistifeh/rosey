@@ -22,10 +22,12 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
-import { LocationSelector } from "@/components/dashboard/location-selector";
+
 import { useProfile } from "@/hooks/use-profile";
 import { useCurrentUser } from "@/hooks/use-current-user";
-import { getUserId } from "@/api/axios-config";
+import { LocationFilter } from "@/components/location-filter";
+import { ProviderProfileEditor } from "@/components/provider/profile-editor";
+
 export default function ProviderLayout({
   children,
 }: {
@@ -36,15 +38,9 @@ export default function ProviderLayout({
   const userId = getUserId();
   const [showNotification, setShowNotification] = useState(true);
   useCurrentUser();
-  const { data: profile } = useProfile();
-  useEffect(() => {
-    if (!userId) {
-      router.replace("/login");
-    }
-  }, [router, userId]);
-  if (!userId) {
-    return null;
-  }
+  const { data: profile, isLoading: profileLoading } = useProfile();
+
+  console.log("💁", profile);
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: Bell },
@@ -148,8 +144,9 @@ export default function ProviderLayout({
             </nav>
 
             <div className="flex items-center gap-4 lg:gap-6">
-              <div className="hidden lg:block w-[280px]">
-                <LocationSelector />
+              <div className="hidden lg:flex lg:flex-col lg:w-[280px] gap-2">
+                <LocationFilter />
+                <ProviderProfileEditor />
               </div>
 
               <div className="flex items-center gap-2">
