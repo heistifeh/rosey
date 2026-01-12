@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -34,6 +34,8 @@ export default function ProviderLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const userId = getUserId();
   const [showNotification, setShowNotification] = useState(true);
   useCurrentUser();
   const { data: profile, isLoading: profileLoading } = useProfile();
@@ -162,7 +164,7 @@ export default function ProviderLayout({
                     />
                   </div>
                   <p className="text-primary-text font-normal text-base">
-                    Nicki Minaj
+                    {profile ? `${profile.working_name}` : "Loading..."}
                   </p>
                 </div>
                 <div className="md:hidden relative h-10 w-10 rounded-full overflow-hidden">
