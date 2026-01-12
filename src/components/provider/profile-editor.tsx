@@ -148,9 +148,9 @@ export function ProviderProfileEditor() {
           </Button>
           <Button
             onClick={handleSave}
-            disabled={!isDirty || mutation.isLoading || isFetching}
+            disabled={!isDirty || mutation.isPending || isFetching}
           >
-            {mutation.isLoading ? "Saving…" : "Save"}
+            {mutation.isPending ? "Saving…" : "Save"}
           </Button>
         </div>
       </SheetContent>
