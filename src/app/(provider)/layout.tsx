@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -25,18 +25,26 @@ import {
 import { LocationSelector } from "@/components/dashboard/location-selector";
 import { useProfile } from "@/hooks/use-profile";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { getUserId } from "@/api/axios-config";
 export default function ProviderLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const userId = getUserId();
   const [showNotification, setShowNotification] = useState(true);
   useCurrentUser();
-  const { data: profile, isLoading: profileLoading } = useProfile();
-
-  console.log("💁", profile);
-  
+  const { data: profile } = useProfile();
+  useEffect(() => {
+    if (!userId) {
+      router.replace("/login");
+    }
+  }, [router, userId]);
+  if (!userId) {
+    return null;
+  }
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: Bell },
@@ -84,10 +92,11 @@ export default function ProviderLayout({
                         <SheetClose key={item.href} asChild>
                           <Link
                             href={item.href}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                              ? "bg-primary text-primary-text"
-                              : "text-text-gray-opacity hover:bg-primary-bg"
-                              }`}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                              isActive
+                                ? "bg-primary text-primary-text"
+                                : "text-text-gray-opacity hover:bg-primary-bg"
+                            }`}
                           >
                             <Icon className="h-5 w-5" />
                             <span className="text-sm font-medium">
@@ -121,10 +130,11 @@ export default function ProviderLayout({
                   >
                     <Link
                       href={item.href}
-                      className={`flex items-center gap-2 text-sm font-medium transition-colors ${isActive
-                        ? "text-primary"
-                        : "text-[#8E8E93] hover:text-primary-text"
-                        }`}
+                      className={`flex items-center gap-2 text-sm font-medium transition-colors ${
+                        isActive
+                          ? "text-primary"
+                          : "text-[#8E8E93] hover:text-primary-text"
+                      }`}
                     >
                       <Icon className="h-4 w-4" />
                       <span>{item.label}</span>
@@ -157,7 +167,7 @@ export default function ProviderLayout({
                     />
                   </div>
                   <p className="text-primary-text font-normal text-base">
-                    Nicki Minaj
+                    {profile ? `${profile.working_name}` : "Loading..."}
                   </p>
                 </div>
                 <div className="md:hidden relative h-10 w-10 rounded-full overflow-hidden">
@@ -175,23 +185,31 @@ export default function ProviderLayout({
         </div>
       </header>
 
-      {showNotification && pathname !== "/dashboard/profile" && pathname !== "/dashboard/photos" && pathname !== "/dashboard/wallet" && pathname !== "/dashboard/wallet/transactions" && pathname !== "/dashboard/ad-management" && pathname !== "/dashboard/ad-management/pause-ad" && (
-        <div className="flex justify-center px-4 md:px-8 lg:px-12  pt-10">
-          <div className="bg-[#552833] border border-primary rounded-2xl px-4 md:px-6 py-3 flex items-center justify-between max-w-4xl w-full">
-            <p className="text-primary-text text-sm md:text-base">
-              Your Photos have been submitted for review
-            </p>
-            <button
-              onClick={() => setShowNotification(false)}
-              className="h-6 w-6 rounded-full bg-primary-bg flex items-center justify-center hover:bg-input-bg transition-colors shrink-0 ml-4"
-            >
-              <X className="h-4 w-4 text-primary-text" />
-            </button>
+      {showNotification &&
+        pathname !== "/dashboard/profile" &&
+        pathname !== "/dashboard/photos" &&
+        pathname !== "/dashboard/wallet" &&
+        pathname !== "/dashboard/wallet/transactions" &&
+        pathname !== "/dashboard/ad-management" &&
+        pathname !== "/dashboard/ad-management/pause-ad" && (
+          <div className="flex justify-center px-4 md:px-8 lg:px-12  pt-10">
+            <div className="bg-[#552833] border border-primary rounded-2xl px-4 md:px-6 py-3 flex items-center justify-between max-w-4xl w-full">
+              <p className="text-primary-text text-sm md:text-base">
+                Your Photos have been submitted for review
+              </p>
+              <button
+                onClick={() => setShowNotification(false)}
+                className="h-6 w-6 rounded-full bg-primary-bg flex items-center justify-center hover:bg-input-bg transition-colors shrink-0 ml-4"
+              >
+                <X className="h-4 w-4 text-primary-text" />
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <main className="px-4 md:px-8 lg:px-12 py-6 md:py-8 overflow-y-auto scrollbar-hide">{children}</main>
+      <main className="px-4 md:px-8 lg:px-12 py-6 md:py-8 overflow-y-auto scrollbar-hide">
+        {children}
+      </main>
     </div>
   );
 }
