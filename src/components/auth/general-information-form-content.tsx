@@ -11,10 +11,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TabsContent } from "@/components/ui/tabs";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useProfileStore } from "@/hooks/use-profile-store";
 import { toast } from "react-hot-toast";
-import { loadGooglePlacesScript } from "@/lib/google-places";
+import { LocationAutocompleteInput } from "@/components/location/location-autocomplete-input";
+import { LocationSuggestion } from "@/hooks/use-location-autocomplete";
 
 interface GeneralInformationFormContentProps {
   onNext?: () => void;
@@ -39,73 +40,34 @@ export function GeneralInformationFormContent({
     displayedAge: "",
     temporaryProfileHiding: "",
     homeLocations: "",
+    homeLocation: null as LocationSuggestion | null,
   });
 
   useEffect(() => {
     const savedData = getData("general");
-    if (savedData) {
-      setFormData((prev) => ({ ...prev, ...savedData }));
-    }
+      if (savedData) {
+        setFormData((prev) => ({
+          ...prev,
+          ...savedData,
+          homeLocation: savedData?.homeLocation ?? null,
+        }));
+      }
   }, [getData]);
 
   const handleChange = useCallback((field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   }, []);
 
-  const homeLocationRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<any>(null);
-
-  useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLEMAP_API_KEY;
-    if (!apiKey || typeof window === "undefined") {
-      return;
-    }
-
-    let active = true;
-
-    loadGooglePlacesScript(apiKey).then(() => {
-      if (!active || typeof window === "undefined") {
-        return;
-      }
-
-      const google = (window as typeof window & { google?: any }).google;
-      if (!google?.maps?.places || !homeLocationRef.current) {
-        return;
-      }
-
-      if (autocompleteRef.current) {
-        return;
-      }
-
-      const autocomplete = new google.maps.places.Autocomplete(
-        homeLocationRef.current,
-        { types: ["(regions)"] }
-      );
-
-      autocomplete.setFields(["formatted_address"]);
-
-      autocomplete.addListener("place_changed", () => {
-        const place = autocomplete.getPlace();
-        if (place?.formatted_address) {
-          handleChange("homeLocations", place.formatted_address);
-        }
-      });
-
-      autocompleteRef.current = autocomplete;
-    });
-
-    return () => {
-      active = false;
-
-      if (autocompleteRef.current) {
-        const google = (window as typeof window & { google?: any }).google;
-        google?.maps?.event?.clearInstanceListeners(
-          autocompleteRef.current
-        );
-        autocompleteRef.current = null;
-      }
-    };
-  }, [handleChange]);
+  const handleLocationChange = useCallback(
+    (location: LocationSuggestion | null) => {
+      setFormData((prev) => ({
+        ...prev,
+        homeLocations: location?.fullLabel ?? "",
+        homeLocation: location,
+      }));
+    },
+    [setFormData]
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -475,12 +437,10 @@ export function GeneralInformationFormContent({
               >
                 Home locations <span className="text-primary">*</span>
               </Label>
-              <Input
-                id="homeLocations"
-                ref={homeLocationRef}
-                type="text"
-                value={formData.homeLocations}
-                onChange={(e) => handleChange("homeLocations", e.target.value)}
+              <LocationAutocompleteInput
+                value={formData.homeLocation}
+                onChange={handleLocationChange}
+                placeholder="Type city, state, or country"
               />
               <p className="text-[12px] font-normal text-text-gray-opacity">
                 Start typing to pull suggestions from Google Places; select the

@@ -9,6 +9,7 @@ import { apiBuilder } from "@/api/builder";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
 import { useProfileStore } from "@/hooks/use-profile-store";
+import { LocationSuggestion } from "@/hooks/use-location-autocomplete";
 
 const getUserId = () => {
   if (typeof document === "undefined") return null;
@@ -172,10 +173,27 @@ export function UploadPicturesForm() {
           .replace(/--+/g, "-");
       };
 
-      const city = allData.homeLocations
-        ? allData.homeLocations.split(",")[0].trim()
-        : null;
-      const country = "Nigeria";
+      const locationSuggestion = allData.homeLocation as
+        | LocationSuggestion
+        | undefined;
+
+      const normalizedHomeLocations = locationSuggestion
+        ? [locationSuggestion.fullLabel]
+        : allData.homeLocations
+        ? allData.homeLocations.split(",").map((s: string) => s.trim())
+        : [];
+
+      const city =
+        locationSuggestion?.city ??
+        (normalizedHomeLocations.length
+          ? normalizedHomeLocations[0].split(",")[0].trim()
+          : null);
+      const country = locationSuggestion?.country ?? "Nigeria";
+      const state = locationSuggestion?.state ?? city;
+      const city_slug =
+        locationSuggestion?.city_slug ?? (city ? slugify(city) : null);
+      const country_slug =
+        locationSuggestion?.country_slug ?? slugify(country);
 
       // 3. Construct Profile Payload
       const profilePayload = {
@@ -199,16 +217,14 @@ export function UploadPicturesForm() {
         caters_to: allData.catersTo
           ? allData.catersTo.split(",").map((s: string) => s.trim())
           : [],
-        home_locations: allData.homeLocations
-          ? allData.homeLocations.split(",").map((s: string) => s.trim())
-          : [],
+        home_locations: normalizedHomeLocations,
         city: city,
-        state: city, // Fallback
+        state: state,
         country: country,
 
         // Required for Listing visibility
-        city_slug: city ? slugify(city) : null,
-        country_slug: slugify(country),
+        city_slug: city_slug,
+        country_slug: country_slug,
         is_active: true,
         onboarding_completed: true,
 

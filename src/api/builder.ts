@@ -303,7 +303,6 @@ export const apiBuilder = {
   notifications: {
     list: (limit = 20) => {
       const userId = getUserId();
-      console.log("[notifications] userId", userId);
       if (!userId) {
         return Promise.resolve([]);
       }

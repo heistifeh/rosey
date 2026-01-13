@@ -23,7 +23,6 @@ export function useNotifications() {
   });
 
   const notifications: NotificationRecord[] = query.data ?? [];
-  console.log("[notifications] data", notifications, "loading", query.isLoading);
   const unreadCount = notifications.filter((item) => !item.is_read).length;
 
   return {
