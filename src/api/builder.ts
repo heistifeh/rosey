@@ -7,7 +7,7 @@ import {
   getStoredUser,
 } from "./axios-config";
 import axios from "axios";
-import { SignInPayload, SignUpPayload, Profile } from "@/types/types";
+import { SignInPayload, SignUpPayload, Profile, Account } from "@/types/types";
 
 const DEFAULT_SUPABASE_URL = "https://axhkwqaxbnsguxzrfsfj.supabase.co";
 
@@ -23,7 +23,7 @@ const SUPABASE_URL =
 const STORAGE_BASE = `${SUPABASE_URL}/storage/v1`;
 
 const PROFILE_SELECT =
-  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,country,images!inner(public_url,is_primary)";
+  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images!inner(public_url,is_primary)";
 
 export const apiBuilder = {
   auth: {
@@ -250,6 +250,39 @@ export const apiBuilder = {
       return API.get<Profile[]>("/profiles", { params }).then(
         (response) => response.data?.[0] ?? null
       );
+    },
+  },
+  account: {
+    getAccount: () => {
+      const userId = getUserId();
+      if (!userId) {
+        return Promise.resolve<Account | null>(null);
+      }
+      const params = new URLSearchParams();
+      params.append(
+        "select",
+        "id,user_id,two_factor_enabled,two_factor_method"
+      );
+      params.append("user_id", `eq.${userId}`);
+      params.append("limit", "1");
+      return API.get<Account[]>("/user_accounts", { params }).then(
+        (response) => response.data?.[0] ?? null
+      );
+    },
+    updateAccount: (data: Partial<Pick<Account, "two_factor_enabled" | "two_factor_method">>) => {
+      const userId = getUserId();
+      if (!userId) {
+        return Promise.resolve<Account | null>(null);
+      }
+      return API.patch<Account[]>(
+        `/user_accounts?user_id=eq.${userId}`,
+        data,
+        {
+          headers: {
+            Prefer: "return=representation",
+          },
+        }
+      ).then((response) => response.data?.[0] ?? null);
     },
   },
   ads: {

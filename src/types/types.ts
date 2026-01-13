@@ -70,6 +70,13 @@ export type ProfileImage = {
   is_primary: boolean;
 };
 
+export type Account = {
+  id: string;
+  user_id: string;
+  two_factor_enabled: boolean;
+  two_factor_method?: "email" | "auth_app" | "sms";
+};
+
 export type Profile = {
   id: string;
   user_id: string;
@@ -96,5 +103,13 @@ export type Profile = {
   images?: ProfileImage[];
   created_at?: string;
   updated_at?: string;
+  approval_status?: "pending" | "approved" | "rejected";
+  verification_photo_verified?: boolean;
+  id_verified?: boolean;
+  min_photos_verified?: boolean;
+  profile_fields_verified?: boolean;
+  verified_at?: string | null;
+  verification_notes?: string | null;
+  is_fully_verified?: boolean;
   [key: string]: unknown;
 };

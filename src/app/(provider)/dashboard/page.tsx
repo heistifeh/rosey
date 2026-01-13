@@ -1,33 +1,15 @@
 "use client";
 
-import { CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
-import { apiBuilder } from "@/api/builder";
-import { useAuthStore } from "@/stores/auth-store";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useProfile } from "@/hooks/use-profile";
 import { DashboardCardSkeleton } from "@/components/skeletons/dashboard-card-skeleton";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
-
-interface ChecklistItem {
-  id: string;
-  text: string;
-  status: "verified" | "not-verified";
-}
+import { ProfileVerificationChecklist } from "@/components/profile/profile-verification-checklist";
 
 export default function DashboardPage() {
-  // const userId = useAuthStore((state) => state.user?.id);
-
-  const user = useAuthStore((state) => state.user);
-  const userId = user?.id;
-  const { data: profile, isLoading: profileLoading } = useQuery({
-    queryKey: ["user-profile", userId],
-    enabled: Boolean(userId),
-    staleTime: 1000 * 60 * 5,
-    queryFn: () => apiBuilder.profiles.getProfileByUserId(userId!),
-  });
+  const { data: profile, isLoading: profileLoading } = useProfile();
   useCurrentUser();
-
   if (profileLoading) {
     return (
       <div className="flex flex-col gap-6 md:gap-8 items-center justify-center mx-auto px-4 md:px-[180px] pt-8">
@@ -53,29 +35,6 @@ export default function DashboardPage() {
     "Promoting yourself",
     "Code of Conduct",
     "Advertising Policy",
-  ];
-
-  const checklistItems: ChecklistItem[] = [
-    {
-      id: "1",
-      text: "A verification photo that meets our requirements",
-      status: "verified",
-    },
-    {
-      id: "2",
-      text: "Valid age-verification ID",
-      status: "verified",
-    },
-    {
-      id: "3",
-      text: "At least 3 approved photos",
-      status: "not-verified",
-    },
-    {
-      id: "4",
-      text: "All required profile fields filled out as per our policies.",
-      status: "not-verified",
-    },
   ];
 
   return (
@@ -113,37 +72,11 @@ export default function DashboardPage() {
         </p>
 
         <div className="space-y-4">
-          {checklistItems.map((item) => (
-            <div key={item.id} className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-input-bg flex items-center justify-center shrink-0">
-                  <span className="text-primary-text text-sm font-medium">
-                    {item.id}.
-                  </span>
-                </div>
-                <p className="text-primary-text text-sm md:text-base">
-                  {item.text}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                {item.status === "verified" ? (
-                  <>
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-                    <span className="text-emerald-400 text-sm md:text-base font-medium">
-                      Verified
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-5 w-5 text-primary" />
-                    <span className="text-primary text-sm md:text-base font-medium">
-                      Not Verified
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
+          {profile ? (
+            <ProfileVerificationChecklist profile={profile} />
+          ) : (
+            <p className="text-sm text-text-gray-opacity">Loading checklist…</p>
+          )}
         </div>
       </div>
     </div>

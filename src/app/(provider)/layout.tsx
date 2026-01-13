@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -22,28 +22,30 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
+import dynamic from "next/dynamic";
 
 import { useProfile } from "@/hooks/use-profile";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { LocationFilter } from "@/components/location-filter";
 import { ProviderProfileEditor } from "@/components/provider/profile-editor";
-import { NotificationBell } from "@/components/dashboard/notification-bell";
-import { getUserId } from "@/api/axios-config";
-
+const NotificationBell = dynamic(
+  () =>
+    import("@/components/dashboard/notification-bell").then(
+      (mod) => mod.NotificationBell
+    ),
+  {
+    ssr: false,
+  }
+);
 export default function ProviderLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const userId = getUserId();
-  console.log("[notifications] userId", userId);
   const [showNotification, setShowNotification] = useState(true);
   useCurrentUser();
   const { data: profile, isLoading: profileLoading } = useProfile();
-
-  console.log("💁", profile);
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: Bell },
@@ -154,7 +156,7 @@ export default function ProviderLayout({
               </div>
 
               <div className="flex items-center gap-2">
-                {userId && <NotificationBell />}
+                <NotificationBell />
                 <div className="hidden md:flex items-center gap-2 px-4 py-3 bg-primary-bg rounded-full">
                   <div className="relative h-10 w-10 rounded-full overflow-hidden">
                     <Image
