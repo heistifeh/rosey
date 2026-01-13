@@ -20,7 +20,6 @@ const SUPABASE_URL =
   trimTrailingSlash(baseFromAuth(process.env.NEXT_PUBLIC_BASE_URL)) ||
   DEFAULT_SUPABASE_URL;
 
-const REST_BASE = `${SUPABASE_URL}/rest/v1`;
 const STORAGE_BASE = `${SUPABASE_URL}/storage/v1`;
 
 const PROFILE_SELECT =
@@ -58,7 +57,7 @@ export const apiBuilder = {
       if (query) {
         params.city = `ilike.${query}*`;
       }
-      return API.get(`${REST_BASE}/city_locations`, { params }).then(
+      return API.get("/city_locations", { params }).then(
         (response) => response.data
       );
     },
@@ -114,9 +113,6 @@ export const apiBuilder = {
 
     //   params.append("caters_to", "cs.{Male}");
 
-    //   return API.get(`${REST_BASE}/profiles?${params.toString()}`).then(
-    //     (response) => response.data
-    //   );
     // },
 
     getProfiles: (
@@ -184,12 +180,9 @@ export const apiBuilder = {
 
       // params.append("caters_to", "cs.{Male}");
 
-      // return API.get<Profile[]>(
-      //   `https://axhkwqaxbnsguxzrfsfj.supabase.co/rest/v1/profiles?${params.toString()}`
-      // ).then((response) => response.data);
-      // return API.get(`${REST_BASE}/profiles?${params.toString()}`).then(
-      //   (response) => response.data
-      // );
+      return API.get<Profile[]>("/profiles", { params }).then(
+        (response) => response.data
+      );
     },
     getProfileByUsername: (username: string) => {
       if (!username) return Promise.resolve(null);
@@ -197,7 +190,7 @@ export const apiBuilder = {
       params.append("select", PROFILE_SELECT);
       params.append("username", `eq.${username}`);
       params.append("limit", "1");
-      return API.get(`${REST_BASE}/profiles?${params.toString()}`).then(
+      return API.get("/profiles", { params }).then(
         (response) => response.data?.[0] ?? null
       );
     },
@@ -207,20 +200,20 @@ export const apiBuilder = {
       params.append("select", PROFILE_SELECT);
       params.append("user_id", `eq.${userId}`);
       params.append("limit", "1");
-      return API.get(`${REST_BASE}/profiles?${params.toString()}`).then(
+      return API.get("/profiles", { params }).then(
         (response) => response.data?.[0] ?? null
       );
     },
     updateProfile: (id: string, data: any) =>
-      API.patch(`${REST_BASE}/profiles?id=eq.${id}`, data).then(
+      API.patch(`/profiles?id=eq.${id}`, data).then(
         (response) => response.data
       ),
     updateProfileByUserId: (userId: string, data: any) =>
-      API.patch(`${REST_BASE}/profiles?user_id=eq.${userId}`, data).then(
+      API.patch(`/profiles?user_id=eq.${userId}`, data).then(
         (response) => response.data
       ),
     createProfile: (data: any) =>
-      API.post(`${REST_BASE}/profiles?on_conflict=user_id`, data, {
+      API.post(`/profiles?on_conflict=user_id`, data, {
         headers: {
           Prefer: "resolution=merge-duplicates, return=representation",
         },
@@ -231,7 +224,7 @@ export const apiBuilder = {
       path: string;
       is_primary: boolean;
     }) =>
-      API.post(`${REST_BASE}/images`, {
+      API.post(`/images`, {
         profile_id: data.profile_id,
         public_url: data.public_url,
         path: data.path,
@@ -254,9 +247,81 @@ export const apiBuilder = {
       params.append("select", "*");
       params.append("user_id", `eq.${userId}`);
       params.append("limit", "1");
-      return API.get<Profile[]>(
-        `https://axhkwqaxbnsguxzrfsfj.supabase.co/rest/v1/profiles?${params.toString()}`
-      ).then((response) => response.data?.[0] ?? null);
+      return API.get<Profile[]>("/profiles", { params }).then(
+        (response) => response.data?.[0] ?? null
+      );
+    },
+  },
+  ads: {
+    getMyAds: (profileId: string) => {
+      if (!profileId) {
+        return Promise.resolve([]);
+      }
+      return API.get("/ads", {
+        params: {
+          select:
+            "id,title,status,start_at,end_at,budget_credits,spent_credits,placement_available_now,created_at,ad_city_targets(city_slug,state_slug,country_slug)",
+          profile_id: `eq.${profileId}`,
+          order: "created_at.desc",
+        },
+      }).then((response) => response.data);
+    },
+    getAdDailyStats: (adId: string, fromDate: string) => {
+      if (!adId || !fromDate) {
+        return Promise.resolve([]);
+      }
+      return API.get("/ad_daily_stats", {
+        params: {
+          select: "day,impressions,clicks",
+          ad_id: `eq.${adId}`,
+          day: `gte.${fromDate}`,
+          order: "day.asc",
+        },
+      }).then((response) => response.data);
+    },
+    updateAdStatus: (
+      adId: string,
+      status: "active" | "paused" | "expired"
+    ) => {
+      if (!adId) {
+        return Promise.resolve(null);
+      }
+      return axios
+        .post("/api/ads/status", { adId, status })
+        .then((response) => response.data?.ad ?? null);
+    },
+    placeAd: (payload: {
+      title: string;
+      placement_available_now: boolean;
+      cities: {
+        country_slug: string;
+        state_slug: string;
+        city_slug: string;
+      }[];
+    }) => axios.post("/api/ads/place", payload).then((response) => response.data),
+  },
+  notifications: {
+    list: (limit = 20) => {
+      const userId = getUserId();
+      if (!userId) {
+        return Promise.resolve([]);
+      }
+      return API.get("/notifications", {
+        params: {
+          select: "id,type,title,body,data,is_read,created_at",
+          user_id: `eq.${userId}`,
+          order: "created_at.desc",
+          limit,
+        },
+      }).then((response) => response.data);
+    },
+    markRead: (id: string) => {
+      if (!id) {
+        return Promise.resolve(null);
+      }
+      return API.patch(`/notifications?id=eq.${id}`, { is_read: true }).then(
+        (response) => response.data
+      );
     },
   },
   storage: {

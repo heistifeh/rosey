@@ -1,8 +1,22 @@
 import axios, { type InternalAxiosRequestConfig } from "axios";
 import { toast } from "react-hot-toast";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+const DEFAULT_SUPABASE_URL = "https://axhkwqaxbnsguxzrfsfj.supabase.co";
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+const trimTrailingSlash = (value?: string) =>
+  value ? value.replace(/\/$/, "") : null;
+
+const baseFromAuth = (value?: string) =>
+  value?.replace(/\/auth\/v1\/?$/, "");
+
+const SUPABASE_URL =
+  trimTrailingSlash(process.env.NEXT_PUBLIC_SUPABASE_URL) ||
+  trimTrailingSlash(baseFromAuth(process.env.NEXT_PUBLIC_BASE_URL)) ||
+  DEFAULT_SUPABASE_URL;
+
+const SUPABASE_AUTH_URL = `${SUPABASE_URL}/auth/v1`;
+const SUPABASE_REST_URL = `${SUPABASE_URL}/rest/v1`;
 const AUTH_COOKIE_KEY = "rosey-auth";
 
 const readCookie = (name: string): string | null => {
@@ -52,7 +66,7 @@ export const clearAuthCookie = () => {
 };
 
 export const LOGINAPI = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: SUPABASE_AUTH_URL,
   headers: SUPABASE_ANON_KEY
     ? {
       apikey: SUPABASE_ANON_KEY,
@@ -62,7 +76,7 @@ export const LOGINAPI = axios.create({
 });
 
 export const API = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: SUPABASE_REST_URL,
   headers: SUPABASE_ANON_KEY
     ? {
       apikey: SUPABASE_ANON_KEY,
