@@ -50,7 +50,7 @@ export default function ProviderLayout({
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: Bell },
     { label: "Profile", href: "/dashboard/profile", icon: User },
-    { label: "Photos", href: "/dashboard/photos", icon: Camera },
+    { label: "Manage Pictures", href: "/manage-pictures", icon: Camera },
     {
       label: "Ad Management",
       href: "/dashboard/ad-management",
@@ -187,8 +187,9 @@ export default function ProviderLayout({
       </header>
 
       {showNotification &&
-        pathname !== "/dashboard/profile" &&
-        pathname !== "/dashboard/photos" &&
+      pathname !== "/dashboard/profile" &&
+      pathname !== "/dashboard/photos" &&
+      pathname !== "/manage-pictures" &&
         pathname !== "/dashboard/wallet" &&
         pathname !== "/dashboard/wallet/transactions" &&
         pathname !== "/dashboard/ad-management" &&

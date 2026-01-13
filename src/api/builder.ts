@@ -252,6 +252,22 @@ export const apiBuilder = {
       );
     },
   },
+  images: {
+    listByProfile: (profileId: string) => {
+      if (!profileId) {
+        return Promise.resolve([]);
+      }
+      return API.get("/images", {
+        params: {
+          select: "id,profile_id,public_url,path,is_primary,created_at",
+          profile_id: `eq.${profileId}`,
+          order: "created_at.desc",
+        },
+      }).then((response) => response.data);
+    },
+    deleteImage: (id: string) =>
+      API.delete(`/images?id=eq.${id}`).then((response) => response.data),
+  },
   account: {
     getAccount: () => {
       const userId = getUserId();
