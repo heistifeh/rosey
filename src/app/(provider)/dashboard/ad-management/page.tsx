@@ -24,6 +24,12 @@ import { apiBuilder } from "@/api/builder";
 import { useMyAds } from "@/hooks/use-my-ads";
 import { useAdStats } from "@/hooks/use-ad-stats";
 
+type AdCityTarget = {
+  country_slug: string;
+  state_slug: string | null;
+  city_slug: string;
+};
+
 const statusBadge = (status?: string) => {
   switch (status) {
     case "active":
@@ -52,6 +58,7 @@ const formatLineChartDay = (day: string) => {
 export default function AdManagementPage() {
   const { ads, isLoading: adsLoading, error: adsError } = useMyAds();
   const [selectedAdId, setSelectedAdId] = useState<string | undefined>();
+  const [expandedAdId, setExpandedAdId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -87,7 +94,8 @@ export default function AdManagementPage() {
     [points]
   );
 
-  const coverageCount = selectedAd?.ad_city_targets?.length ?? 0;
+  const selectedAdTargets: AdCityTarget[] = selectedAd?.ad_city_targets ?? [];
+  const coverageCount = selectedAdTargets.length;
   const coverageLabel =
     coverageCount > 1
       ? `${coverageCount} locations`
@@ -128,6 +136,27 @@ export default function AdManagementPage() {
 
   const statsErrorMessage = adsError || statsError;
 
+  const toggleExpandedAdCities = useCallback(
+    (adId: string) => {
+      setExpandedAdId((prev) => (prev === adId ? null : adId));
+    },
+    [setExpandedAdId]
+  );
+
+  const formatCityLabel = useCallback((target: AdCityTarget) => {
+    const parts = [];
+    if (target.city_slug) {
+      parts.push(target.city_slug.replace(/-/g, " "));
+    }
+    if (target.state_slug) {
+      parts.push(target.state_slug.replace(/-/g, " "));
+    }
+    if (target.country_slug) {
+      parts.push(target.country_slug.replace(/-/g, " "));
+    }
+    return parts.join(", ");
+  }, []);
+
   if (!adsLoading && ads.length === 0) {
     return (
       <div className="w-full flex justify-center px-4 md:px-[180px] pt-8 bg-primary-bg">
@@ -139,7 +168,7 @@ export default function AdManagementPage() {
             Create your first ad to reach more clients and grow your booking
             pipeline.
           </p>
-          <Link href="/dashboard/ads/new">
+          <Link href="/dashboard/place-ad">
             <Button className="bg-primary hover:bg-primary/90 text-primary-text px-10">
               Create new ad
             </Button>
@@ -270,6 +299,30 @@ export default function AdManagementPage() {
                         {coverageLabel}
                       </span>
                     </div>
+                    {selectedAdTargets.length > 0 && (
+                      <div className="flex flex-col gap-2">
+                        <button
+                          type="button"
+                          onClick={() => toggleExpandedAdCities(selectedAd.id)}
+                          className="text-sm font-semibold text-primary underline"
+                        >
+                          {selectedAdTargets.length} cities selected
+                        </button>
+                        {expandedAdId === selectedAd.id && (
+                          <div className="rounded-2xl border border-dark-border bg-[rgba(255,255,255,0.04)] p-3 max-h-40 overflow-y-auto">
+                            <ul className="space-y-1 text-sm text-primary-text">
+                              {selectedAdTargets.map((target) => (
+                                <li
+                                  key={`${target.country_slug}-${target.state_slug ?? "none"}-${target.city_slug}`}
+                                >
+                                  {formatCityLabel(target)}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-primary" />

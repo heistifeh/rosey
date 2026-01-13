@@ -7,8 +7,8 @@ import {
   BarChart3,
   Wallet,
   X,
-  BellDot,
   Menu,
+  Plus,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,6 +27,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { LocationFilter } from "@/components/location-filter";
 import { ProviderProfileEditor } from "@/components/provider/profile-editor";
+import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { getUserId } from "@/api/axios-config";
 
 export default function ProviderLayout({
@@ -37,6 +38,7 @@ export default function ProviderLayout({
   const pathname = usePathname();
   const router = useRouter();
   const userId = getUserId();
+  console.log("[notifications] userId", userId);
   const [showNotification, setShowNotification] = useState(true);
   useCurrentUser();
   const { data: profile, isLoading: profileLoading } = useProfile();
@@ -52,6 +54,7 @@ export default function ProviderLayout({
       href: "/dashboard/ad-management",
       icon: BarChart3,
     },
+    { label: "Place Ad", href: "/dashboard/place-ad", icon: Plus },
     { label: "Wallet", href: "/dashboard/wallet", icon: Wallet },
   ];
 
@@ -151,9 +154,7 @@ export default function ProviderLayout({
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="rounded-full bg-primary-bg flex items-center justify-center p-3">
-                  <BellDot size={24} className="text-primary-text" />
-                </div>
+                {userId && <NotificationBell />}
                 <div className="hidden md:flex items-center gap-2 px-4 py-3 bg-primary-bg rounded-full">
                   <div className="relative h-10 w-10 rounded-full overflow-hidden">
                     <Image
@@ -189,7 +190,7 @@ export default function ProviderLayout({
         pathname !== "/dashboard/wallet" &&
         pathname !== "/dashboard/wallet/transactions" &&
         pathname !== "/dashboard/ad-management" &&
-        pathname !== "/dashboard/ad-management/pause-ad" && (
+        pathname !== "/dashboard/place-ad" && (
           <div className="flex justify-center px-4 md:px-8 lg:px-12  pt-10">
             <div className="bg-[#552833] border border-primary rounded-2xl px-4 md:px-6 py-3 flex items-center justify-between max-w-4xl w-full">
               <p className="text-primary-text text-sm md:text-base">

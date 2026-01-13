@@ -1,24 +1,15 @@
 "use server";
 
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const SERVICE_ROLE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY;
-const SUPABASE_URL =
-  process.env.SUPABASE_URL ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  "https://axhkwqaxbnsguxzrfsfj.supabase.co";
+import { createNotification } from "@/server/notifications";
+import {
+  createServiceRoleClient,
+  getAccessTokenFromRequest,
+  SERVICE_ROLE_KEY,
+} from "@/server/supabase-client";
 
 const CITY_COST = 15;
-
-const getCookieValue = (cookieHeader: string | null, name: string) => {
-  if (!cookieHeader) return null;
-  const parts = cookieHeader.split(";").map((part) => part.trim());
-  const segment = parts.find((part) => part.startsWith(`${name}=`));
-  return segment ? segment.split("=")[1] : null;
-};
+const LOW_BALANCE_THRESHOLD = 50;
 
 type PlaceAdBody = {
   title: string;
@@ -38,11 +29,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
-    auth: { persistSession: false },
-  });
-
   try {
+    const supabase = createServiceRoleClient();
     const payload: PlaceAdBody = await req.json();
     if (
       !payload ||
@@ -53,35 +41,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "INVALID_PAYLOAD" }, { status: 400 });
     }
 
-    const cookie = req.headers.get("cookie");
-    const raw = getCookieValue(cookie, "rosey-auth");
-    let parsed: any = null;
-    if (raw) {
-      try {
-        parsed = JSON.parse(decodeURIComponent(raw));
-      } catch {
-        parsed = null;
-      }
+    const accessToken = getAccessTokenFromRequest(req);
+    if (!accessToken) {
+      return NextResponse.json(
+        { ok: false, error: "AUTH_REQUIRED" },
+        { status: 401 }
+      );
     }
 
-    let accessToken = parsed?.access_token;
-    if (!accessToken) {
-      const authHeader = req.headers.get("authorization");
-      if (authHeader?.startsWith("Bearer ")) {
-        accessToken = authHeader.slice("Bearer ".length);
-      }
-    }
-
-    if (!accessToken) {
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser(accessToken);
+    if (userError || !user?.id) {
       return NextResponse.json({ ok: false, error: "AUTH_REQUIRED" }, { status: 401 });
     }
 
-    const { data: userData, error: userError } = await supabase.auth.getUser(accessToken);
-    if (userError || !userData?.user?.id) {
-      return NextResponse.json({ ok: false, error: "AUTH_REQUIRED" }, { status: 401 });
-    }
+    const userId = user.id;
+    const cities = payload.cities;
 
-    const userId = userData.user.id;
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("id")
@@ -113,6 +91,10 @@ export async function POST(req: Request) {
       );
     }
 
+    const now = new Date();
+    const durationDays = 30;
+    const end = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+
     const { data: ad, error: adError } = await supabase
       .from("ads")
       .insert({
@@ -122,6 +104,8 @@ export async function POST(req: Request) {
         placement_available_now: payload.placement_available_now,
         budget_credits: creditsNeeded,
         spent_credits: 0,
+        start_at: now.toISOString(),
+        end_at: end.toISOString(),
       })
       .select("*")
       .single();
@@ -166,12 +150,43 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "TRANSACTION_FAILED" }, { status: 500 });
     }
 
+    await createNotification(supabase, {
+      user_id: user.id,
+      type: "ad_created",
+      title: "Ad created",
+      body: `Your ad "${ad.title}" is now live in ${cities.length} cities.`,
+      data: {
+        ad_id: ad.id,
+        title: ad.title,
+        city_count: cities.length,
+      },
+    });
+
+    const updatedWalletBalance = updatedWallet.balance_credits ?? 0;
+    if (updatedWalletBalance < LOW_BALANCE_THRESHOLD) {
+      await createNotification(supabase, {
+        user_id: user.id,
+        type: "low_balance",
+        title: "Your credits are running low",
+        body: `Your wallet balance is down to ${updatedWalletBalance} credits. Top up to keep your ads running.`,
+        data: {
+          balance: updatedWalletBalance,
+        },
+      });
+    }
+
     return NextResponse.json(
       { ok: true, ad, wallet: { balance_credits: updatedWallet.balance_credits } },
       { status: 200 }
     );
   } catch (error) {
     console.error("place ad error", error);
-    return NextResponse.json({ ok: false, error: "SERVER_ERROR" }, { status: 500 });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }

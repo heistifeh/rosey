@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -150,11 +151,11 @@ const makeCityKey = (
   country_slug = COUNTRY_SLUG
 ) => `${country_slug}/${state_slug}/${city_slug}`;
 
-export default function PauseAdPage() {
+export default function PlaceAdPage() {
   const [selectedCities, setSelectedCities] = useState<Record<string, SelectedCity>>({});
   const [isPlacing, setIsPlacing] = useState(false);
-  const [title] = useState("My Ad");
-  const [placementAvailableNow] = useState(false);
+  const [adTitle, setAdTitle] = useState("");
+  const [placementAvailableNow, setPlacementAvailableNow] = useState(false);
   const router = useRouter();
   const { wallet } = useWallet();
   const availableCredits = wallet?.balance_credits ?? 0;
@@ -168,6 +169,8 @@ export default function PauseAdPage() {
     () => Object.values(selectedCities),
     [selectedCities]
   );
+  const trimmedTitle = adTitle.trim();
+  const hasTitle = trimmedTitle.length > 0;
 
   const isAllSelected = useMemo(
     () =>
@@ -241,9 +244,14 @@ export default function PauseAdPage() {
     setSelectedCities(next);
   }, [isAllSelected]);
 
-  const canPlaceAd = citiesSelected > 0 && creditsUsed <= availableCredits;
+  const canPlaceAd =
+    hasTitle && citiesSelected > 0 && creditsUsed <= availableCredits;
 
   const handlePlaceAd = useCallback(async () => {
+    if (!hasTitle) {
+      toast.error("Please enter an ad title.");
+      return;
+    }
     if (citiesSelected === 0) {
       toast.error("Select at least one city.");
       return;
@@ -258,14 +266,14 @@ export default function PauseAdPage() {
     setIsPlacing(true);
     try {
       const payload: PlaceAdPayload = {
-        title,
+        title: trimmedTitle,
         placement_available_now: placementAvailableNow,
         cities: selectedValues,
       };
       await apiBuilder.ads.placeAd(payload);
       toast.success("Ad placed successfully.");
       setSelectedCities({});
-      router.push("/dashboard/ads");
+      router.push("/dashboard/ad-management");
     } catch (error) {
       console.error("Place ad error:", error);
       toast.error("Something went wrong while placing the ad.");
@@ -277,7 +285,8 @@ export default function PauseAdPage() {
     creditsUsed,
     availableCredits,
     selectedValues,
-    title,
+    trimmedTitle,
+    hasTitle,
     placementAvailableNow,
     router,
   ]);
@@ -293,6 +302,39 @@ export default function PauseAdPage() {
             Each city costs {CREDITS_PER_CITY} credits. Add more cities to
             increase your reach.
           </p>
+        </div>
+
+        <div className="mx-auto mt-8 max-w-lg space-y-4">
+          <div className="flex flex-col gap-2 text-left">
+            <label className="text-sm font-semibold text-primary-text">
+              Ad title
+            </label>
+            <Input
+              value={adTitle}
+              onChange={(event) => setAdTitle(event.target.value)}
+              placeholder="Holiday Lagos Promo"
+              className="bg-input-bg text-primary-text"
+            />
+            <p className="text-xs text-text-gray-opacity">
+              This title will appear to clients when they view your campaigns.
+            </p>
+          </div>
+          <label className="flex items-start gap-3 text-sm text-primary-text">
+            <input
+              type="checkbox"
+              checked={placementAvailableNow}
+              onChange={(event) =>
+                setPlacementAvailableNow(event.target.checked)
+              }
+              className="mt-1 h-4 w-4 rounded border-dark-border bg-primary-bg"
+            />
+            <span>
+              Feature this ad in Available Now.
+              <span className="block text-xs text-text-gray-opacity">
+                Highlight this campaign so clients see you as currently available.
+              </span>
+            </span>
+          </label>
         </div>
 
         <div className="mt-6 flex flex-col items-center justify-center gap-3 md:mt-10 md:flex-row md:gap-24">

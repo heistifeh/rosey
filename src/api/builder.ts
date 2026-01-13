@@ -286,9 +286,9 @@ export const apiBuilder = {
       if (!adId) {
         return Promise.resolve(null);
       }
-      return API.patch(`/ads?id=eq.${adId}`, { status }).then(
-        (response) => response.data
-      );
+      return axios
+        .post("/api/ads/status", { adId, status })
+        .then((response) => response.data?.ad ?? null);
     },
     placeAd: (payload: {
       title: string;
@@ -299,6 +299,31 @@ export const apiBuilder = {
         city_slug: string;
       }[];
     }) => axios.post("/api/ads/place", payload).then((response) => response.data),
+  },
+  notifications: {
+    list: (limit = 20) => {
+      const userId = getUserId();
+      console.log("[notifications] userId", userId);
+      if (!userId) {
+        return Promise.resolve([]);
+      }
+      return API.get("/notifications", {
+        params: {
+          select: "id,type,title,body,data,is_read,created_at",
+          user_id: `eq.${userId}`,
+          order: "created_at.desc",
+          limit,
+        },
+      }).then((response) => response.data);
+    },
+    markRead: (id: string) => {
+      if (!id) {
+        return Promise.resolve(null);
+      }
+      return API.patch(`/notifications?id=eq.${id}`, { is_read: true }).then(
+        (response) => response.data
+      );
+    },
   },
   storage: {
     uploadImage: async (file: File, userId: string) => {
