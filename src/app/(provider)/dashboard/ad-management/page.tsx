@@ -23,6 +23,11 @@ import { MapPin, Calendar } from "lucide-react";
 import { apiBuilder } from "@/api/builder";
 import { useMyAds } from "@/hooks/use-my-ads";
 import { useAdStats } from "@/hooks/use-ad-stats";
+import { DashboardCardSkeleton } from "@/components/skeletons/dashboard-card-skeleton";
+import {
+  AdSummarySkeleton,
+  AdViewsChartSkeleton,
+} from "@/components/skeletons/ad-management-skeletons";
 
 type AdCityTarget = {
   country_slug: string;
@@ -205,33 +210,39 @@ export default function AdManagementPage() {
               Unable to load ad data. Please try again.
             </div>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 bg-input-bg rounded-2xl p-2">
-            {summaryStats.map((stat) => (
-              <div
-                key={stat.title}
-                className="bg-primary-bg rounded-2xl p-4 md:p-6 min-w-0"
-              >
-                <p className="text-text-gray-opacity text-sm mb-2">
-                  {stat.title}
-                </p>
-                {stat.value !== null && stat.value !== undefined ? (
-                  <p className="text-3xl md:text-4xl font-semibold text-primary-text mb-2">
-                    {stat.value.toLocaleString?.()
-                      ? stat.value.toLocaleString()
-                      : stat.value}
-                    {stat.suffix && ` ${stat.suffix}`}
-                  </p>
-                ) : (
-                  <div className="flex items-center gap-2 mt-4">
-                    <div className="w-8 h-8 bg-input-bg rounded flex items-center justify-center">
-                      <div className="w-4 h-4 bg-text-gray-opacity rounded"></div>
+          {adsLoading || statsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <DashboardCardSkeleton key={index} />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 bg-input-bg rounded-2xl p-2">
+              {summaryStats.map((stat) => (
+                <div
+                  key={stat.title}
+                  className="bg-primary-bg rounded-2xl p-4 md:p-6 min-w-0"
+                >
+                  <p className="text-text-gray-opacity text-sm mb-2">{stat.title}</p>
+                  {stat.value !== null && stat.value !== undefined ? (
+                    <p className="text-3xl md:text-4xl font-semibold text-primary-text mb-2">
+                      {stat.value.toLocaleString?.()
+                        ? stat.value.toLocaleString()
+                        : stat.value}
+                      {stat.suffix && ` ${stat.suffix}`}
+                    </p>
+                  ) : (
+                    <div className="flex items-center gap-2 mt-4">
+                      <div className="w-8 h-8 bg-input-bg rounded flex items-center justify-center">
+                        <div className="w-4 h-4 bg-text-gray-opacity rounded" />
+                      </div>
+                      <div className="h-4 bg-input-bg rounded flex-1"></div>
                     </div>
-                    <div className="h-4 bg-input-bg rounded flex-1"></div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
             <section className="flex flex-col gap-4">

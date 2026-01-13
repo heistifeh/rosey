@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiBuilder } from "@/api/builder";
+import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
 
 const tabs = ["All", "Female", "Male", "Trans", "Non-Binary"];
 
@@ -91,16 +92,7 @@ export function AvailableNowSection({
         <div className="flex gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
           {isLoading
             ? Array.from({ length: 6 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex h-full flex-col overflow-hidden p-2.5 md:p-3 rounded-[20px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[220px] sm:min-w-0 animate-pulse"
-                >
-                  <div className="relative h-[200px] w-full overflow-hidden rounded-[16px] bg-[#2a2a2d]" />
-                  <div className="flex flex-1 flex-col justify-between gap-3 md:gap-[22px] pt-3 md:pt-[22px]">
-                    <div className="h-6 w-3/4 bg-[#2a2a2d] rounded" />
-                    <div className="h-4 w-1/2 bg-[#2a2a2d] rounded" />
-                  </div>
-                </div>
+                <BaseCardSkeleton key={i} />
               ))
             : profiles?.map((profile: any, index: number) => (
                 <Link
