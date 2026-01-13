@@ -2,11 +2,12 @@
 
 import { CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiBuilder } from "@/api/builder";
 import { useAuthStore } from "@/stores/auth-store";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { DashboardCardSkeleton } from "@/components/skeletons/dashboard-card-skeleton";
+import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
 
 interface ChecklistItem {
   id: string;
@@ -27,12 +28,24 @@ export default function DashboardPage() {
   });
   useCurrentUser();
 
-  useEffect(() => {
-    console.log("Provider dashboard current user:", user);
-    if (profile) {
-      console.log("Provider dashboard user profile:", profile);
-    }
-  }, [user, profile]);
+  if (profileLoading) {
+    return (
+      <div className="flex flex-col gap-6 md:gap-8 items-center justify-center mx-auto px-4 md:px-[180px] pt-8">
+        <div className="w-full max-w-5xl space-y-6">
+          <div className="grid gap-4 md:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <DashboardCardSkeleton key={index} />
+            ))}
+          </div>
+          <div className="space-y-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <BaseCardSkeleton key={index} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const links = [
     "Getting Verified on Rosey",

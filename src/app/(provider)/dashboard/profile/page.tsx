@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useProfile } from "@/hooks/use-profile";
+import {
+  ProfileHeaderSkeleton,
+  ProfileSectionSkeleton,
+} from "@/components/skeletons/profile-skeletons";
 
 const securityList = [
   {
@@ -31,6 +35,20 @@ export default function ProfilePage() {
           profile.country ? `, ${profile.country}` : ""
         }`
       : null);
+
+  if (profileLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center mx-auto px-4 md:px-[180px] pt-8">
+        <div className="w-full max-w-6xl space-y-6">
+          <ProfileHeaderSkeleton />
+          <div className="grid gap-4 md:grid-cols-2">
+            <ProfileSectionSkeleton />
+            <ProfileSectionSkeleton />
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex items-center justify-center mx-auto px-4 md:px-[180px] pt-8">
       <div className="w-full max-w-6xl">
