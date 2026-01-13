@@ -39,10 +39,18 @@ export default function DashboardPage() {
 
   return (
     <div className=" flex items-center justify-center mx-auto ">
-      <div className="mb-8 md:pt-10">
-        <h1 className="text-2xl  font-semibold text-primary-text mb-[33px] text-center">
-          Welcome to Rosey
-        </h1>
+      <div className="mb-8 md:pt-10 w-full max-w-4xl">
+        <div className="mb-6 flex justify-between items-center">
+          <h1 className="text-2xl font-semibold text-primary-text mb-[33px] text-center">
+            Welcome to Rosey
+          </h1>
+          <Link
+            href="/"
+            className="rounded-full border border-[#E5E5EA] px-4 py-2 text-sm font-medium text-primary-text hover:bg-primary-bg transition-colors"
+          >
+            Back to home
+          </Link>
+        </div>
         <p className="text-base text-text-gray-opacity mb-6 max-w-3xl">
           Before we publish your profile, our team needs to verify a few things.
           Use these links to get started:
