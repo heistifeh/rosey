@@ -290,6 +290,15 @@ export const apiBuilder = {
         (response) => response.data
       );
     },
+    placeAd: (payload: {
+      title: string;
+      placement_available_now: boolean;
+      cities: {
+        country_slug: string;
+        state_slug: string;
+        city_slug: string;
+      }[];
+    }) => axios.post("/api/ads/place", payload).then((response) => response.data),
   },
   storage: {
     uploadImage: async (file: File, userId: string) => {
