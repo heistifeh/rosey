@@ -2,19 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import {
-  ArrowRight,
-  ChevronRight,
-  MapPin,
-  MoveRight,
-  Circle,
-} from "lucide-react";
+import { ArrowRight, MapPin, Circle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiBuilder } from "@/api/builder";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
-
-const tabs = ["All", "Female", "Male", "Trans", "Non-Binary"];
+import { AvailableNowItem } from "@/types/types";
 
 interface AvailableNowSectionProps {
   filters: {
@@ -41,42 +33,56 @@ interface AvailableNowSectionProps {
   >;
 }
 
-export function AvailableNowSection({
-  filters,
-  setFilters,
-}: AvailableNowSectionProps) {
-  const { data: profiles, isLoading } = useQuery<[]>({
-    queryKey: ["profiles", filters],
-    queryFn: async () =>
-      (await apiBuilder.profiles.getProfiles({
-        gender: filters.gender,
-        priceRange: filters.priceRange,
-        citySlug: filters.location?.city_slug,
-        countrySlug: filters.location?.country_slug,
-        applyDefaults: true,
-      })) ?? [],
+type NormalizedAvailableNowItem = {
+  adId: string;
+  profileId: string;
+  username: string | null;
+  workingName: string;
+  baseCurrency: string | null;
+  baseHourlyRate: number | null;
+  locationLabel: string;
+  imageUrl: string;
+};
+
+export function AvailableNowSection(_props: AvailableNowSectionProps) {
+  const { data: ads, isLoading } = useQuery<AvailableNowItem[]>({
+    queryKey: ["available-now"],
+    queryFn: async () => (await apiBuilder.ads.getAvailableNow()) ?? [],
   });
+
+  const normalized = (ads ?? [])
+    .map((ad): NormalizedAvailableNowItem | null => {
+      const profile = ad.profile;
+      if (!profile?.id) {
+        return null;
+      }
+
+      const images = profile.images ?? [];
+      const primary = images.find((img) => img.is_primary) ?? images[0];
+      const imageUrl = primary?.public_url || "/images/girl1.png";
+      const locationLabel = [profile.city, profile.country]
+        .filter(Boolean)
+        .join(", ");
+
+      return {
+        adId: ad.id,
+        profileId: profile.id,
+        username: profile.username,
+        workingName: profile.working_name ?? "Provider",
+        baseCurrency: profile.base_currency,
+        baseHourlyRate: profile.base_hourly_rate,
+        locationLabel,
+        imageUrl,
+      };
+    })
+    .filter(
+      (item): item is NormalizedAvailableNowItem => item !== null
+    );
 
   return (
     <section className="relative z-10 w-full bg-input-bg  pb-12 pt-10 md:pb-16 md:pt-20">
       <div className="mx-auto flex w-full px-0 md:px-[60px] flex-col gap-4 md:gap-10">
         {/* Header row */}
-
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 md:pb-10 scrollbar-hide md:justify-center">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setFilters((prev) => ({ ...prev, gender: tab }))}
-              className={`flex-1 min-w-[80px] md:flex-none md:min-w-0 px-3 py-1.5 md:px-6 md:py-2.5 text-xs md:text-sm font-medium rounded-full transition whitespace-nowrap cursor-pointer ${
-                filters.gender === tab
-                  ? "bg-primary text-primary-text"
-                  : "bg-primary-bg text-primary-text hover:bg-[#2a2a2d]"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
 
         <div className=" flex justify-between items-center px-4">
           <h2 className="text-xl md:text-2xl font-semibold text-primary-text lg:text-[36px]">
@@ -94,18 +100,16 @@ export function AvailableNowSection({
             ? Array.from({ length: 6 }).map((_, i) => (
                 <BaseCardSkeleton key={i} />
               ))
-            : profiles?.map((profile: any, index: number) => (
+            : normalized.map((item, index) => (
                 <Link
-                  key={profile.id}
-                  href={`/profile/${profile.username || profile.id}`}
+                  key={item.adId}
+                  href={`/profile/${item.username || item.profileId}`}
                   className={`flex h-full flex-col overflow-hidden p-3 md:p-4 rounded-[24px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[280px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity`}
                 >
                   <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
                     <Image
-                      src={
-                        profile.images?.[0]?.public_url || "/images/girl1.png"
-                      }
-                      alt={profile.working_name}
+                      src={item.imageUrl}
+                      alt={item.workingName}
                       fill
                       className="object-cover object-center"
                       sizes="(max-width: 768px) 100vw, 25vw"
@@ -116,11 +120,11 @@ export function AvailableNowSection({
                   <div className="flex flex-1 flex-col justify-between gap-3 md:gap-[22px] pt-3 md:pt-[22px]">
                     <div className="flex  justify-between gap-2 items-center">
                       <p className="text-base md:text-lg lg:text-[24px] font-normal text-primary-text">
-                        {profile.working_name}
+                        {item.workingName}
                       </p>
                       <p className="text-xl md:text-2xl lg:text-[36px] font-semibold text-primary-text">
-                        {profile.base_currency}
-                        {profile.base_hourly_rate}
+                        {item.baseCurrency}
+                        {item.baseHourlyRate}
                       </p>
                     </div>
 
@@ -128,7 +132,7 @@ export function AvailableNowSection({
                       <div className="flex items-center gap-1">
                         <MapPin className="h-2.5 w-2.5 md:h-3 md:w-3" />
                         <span className="text-xs md:text-sm lg:text-[16px] font-normal text-text-gray-opacity">
-                          {profile.city}, {profile.country}
+                          {item.locationLabel}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 md:gap-2 bg-input-bg rounded-[200px] px-2 py-1 md:px-3 md:py-2">
@@ -143,13 +147,9 @@ export function AvailableNowSection({
                   </div>
                 </Link>
               ))}
-          {!isLoading && (!profiles || profiles.length === 0) && (
+          {!isLoading && normalized.length === 0 && (
             <div className="col-span-full py-10 text-center text-text-gray-opacity">
-              No profiles found
-              {filters.gender && filters.gender !== "All"
-                ? ` for ${filters.gender}`
-                : ""}
-              .
+              No providers are currently marked as Available Now.
             </div>
           )}
         </div>

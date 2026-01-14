@@ -113,3 +113,22 @@ export type Profile = {
   is_fully_verified?: boolean;
   [key: string]: unknown;
 };
+
+export type AvailableNowItem = {
+  id: string;
+  created_at: string;
+  profile: {
+    id: string;
+    username: string | null;
+    working_name: string | null;
+    gender: string | null;
+    base_hourly_rate: number | null;
+    base_currency: string | null;
+    city: string | null;
+    country: string | null;
+    images?: {
+      public_url: string;
+      is_primary: boolean | null;
+    }[] | null;
+  } | null;
+};

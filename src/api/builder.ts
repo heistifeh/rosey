@@ -7,7 +7,13 @@ import {
   getStoredUser,
 } from "./axios-config";
 import axios from "axios";
-import { SignInPayload, SignUpPayload, Profile, Account } from "@/types/types";
+import {
+  SignInPayload,
+  SignUpPayload,
+  Profile,
+  Account,
+  AvailableNowItem,
+} from "@/types/types";
 
 const DEFAULT_SUPABASE_URL = "https://axhkwqaxbnsguxzrfsfj.supabase.co";
 
@@ -302,6 +308,42 @@ export const apiBuilder = {
     },
   },
   ads: {
+    getAvailableNow: (gender?: string) => {
+      const params = new URLSearchParams();
+
+      params.append(
+        "select",
+        [
+          "id,",
+          "created_at,",
+          "profile:profiles(",
+          "id,",
+          "username,",
+          "working_name,",
+          "gender,",
+          "base_hourly_rate,",
+          "base_currency,",
+          "city,",
+          "country,",
+          "images(public_url,is_primary)",
+          ")",
+        ].join("")
+      );
+
+      params.append("status", "eq.active");
+      params.append("placement_available_now", "eq.true");
+
+      if (gender && gender !== "All") {
+        params.append("profile.gender", `eq.${gender}`);
+      }
+
+      params.append("order", "created_at.desc");
+      params.append("limit", "12");
+
+      return API.get<AvailableNowItem[]>("/ads", { params }).then(
+        (response) => response.data ?? []
+      );
+    },
     getMyAds: (profileId: string) => {
       if (!profileId) {
         return Promise.resolve([]);
