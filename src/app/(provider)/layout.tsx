@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -43,9 +43,26 @@ export default function ProviderLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [showNotification, setShowNotification] = useState(true);
   useCurrentUser();
   const { data: profile, isLoading: profileLoading } = useProfile();
+  const profileType =
+    typeof profile?.profile_type === "string" ? profile.profile_type : "";
+  const isEscort = profileType.toLowerCase() === "escort";
+
+  useEffect(() => {
+    if (profileLoading) return;
+
+    if (!profile) {
+      router.replace("/login?redirect=/dashboard");
+      return;
+    }
+
+    if (!isEscort) {
+      router.replace("/");
+    }
+  }, [profileLoading, profile, isEscort, router]);
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: Bell },
@@ -59,6 +76,14 @@ export default function ProviderLayout({
     { label: "Place Ad", href: "/dashboard/place-ad", icon: Plus },
     { label: "Wallet", href: "/dashboard/wallet", icon: Wallet },
   ];
+
+  if (profileLoading || !profile || !isEscort) {
+    return (
+      <div className="min-h-screen bg-primary-bg flex items-center justify-center">
+        <p className="text-primary-text text-sm">Checking your access…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-primary-bg">
