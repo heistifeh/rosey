@@ -22,14 +22,21 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
+import dynamic from "next/dynamic";
 
 import { useProfile } from "@/hooks/use-profile";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { LocationFilter } from "@/components/location-filter";
 import { ProviderProfileEditor } from "@/components/provider/profile-editor";
-import { NotificationBell } from "@/components/dashboard/notification-bell";
-import { getUserId } from "@/api/axios-config";
-
+const NotificationBell = dynamic(
+  () =>
+    import("@/components/dashboard/notification-bell").then(
+      (mod) => mod.NotificationBell
+    ),
+  {
+    ssr: false,
+  }
+);
 export default function ProviderLayout({
   children,
 }: {
@@ -37,18 +44,30 @@ export default function ProviderLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const userId = getUserId();
-  console.log("[notifications] userId", userId);
   const [showNotification, setShowNotification] = useState(true);
   useCurrentUser();
   const { data: profile, isLoading: profileLoading } = useProfile();
+  const profileType =
+    typeof profile?.profile_type === "string" ? profile.profile_type : "";
+  const isEscort = profileType.toLowerCase() === "escort";
 
-  console.log("💁", profile);
+  useEffect(() => {
+    if (profileLoading) return;
+
+    if (!profile) {
+      router.replace("/login?redirect=/dashboard");
+      return;
+    }
+
+    if (!isEscort) {
+      router.replace("/");
+    }
+  }, [profileLoading, profile, isEscort, router]);
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: Bell },
     { label: "Profile", href: "/dashboard/profile", icon: User },
-    { label: "Photos", href: "/dashboard/photos", icon: Camera },
+    { label: "Manage Pictures", href: "/manage-pictures", icon: Camera },
     {
       label: "Ad Management",
       href: "/dashboard/ad-management",
@@ -57,6 +76,14 @@ export default function ProviderLayout({
     { label: "Place Ad", href: "/dashboard/place-ad", icon: Plus },
     { label: "Wallet", href: "/dashboard/wallet", icon: Wallet },
   ];
+
+  if (profileLoading || !profile || !isEscort) {
+    return (
+      <div className="min-h-screen bg-primary-bg flex items-center justify-center">
+        <p className="text-primary-text text-sm">Checking your access…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-primary-bg">
@@ -154,7 +181,7 @@ export default function ProviderLayout({
               </div>
 
               <div className="flex items-center gap-2">
-                {userId && <NotificationBell />}
+                <NotificationBell />
                 <div className="hidden md:flex items-center gap-2 px-4 py-3 bg-primary-bg rounded-full">
                   <div className="relative h-10 w-10 rounded-full overflow-hidden">
                     <Image
@@ -185,8 +212,9 @@ export default function ProviderLayout({
       </header>
 
       {showNotification &&
-        pathname !== "/dashboard/profile" &&
-        pathname !== "/dashboard/photos" &&
+      pathname !== "/dashboard/profile" &&
+      pathname !== "/dashboard/photos" &&
+      pathname !== "/manage-pictures" &&
         pathname !== "/dashboard/wallet" &&
         pathname !== "/dashboard/wallet/transactions" &&
         pathname !== "/dashboard/ad-management" &&

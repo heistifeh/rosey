@@ -7,7 +7,13 @@ import {
   getStoredUser,
 } from "./axios-config";
 import axios from "axios";
-import { SignInPayload, SignUpPayload, Profile } from "@/types/types";
+import {
+  SignInPayload,
+  SignUpPayload,
+  Profile,
+  Account,
+  AvailableNowItem,
+} from "@/types/types";
 
 const DEFAULT_SUPABASE_URL = "https://axhkwqaxbnsguxzrfsfj.supabase.co";
 
@@ -23,7 +29,7 @@ const SUPABASE_URL =
 const STORAGE_BASE = `${SUPABASE_URL}/storage/v1`;
 
 const PROFILE_SELECT =
-  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,country,images!inner(public_url,is_primary)";
+  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images!inner(public_url,is_primary)";
 
 export const apiBuilder = {
   auth: {
@@ -252,7 +258,92 @@ export const apiBuilder = {
       );
     },
   },
+  images: {
+    listByProfile: (profileId: string) => {
+      if (!profileId) {
+        return Promise.resolve([]);
+      }
+      return API.get("/images", {
+        params: {
+          select: "id,profile_id,public_url,path,is_primary,created_at",
+          profile_id: `eq.${profileId}`,
+          order: "created_at.desc",
+        },
+      }).then((response) => response.data);
+    },
+    deleteImage: (id: string) =>
+      API.delete(`/images?id=eq.${id}`).then((response) => response.data),
+  },
+  account: {
+    getAccount: () => {
+      const userId = getUserId();
+      if (!userId) {
+        return Promise.resolve<Account | null>(null);
+      }
+      const params = new URLSearchParams();
+      params.append(
+        "select",
+        "id,user_id,two_factor_enabled,two_factor_method"
+      );
+      params.append("user_id", `eq.${userId}`);
+      params.append("limit", "1");
+      return API.get<Account[]>("/user_accounts", { params }).then(
+        (response) => response.data?.[0] ?? null
+      );
+    },
+    updateAccount: (data: Partial<Pick<Account, "two_factor_enabled" | "two_factor_method">>) => {
+      const userId = getUserId();
+      if (!userId) {
+        return Promise.resolve<Account | null>(null);
+      }
+      return API.patch<Account[]>(
+        `/user_accounts?user_id=eq.${userId}`,
+        data,
+        {
+          headers: {
+            Prefer: "return=representation",
+          },
+        }
+      ).then((response) => response.data?.[0] ?? null);
+    },
+  },
   ads: {
+    getAvailableNow: (gender?: string) => {
+      const params = new URLSearchParams();
+
+      params.append(
+        "select",
+        [
+          "id,",
+          "created_at,",
+          "profile:profiles(",
+          "id,",
+          "username,",
+          "working_name,",
+          "gender,",
+          "base_hourly_rate,",
+          "base_currency,",
+          "city,",
+          "country,",
+          "images(public_url,is_primary)",
+          ")",
+        ].join("")
+      );
+
+      params.append("status", "eq.active");
+      params.append("placement_available_now", "eq.true");
+
+      if (gender && gender !== "All") {
+        params.append("profile.gender", `eq.${gender}`);
+      }
+
+      params.append("order", "created_at.desc");
+      params.append("limit", "12");
+
+      return API.get<AvailableNowItem[]>("/ads", { params }).then(
+        (response) => response.data ?? []
+      );
+    },
     getMyAds: (profileId: string) => {
       if (!profileId) {
         return Promise.resolve([]);

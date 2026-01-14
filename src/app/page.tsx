@@ -4,7 +4,7 @@ import { Menu, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { HeroSection } from "@/components/home/hero-section";
 import { useAuthStore } from "@/stores/auth-store";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -38,8 +38,7 @@ export default function Home() {
   const user = useAuthStore((state) => state.user);
   const clearUser = useAuthStore((state) => state.clearUser);
   const router = useRouter();
-
-  console.log(user);
+  const isProvider = Boolean(user);
 
   //  useEffect(() => {
   //   const load = async () => {
