@@ -40,9 +40,8 @@ const supportLinks = [
 ];
 
 const locationLinks = [
-  { label: "Chicago Escorts", href: "/" },
-  { label: "Denver Escorts", href: "/" },
-  { label: "Melbourne Escorts", href: "/" },
+  { label: "Escorts in Lagos", href: "/escorts/nigeria/lagos" },
+  { label: "Escorts in Miami", href: "/escorts/us/miami" },
 ];
 
 export function FooterSection() {
