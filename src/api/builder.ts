@@ -30,6 +30,8 @@ const STORAGE_BASE = `${SUPABASE_URL}/storage/v1`;
 
 const PROFILE_SELECT =
   "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images!inner(public_url,is_primary)";
+const SEARCH_PROFILE_SELECT =
+  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,country,images!inner(public_url,is_primary)";
 
 export const apiBuilder = {
   auth: {
@@ -177,6 +179,54 @@ export const apiBuilder = {
 
       return API.get<Profile[]>("/profiles", { params }).then(
         (response) => response.data
+      );
+    },
+    searchProfiles: (paramsIn: {
+      countrySlug: string;
+      citySlug: string;
+      gender?: string;
+      minRate?: number;
+      maxRate?: number;
+      catersTo?: string | string[];
+    }) => {
+      const params = new URLSearchParams();
+      params.append("select", SEARCH_PROFILE_SELECT);
+      params.append("country_slug", `eq.${paramsIn.countrySlug}`);
+      params.append("city_slug", `eq.${paramsIn.citySlug}`);
+      params.append("is_active", "eq.true");
+      params.append("onboarding_completed", "eq.true");
+      params.append("order", "created_at.desc");
+
+      const gender =
+        paramsIn.gender && paramsIn.gender !== "All" ? paramsIn.gender : null;
+      if (gender) {
+        params.append("gender", `eq.${gender}`);
+      }
+
+      if (
+        typeof paramsIn.minRate === "number" &&
+        !Number.isNaN(paramsIn.minRate)
+      ) {
+        params.append("base_hourly_rate", `gte.${paramsIn.minRate}`);
+      }
+
+      if (
+        typeof paramsIn.maxRate === "number" &&
+        !Number.isNaN(paramsIn.maxRate)
+      ) {
+        params.append("base_hourly_rate", `lte.${paramsIn.maxRate}`);
+      }
+
+      const catersToValue = Array.isArray(paramsIn.catersTo)
+        ? paramsIn.catersTo.filter(Boolean).join(",")
+        : paramsIn.catersTo;
+
+      if (catersToValue) {
+        params.append("caters_to", `cs.{${catersToValue}}`);
+      }
+
+      return API.get<Profile[]>("/profiles", { params }).then(
+        (response) => response.data ?? []
       );
     },
     getCityProfiles: (paramsIn: { citySlug: string; countrySlug: string }) => {

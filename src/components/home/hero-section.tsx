@@ -6,6 +6,7 @@ import {
   SlidersHorizontal,
   Venus,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -45,6 +46,7 @@ interface HeroSectionProps {
 
 export function HeroSection({ filters, setFilters }: HeroSectionProps) {
   const genders = ["All", "Male", "Female", "Transgender", "Non-binary"];
+  const router = useRouter();
 
   const priceRanges = [
     "$0 - $100",
@@ -55,13 +57,37 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
   ];
 
   const handleSearch = () => {
-    console.log("Searching for:", {
-      filters,
-    });
+    const params = new URLSearchParams();
+
+    if (filters.location?.country_slug) {
+      params.set("country", filters.location.country_slug);
+    }
+    if (filters.location?.city_slug) {
+      params.set("city", filters.location.city_slug);
+    }
+
+    if (filters.gender && filters.gender !== "All") {
+      params.set("gender", filters.gender);
+    }
+
+    if (filters.priceRange) {
+      const clean = filters.priceRange.replace(/[\$\s]/g, "");
+      if (clean.includes("-")) {
+        const [min, max] = clean.split("-").map((val) => Number(val));
+        if (!Number.isNaN(min)) params.set("min", String(min));
+        if (!Number.isNaN(max)) params.set("max", String(max));
+      } else if (clean.includes("+")) {
+        const min = Number(clean.replace("+", ""));
+        if (!Number.isNaN(min)) params.set("min", String(min));
+      }
+    }
+
+    const queryString = params.toString();
+    router.push(queryString ? `/search?${queryString}` : "/search");
   };
 
   const handleFilter = () => {
-    console.log("Filter clicked:", { filters });
+    handleSearch();
   };
 
   const handleLocationChange = (location: LocationValue | null) => {
