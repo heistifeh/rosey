@@ -30,6 +30,8 @@ const STORAGE_BASE = `${SUPABASE_URL}/storage/v1`;
 
 const PROFILE_SELECT =
   "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images!inner(public_url,is_primary)";
+const SEARCH_PROFILE_SELECT =
+  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,country,images!inner(public_url,is_primary)";
 
 export const apiBuilder = {
   auth: {
@@ -144,8 +146,10 @@ export const apiBuilder = {
 
       // Only add filters if they're explicitly provided
       if (applyDefaults) {
+        params.append("profile_type", "eq.Escort");
         params.append("is_active", "eq.true");
         params.append("onboarding_completed", "eq.true");
+        params.append("approval_status", "eq.approved");
         params.append("order", "created_at.desc");
       }
 
@@ -173,21 +177,71 @@ export const apiBuilder = {
         }
       }
 
-      // Remove these hardcoded defaults:
-      // params.append("is_active", "eq.true");
-      // params.append("onboarding_completed", "eq.true");
-      // params.append("order", "created_at.desc");
-      // params.append("gender", `eq.Female`);
-      // params.append("city_slug", "eq.lagos");
-      // params.append("country_slug", "eq.nigeria");
-      // params.append("base_hourly_rate", "gte.100");
-      // params.append("base_hourly_rate", "lte.300");
-      // params.append("caters_to", "cs.{Male}");
-
-      // params.append("caters_to", "cs.{Male}");
-
       return API.get<Profile[]>("/profiles", { params }).then(
         (response) => response.data
+      );
+    },
+    searchProfiles: (paramsIn: {
+      countrySlug: string;
+      citySlug: string;
+      gender?: string;
+      minRate?: number;
+      maxRate?: number;
+      catersTo?: string | string[];
+    }) => {
+      const params = new URLSearchParams();
+      params.append("select", SEARCH_PROFILE_SELECT);
+      params.append("country_slug", `eq.${paramsIn.countrySlug}`);
+      params.append("city_slug", `eq.${paramsIn.citySlug}`);
+      params.append("is_active", "eq.true");
+      params.append("onboarding_completed", "eq.true");
+      params.append("order", "created_at.desc");
+
+      const gender =
+        paramsIn.gender && paramsIn.gender !== "All" ? paramsIn.gender : null;
+      if (gender) {
+        params.append("gender", `eq.${gender}`);
+      }
+
+      if (
+        typeof paramsIn.minRate === "number" &&
+        !Number.isNaN(paramsIn.minRate)
+      ) {
+        params.append("base_hourly_rate", `gte.${paramsIn.minRate}`);
+      }
+
+      if (
+        typeof paramsIn.maxRate === "number" &&
+        !Number.isNaN(paramsIn.maxRate)
+      ) {
+        params.append("base_hourly_rate", `lte.${paramsIn.maxRate}`);
+      }
+
+      const catersToValue = Array.isArray(paramsIn.catersTo)
+        ? paramsIn.catersTo.filter(Boolean).join(",")
+        : paramsIn.catersTo;
+
+      if (catersToValue) {
+        params.append("caters_to", `cs.{${catersToValue}}`);
+      }
+
+      return API.get<Profile[]>("/profiles", { params }).then(
+        (response) => response.data ?? []
+      );
+    },
+    getCityProfiles: (paramsIn: { citySlug: string; countrySlug: string }) => {
+      const params = new URLSearchParams();
+      params.append("select", PROFILE_SELECT);
+      params.append("limit", "24");
+      params.append("is_active", "eq.true");
+      params.append("onboarding_completed", "eq.true");
+      params.append("approval_status", "eq.approved");
+      params.append("city_slug", `eq.${paramsIn.citySlug}`);
+      params.append("country_slug", `eq.${paramsIn.countrySlug}`);
+      params.append("profile_type", "eq.Escort");
+
+      return API.get<Profile[]>("/profiles", { params }).then(
+        (response) => response.data ?? []
       );
     },
     getProfileByUsername: (username: string) => {
@@ -291,20 +345,18 @@ export const apiBuilder = {
         (response) => response.data?.[0] ?? null
       );
     },
-    updateAccount: (data: Partial<Pick<Account, "two_factor_enabled" | "two_factor_method">>) => {
+    updateAccount: (
+      data: Partial<Pick<Account, "two_factor_enabled" | "two_factor_method">>
+    ) => {
       const userId = getUserId();
       if (!userId) {
         return Promise.resolve<Account | null>(null);
       }
-      return API.patch<Account[]>(
-        `/user_accounts?user_id=eq.${userId}`,
-        data,
-        {
-          headers: {
-            Prefer: "return=representation",
-          },
-        }
-      ).then((response) => response.data?.[0] ?? null);
+      return API.patch<Account[]>(`/user_accounts?user_id=eq.${userId}`, data, {
+        headers: {
+          Prefer: "return=representation",
+        },
+      }).then((response) => response.data?.[0] ?? null);
     },
   },
   ads: {
@@ -370,16 +422,45 @@ export const apiBuilder = {
         },
       }).then((response) => response.data);
     },
-    updateAdStatus: (
-      adId: string,
-      status: "active" | "paused" | "expired"
-    ) => {
+    updateAdStatus: (adId: string, status: "active" | "paused" | "expired") => {
       if (!adId) {
         return Promise.resolve(null);
       }
       return axios
         .post("/api/ads/status", { adId, status })
         .then((response) => response.data?.ad ?? null);
+    },
+    getSponsoredProfilesForCity: (paramsIn: {
+      citySlug: string;
+      countrySlug: string;
+    }) => {
+      const params = new URLSearchParams();
+      params.append(
+        "select",
+        `profile:profiles(${PROFILE_SELECT}),ad_city_targets!inner(city_slug,country_slug)`
+      );
+      params.append("status", "eq.active");
+      params.append("ad_city_targets.city_slug", `eq.${paramsIn.citySlug}`);
+      params.append(
+        "ad_city_targets.country_slug",
+        `eq.${paramsIn.countrySlug}`
+      );
+
+      return API.get<Array<{ profile?: Profile | null }>>("/ads", { params }).then(
+        (response) => {
+          const rows = response.data ?? [];
+          const unique = new Map<string, Profile>();
+
+          rows.forEach((row) => {
+            const profile = row?.profile;
+            if (profile?.id && !unique.has(profile.id)) {
+              unique.set(profile.id, profile);
+            }
+          });
+
+          return Array.from(unique.values());
+        }
+      );
     },
     placeAd: (payload: {
       title: string;
@@ -389,7 +470,8 @@ export const apiBuilder = {
         state_slug: string;
         city_slug: string;
       }[];
-    }) => axios.post("/api/ads/place", payload).then((response) => response.data),
+    }) =>
+      axios.post("/api/ads/place", payload).then((response) => response.data),
   },
   notifications: {
     list: (limit = 20) => {
