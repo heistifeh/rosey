@@ -58,7 +58,11 @@ export function SearchResultsClient({ initialParams }: SearchResultsClientProps)
     [params.citySlug, params.countrySlug]
   );
 
-  const { data: profiles = [], isLoading, isFetching } = useQuery<Profile[]>({
+  const {
+    data: organicProfiles = [],
+    isLoading: loadingOrganic,
+    isFetching: fetchingOrganic,
+  } = useQuery<Profile[]>({
     queryKey: ["searchProfiles", params],
     queryFn: () => {
       if (!params.countrySlug || !params.citySlug) {
@@ -77,6 +81,39 @@ export function SearchResultsClient({ initialParams }: SearchResultsClientProps)
     enabled,
   });
 
+  const {
+    data: sponsoredProfiles = [],
+    isLoading: loadingSponsored,
+    isFetching: fetchingSponsored,
+  } = useQuery<Profile[]>({
+    queryKey: ["searchSponsoredProfiles", params.countrySlug, params.citySlug],
+    queryFn: () => {
+      if (!params.countrySlug || !params.citySlug) {
+        return Promise.resolve([]);
+      }
+      return apiBuilder.ads.getSponsoredProfilesForCity({
+        citySlug: params.citySlug,
+        countrySlug: params.countrySlug,
+      });
+    },
+    enabled,
+  });
+
+  const sponsoredIds = useMemo(
+    () => new Set(sponsoredProfiles.map((profile) => profile.id)),
+    [sponsoredProfiles]
+  );
+  const organicWithoutSponsored = useMemo(
+    () => organicProfiles.filter((profile) => !sponsoredIds.has(profile.id)),
+    [organicProfiles, sponsoredIds]
+  );
+  const finalProfiles = useMemo(
+    () => [...sponsoredProfiles, ...organicWithoutSponsored],
+    [organicWithoutSponsored, sponsoredProfiles]
+  );
+
+  const loading =
+    loadingOrganic || fetchingOrganic || loadingSponsored || fetchingSponsored;
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -138,8 +175,7 @@ export function SearchResultsClient({ initialParams }: SearchResultsClientProps)
     router.push(queryString ? `/search?${queryString}` : "/search");
   };
 
-  const loading = isLoading || isFetching;
-  const showEmptyState = enabled && !loading && profiles.length === 0;
+  const showEmptyState = enabled && !loading && finalProfiles.length === 0;
 
   return (
     <section className="relative z-10 w-full bg-input-bg pb-12 pt-10 md:pb-16 md:pt-20">
@@ -270,8 +306,12 @@ export function SearchResultsClient({ initialParams }: SearchResultsClientProps)
             ? Array.from({ length: 8 }).map((_, index) => (
                 <BaseCardSkeleton key={index} />
               ))
-            : profiles.map((profile) => (
-                <ProfileCard key={profile.id} profile={profile} />
+            : finalProfiles.map((profile) => (
+                <ProfileCard
+                  key={profile.id}
+                  profile={profile}
+                  isSponsored={sponsoredIds.has(profile.id)}
+                />
               ))}
 
           {showEmptyState && (

@@ -430,6 +430,38 @@ export const apiBuilder = {
         .post("/api/ads/status", { adId, status })
         .then((response) => response.data?.ad ?? null);
     },
+    getSponsoredProfilesForCity: (paramsIn: {
+      citySlug: string;
+      countrySlug: string;
+    }) => {
+      const params = new URLSearchParams();
+      params.append(
+        "select",
+        `profile:profiles(${PROFILE_SELECT}),ad_city_targets!inner(city_slug,country_slug)`
+      );
+      params.append("status", "eq.active");
+      params.append("ad_city_targets.city_slug", `eq.${paramsIn.citySlug}`);
+      params.append(
+        "ad_city_targets.country_slug",
+        `eq.${paramsIn.countrySlug}`
+      );
+
+      return API.get<Array<{ profile?: Profile | null }>>("/ads", { params }).then(
+        (response) => {
+          const rows = response.data ?? [];
+          const unique = new Map<string, Profile>();
+
+          rows.forEach((row) => {
+            const profile = row?.profile;
+            if (profile?.id && !unique.has(profile.id)) {
+              unique.set(profile.id, profile);
+            }
+          });
+
+          return Array.from(unique.values());
+        }
+      );
+    },
     placeAd: (payload: {
       title: string;
       placement_available_now: boolean;
