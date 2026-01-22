@@ -29,9 +29,9 @@ const SUPABASE_URL =
 const STORAGE_BASE = `${SUPABASE_URL}/storage/v1`;
 
 const PROFILE_SELECT =
-  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images!inner(public_url,is_primary)";
+  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images!inner(public_url,is_primary)";
 const SEARCH_PROFILE_SELECT =
-  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,country,images!inner(public_url,is_primary)";
+  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,country,city_slug,country_slug,images!inner(public_url,is_primary)";
 
 export const apiBuilder = {
   auth: {
@@ -146,10 +146,7 @@ export const apiBuilder = {
 
       // Only add filters if they're explicitly provided
       if (applyDefaults) {
-        params.append("profile_type", "eq.Escort");
         params.append("is_active", "eq.true");
-        params.append("onboarding_completed", "eq.true");
-        params.append("approval_status", "eq.approved");
         params.append("order", "created_at.desc");
       }
 
@@ -194,7 +191,6 @@ export const apiBuilder = {
       params.append("country_slug", `eq.${paramsIn.countrySlug}`);
       params.append("city_slug", `eq.${paramsIn.citySlug}`);
       params.append("is_active", "eq.true");
-      params.append("onboarding_completed", "eq.true");
       params.append("order", "created_at.desc");
 
       const gender =
@@ -234,11 +230,8 @@ export const apiBuilder = {
       params.append("select", PROFILE_SELECT);
       params.append("limit", "24");
       params.append("is_active", "eq.true");
-      params.append("onboarding_completed", "eq.true");
-      params.append("approval_status", "eq.approved");
       params.append("city_slug", `eq.${paramsIn.citySlug}`);
       params.append("country_slug", `eq.${paramsIn.countrySlug}`);
-      params.append("profile_type", "eq.Escort");
 
       return API.get<Profile[]>("/profiles", { params }).then(
         (response) => response.data ?? []

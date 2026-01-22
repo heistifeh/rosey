@@ -105,9 +105,9 @@ export function LocationAutocompleteInput({
             </p>
           ) : (
             <ul className="divide-y divide-dark-border/30 max-h-72 overflow-y-auto">
-              {results.map((suggestion) => (
+              {results.map((suggestion, index) => (
                 <li
-                  key={`${suggestion.city_slug}-${suggestion.country_slug}`}
+                  key={`${suggestion.city_slug}-${suggestion.country_slug}-${index}`}
                 >
                   <button
                     type="button"

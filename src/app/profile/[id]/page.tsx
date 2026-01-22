@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, use } from "react";
 import { useQuery } from "@tanstack/react-query";
+import type { Profile } from "@/types/types";
 import { apiBuilder } from "@/api/builder";
 import { FooterSection } from "@/components/home/footer-section";
 import { ProfileHeroSection } from "@/components/home/profile-hero-section";
@@ -226,7 +227,7 @@ const getDefaultProfileData = (baseProfile: (typeof allProfiles)[0]) => ({
   },
 });
 
-const similarProfiles = [
+const fallbackSimilarProfiles = [
   {
     id: 1,
     name: "Melissa Keen",
@@ -321,16 +322,20 @@ type AvailabilityEntry =
     };
 
 type SupabaseProfile = {
+  id?: string;
   working_name?: string;
   username?: string;
   city?: string;
   state?: string;
   country?: string;
+  city_slug?: string | null;
+  country_slug?: string | null;
   base_currency?: string;
   base_hourly_rate?: number | string;
   images?: { public_url: string; is_primary?: boolean }[];
   about?: string;
   pronouns?: string[];
+  gender?: string;
   age?: number;
   displayed_age?: number | null;
   height?: string;
@@ -446,6 +451,7 @@ const mergeProfileData = (
 
   return {
     ...fallbackProfile,
+    id: supabaseProfile.id ?? fallbackProfile.id,
     name: supabaseProfile.working_name ?? fallbackProfile.name,
     image: heroImage,
     photos,
@@ -475,8 +481,54 @@ export default function ProfilePage({
     enabled: Boolean(username),
   });
 
+  const {
+    data: similarProfiles = [],
+    isLoading: similarProfilesLoading,
+  } = useQuery<Profile[]>({
+    queryKey: [
+      "profile-similar",
+      supabaseProfile?.city_slug,
+      supabaseProfile?.country_slug,
+      supabaseProfile?.gender,
+    ],
+    enabled: Boolean(supabaseProfile?.city_slug && supabaseProfile?.country_slug),
+    queryFn: () =>
+      apiBuilder.profiles.getProfiles({
+        citySlug: supabaseProfile?.city_slug ?? undefined,
+        countrySlug: supabaseProfile?.country_slug ?? undefined,
+        gender: supabaseProfile?.gender,
+        applyDefaults: false,
+      }),
+  });
+
   const fallbackProfile = getDefaultProfileData(allProfiles[0]);
   const profile = mergeProfileData(fallbackProfile, supabaseProfile);
+  const filteredSimilarProfiles =
+    similarProfiles?.filter((item) => item.id !== profile.id) ?? [];
+  const fallbackSimilarProfilesMapped: Profile[] = fallbackSimilarProfiles.map(
+    (item) => {
+      const parsedRate = Number(item.price.replace(/[^0-9.]/g, ""));
+      return {
+        id: String(item.id),
+        working_name: item.name,
+        base_hourly_rate: Number.isFinite(parsedRate) ? parsedRate : undefined,
+        base_currency: item.price.startsWith("$") ? "$" : undefined,
+        city: item.location,
+        images: [
+          {
+            id: `${item.id}-img`,
+            profile_id: String(item.id),
+            public_url: item.image,
+            is_primary: true,
+          },
+        ],
+      };
+    }
+  );
+  const similarProfilesToShow =
+    filteredSimilarProfiles.length > 0
+      ? filteredSimilarProfiles
+      : fallbackSimilarProfilesMapped;
 
   const navLinks = [
     { label: "Home", href: "/" },
@@ -639,7 +691,10 @@ export default function ProfilePage({
             <ProfileReviewsSection reviews={profile.reviews} />
           )}
 
-          <SimilarProfilesSection profiles={similarProfiles} />
+          <SimilarProfilesSection
+            profiles={similarProfilesToShow}
+            isLoading={similarProfilesLoading}
+          />
         </div>
       </main>
 
