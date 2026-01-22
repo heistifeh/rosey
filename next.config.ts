@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import { withNetlify } from "@netlify/next";
 
 const nextConfig: NextConfig = {
   images: {
@@ -16,4 +15,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNetlify(nextConfig);
+export default nextConfig;
