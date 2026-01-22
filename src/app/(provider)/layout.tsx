@@ -28,6 +28,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { LocationFilter } from "@/components/location-filter";
 import { ProviderProfileEditor } from "@/components/provider/profile-editor";
+import { useProfileImages } from "@/hooks/use-profile-images";
 const NotificationBell = dynamic(
   () =>
     import("@/components/dashboard/notification-bell").then(
@@ -47,6 +48,7 @@ export default function ProviderLayout({
   const [showNotification, setShowNotification] = useState(true);
   useCurrentUser();
   const { data: profile, isLoading: profileLoading } = useProfile();
+  const { data: profileImages = [] } = useProfileImages(profile?.id);
   const profileType =
     typeof profile?.profile_type === "string" ? profile.profile_type : "";
   const isEscort = profileType.toLowerCase() === "escort";
@@ -185,7 +187,11 @@ export default function ProviderLayout({
                 <div className="hidden md:flex items-center gap-2 px-4 py-3 bg-primary-bg rounded-full">
                   <div className="relative h-10 w-10 rounded-full overflow-hidden">
                     <Image
-                      src="/images/girl1.png"
+                      src={
+                        profileImages.find((img) => img.is_primary)?.public_url ||
+                        profileImages[0]?.public_url ||
+                        "/images/girl1.png"
+                      }
                       alt="Profile"
                       width={40}
                       height={40}
@@ -198,7 +204,11 @@ export default function ProviderLayout({
                 </div>
                 <div className="md:hidden relative h-10 w-10 rounded-full overflow-hidden">
                   <Image
-                    src="/images/girl1.png"
+                    src={
+                      profileImages.find((img) => img.is_primary)?.public_url ||
+                      profileImages[0]?.public_url ||
+                      "/images/girl1.png"
+                    }
                     alt="Profile"
                     width={40}
                     height={40}
