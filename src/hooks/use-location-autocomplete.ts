@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AddressComponent,
   getAddressComponentValue,
@@ -58,8 +58,8 @@ export function useLocationAutocomplete(
     }
 
     let active = true;
-    let placesService: google.maps.places.PlacesService | null = null;
-    let autocompleteService: google.maps.places.AutocompleteService | null = null;
+    let placesService: any = null;
+    let autocompleteService: any = null;
 
     setIsLoading(true);
     setError(null);
@@ -67,7 +67,7 @@ export function useLocationAutocomplete(
     loadGooglePlacesScript(apiKey)
       .then(() => {
         if (!active) return;
-        const google = (window as typeof window & { google?: typeof globalThis.google }).google;
+        const google = (window as typeof window & { google?: any }).google;
         const places = google?.maps?.places;
         if (!places) {
           setError("Google Places unavailable");
@@ -80,7 +80,7 @@ export function useLocationAutocomplete(
           document.createElement("div")
         );
 
-        const request: google.maps.places.AutocompletionRequest = {
+        const request: any = {
           input: query,
           types: ["(cities)"],
         };
@@ -93,32 +93,32 @@ export function useLocationAutocomplete(
 
         autocompleteService.getPlacePredictions(
           request,
-          (predictions, status) => {
+          (predictions: any, status: any) => {
             if (!active) return;
-            if (
-              status !== google.maps.places.PlacesServiceStatus.OK ||
-              !predictions
-            ) {
-              setResults([]);
+          if (
+            status !== google.maps.places.PlacesServiceStatus.OK ||
+            !predictions
+          ) {
+            setResults([]);
               setIsLoading(false);
               return;
             }
 
-            const limited = predictions.slice(0, MAX_SUGGESTIONS);
-            Promise.all(
-              limited.map(
-                (prediction) =>
-                  new Promise<LocationSuggestion | null>((resolve) => {
-                    placesService?.getDetails(
-                      {
-                        placeId: prediction.place_id,
-                        fields: [
+          const limited = predictions.slice(0, MAX_SUGGESTIONS);
+          Promise.all(
+            limited.map(
+              (prediction: any) =>
+                new Promise<LocationSuggestion | null>((resolve) => {
+                  placesService?.getDetails(
+                    {
+                      placeId: prediction.place_id,
+                      fields: [
                           "address_components",
                           "formatted_address",
                           "name",
                         ],
                       },
-                      (details, detailStatus) => {
+                      (details: any, detailStatus: any) => {
                         if (!active) {
                           resolve(null);
                           return;

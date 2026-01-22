@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Star, Clock, Heart, Share2, Venus } from "lucide-react";
+import { MapPin, Clock, Heart, Share2, Venus } from "lucide-react";
 import Image from "next/image";
 import { Circle } from "lucide-react";
 

@@ -25,5 +25,5 @@ export function useCurrentUser() {
       email: user.email ?? user.user_metadata?.email,
       name: user.user_metadata?.name,
     });
-  }, []);
+  }, [authData?.user, clearUser, setUser, token]);
 }

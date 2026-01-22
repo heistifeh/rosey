@@ -29,13 +29,15 @@ export async function createNotification(
 }
 
 // TODO: Schedule a daily job that calls these helpers.
-export async function notifyAdExpiringSoon(supabase: SupabaseClient) {
+export async function notifyAdExpiringSoon(_supabase: SupabaseClient) {
+  void _supabase;
   // TODO: Query ads whose end_at is within the next 3 days and generate
   //       `ad_expiring_soon` notifications for their owners using
   //       `createNotification`.
 }
 
-export async function notifyAdExpired(supabase: SupabaseClient) {
+export async function notifyAdExpired(_supabase: SupabaseClient) {
+  void _supabase;
   // TODO: Query ads whose end_at is in the past and whose status is still
   //       active, then mark them expired and insert `ad_expired`
   //       notifications via `createNotification`.

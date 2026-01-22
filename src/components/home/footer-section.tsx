@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Globe, ChevronDown } from "lucide-react";
+import { Globe } from "lucide-react";
 import {
   Select,
   SelectContent,

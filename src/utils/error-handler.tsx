@@ -2,9 +2,16 @@
 
 import { toast } from "react-hot-toast";
 
+type MaybeRecord = Record<string, unknown>;
+
 export type ErrorType = {
   response?: {
-    data?: { data?: {}; message: any; error?: {} | string[]; errors?: {} };
+    data?: {
+      data?: MaybeRecord;
+      message?: any;
+      error?: unknown | string[];
+      errors?: unknown;
+    };
     status: number;
   };
   message: string;
@@ -34,7 +41,7 @@ export const errorMessageHandler = (obj: ErrorType) => {
 
     if (data && !message) {
       if (typeof data === "object")
-        Object.entries(data)?.map((item: any[], idx) => {
+        Object.entries(data)?.map((item: any[]) => {
           if (item[1].length > 1) {
             item[1].forEach((el: string) => toast.error(el));
           } else {
@@ -71,13 +78,13 @@ export const errorMessageHandler = (obj: ErrorType) => {
             });
           } else toast.error(el);
         });
-      Object.entries(error).map((item: any[], idx) => {
+      Object.entries(error).map((item: any[]) => {
         if (item[1].length > 1) {
           item[1].forEach((el: any) => {
             if (typeof el === "string") {
               toast.error(el);
             } else if (typeof el === "object") {
-              Object.entries(el).map((item: any[], idx) => {
+              Object.entries(el).map((item: any[]) => {
                 toast.error(item[1]);
               });
             }
@@ -88,7 +95,7 @@ export const errorMessageHandler = (obj: ErrorType) => {
       });
     } else if (errors) {
       if (typeof errors === "object") {
-        Object.entries(errors)?.forEach(([k, v]) => {
+        Object.entries(errors)?.forEach(([, v]) => {
           if (typeof v === "string") toast.error(v);
           else if (Array.isArray(v)) {
             v?.forEach((el) => {

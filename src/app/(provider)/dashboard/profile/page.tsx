@@ -33,13 +33,20 @@ export default function ProfilePage() {
   useCurrentUser();
   const { enabled: twoFactorEnabled, isLoading: twoFactorLoading } =
     useTwoFactorStatus();
-  const homeLocation =
-    profile?.home_locations?.filter(Boolean).join(", ") ||
-    (profile && profile.city
-      ? `${profile.city}${profile.state ? `, ${profile.state}` : ""}${
-          profile.country ? `, ${profile.country}` : ""
-        }`
-      : null);
+  const homeLocation = (() => {
+    const locations = Array.isArray(profile?.home_locations)
+      ? profile?.home_locations.filter(Boolean)
+      : null;
+    if (locations?.length) {
+      return locations.join(", ");
+    }
+    if (profile && profile.city) {
+      return `${profile.city}${profile.state ? `, ${profile.state}` : ""}${
+        profile.country ? `, ${profile.country}` : ""
+      }`;
+    }
+    return null;
+  })();
   const approvalStatus = profile?.approval_status ?? "pending";
   const isApproved = approvalStatus === "approved";
   const availableDays = profile?.available_days ?? [];

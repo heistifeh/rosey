@@ -44,7 +44,12 @@ type NormalizedAvailableNowItem = {
   imageUrl: string;
 };
 
-export function AvailableNowSection(_props: AvailableNowSectionProps) {
+export function AvailableNowSection({
+  filters,
+  setFilters,
+}: AvailableNowSectionProps) {
+  void filters;
+  void setFilters;
   const { data: ads, isLoading } = useQuery<AvailableNowItem[]>({
     queryKey: ["available-now"],
     queryFn: async () => (await apiBuilder.ads.getAvailableNow()) ?? [],

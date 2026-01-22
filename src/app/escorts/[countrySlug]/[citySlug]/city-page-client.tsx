@@ -19,17 +19,9 @@ export function CityPageClient({ params }: CityPageClientProps) {
   console.log("CityPageClient params:", params);
   const { countrySlug, citySlug } = params || {};
 
-  if (!citySlug || !countrySlug) {
-    return (
-      <section className="relative z-10 w-full bg-input-bg pb-12 pt-10 md:pb-16 md:pt-20">
-        <div className="mx-auto w-full px-4 md:px-[60px]">
-          <p className="text-primary-text">Invalid city or country.</p>
-        </div>
-      </section>
-    );
-  }
-  const cityName = citySlug.replace(/-/g, " ");
-  const countryName = countrySlug.replace(/-/g, " ");
+  const invalidParams = !citySlug || !countrySlug;
+  const cityName = citySlug ? citySlug.replace(/-/g, " ") : "";
+  const countryName = countrySlug ? countrySlug.replace(/-/g, " ") : "";
 
   const {
     data: organicProfiles = [],
@@ -37,11 +29,13 @@ export function CityPageClient({ params }: CityPageClientProps) {
   } = useQuery<Profile[]>({
     queryKey: ["city-organic", countrySlug, citySlug],
     queryFn: () =>
-      apiBuilder.profiles.getCityProfiles({
-        citySlug,
-        countrySlug,
-      }),
-    enabled: Boolean(citySlug && countrySlug),
+      invalidParams
+        ? Promise.resolve([])
+        : apiBuilder.profiles.getCityProfiles({
+            citySlug: citySlug!,
+            countrySlug: countrySlug!,
+          }),
+    enabled: !invalidParams,
   });
 
   const {
@@ -50,11 +44,13 @@ export function CityPageClient({ params }: CityPageClientProps) {
   } = useQuery<Profile[]>({
     queryKey: ["city-sponsored", countrySlug, citySlug],
     queryFn: () =>
-      apiBuilder.ads.getSponsoredProfilesForCity({
-        citySlug,
-        countrySlug,
-      }),
-    enabled: Boolean(citySlug && countrySlug),
+      invalidParams
+        ? Promise.resolve([])
+        : apiBuilder.ads.getSponsoredProfilesForCity({
+            citySlug: citySlug!,
+            countrySlug: countrySlug!,
+          }),
+    enabled: !invalidParams,
   });
 
   const sponsoredIds = new Set(sponsoredProfiles.map((profile) => profile.id));
@@ -68,12 +64,20 @@ export function CityPageClient({ params }: CityPageClientProps) {
     <section className="relative z-10 w-full bg-input-bg pb-12 pt-10 md:pb-16 md:pt-20">
       <div className="mx-auto flex w-full flex-col gap-4 px-4 md:px-[60px] md:gap-10">
         <div className="flex flex-col gap-2">
-          <h1 className="text-xl md:text-2xl lg:text-[36px] font-semibold text-primary-text">
-            Escorts in {cityName}, {countryName}
-          </h1>
-          <p className="text-sm md:text-base text-text-gray-opacity">
-            Browse verified escorts in {cityName}, {countryName}.
-          </p>
+          {invalidParams ? (
+            <h1 className="text-xl md:text-2xl lg:text-[36px] font-semibold text-primary-text">
+              Invalid city or country
+            </h1>
+          ) : (
+            <>
+              <h1 className="text-xl md:text-2xl lg:text-[36px] font-semibold text-primary-text">
+                Escorts in {cityName}, {countryName}
+              </h1>
+              <p className="text-sm md:text-base text-text-gray-opacity">
+                Browse verified escorts in {cityName}, {countryName}.
+              </p>
+            </>
+          )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

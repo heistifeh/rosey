@@ -21,11 +21,43 @@ interface GeneralInformationFormContentProps {
   onNext?: () => void;
 }
 
+type FormState = {
+  workingName: string;
+  profileType: string;
+  genderPresentation: string;
+  transgenderStatus: string;
+  age: string;
+  appearOnOtherProfiles: string;
+  catersTo: string;
+  profileUsername: string;
+  gender: string;
+  pronouns: string;
+  appearExclusivelyInTransOnly: string;
+  displayedAge: string;
+  temporaryProfileHiding: string;
+  homeLocations: string;
+  homeLocation: LocationSuggestion | null;
+};
+
+const isLocationSuggestion = (
+  value: unknown
+): value is LocationSuggestion => {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.city === "string" &&
+    typeof candidate.country === "string" &&
+    typeof candidate.city_slug === "string" &&
+    typeof candidate.country_slug === "string" &&
+    typeof candidate.fullLabel === "string"
+  );
+};
+
 export function GeneralInformationFormContent({
   onNext,
 }: GeneralInformationFormContentProps) {
   const { saveData, getData } = useProfileStore();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormState>({
     workingName: "",
     profileType: "Escort",
     genderPresentation: "",
@@ -44,14 +76,21 @@ export function GeneralInformationFormContent({
   });
 
   useEffect(() => {
-    const savedData = getData("general");
-      if (savedData) {
-        setFormData((prev) => ({
-          ...prev,
-          ...savedData,
-          homeLocation: savedData?.homeLocation ?? null,
-        }));
-      }
+    const savedData = getData("general") as Partial<FormState> | null;
+    if (savedData) {
+      const nextHomeLocation = isLocationSuggestion(savedData.homeLocation)
+        ? savedData.homeLocation
+        : null;
+      setFormData((prev) => ({
+        ...prev,
+        ...savedData,
+        homeLocation: nextHomeLocation,
+        homeLocations:
+          typeof savedData.homeLocations === "string"
+            ? savedData.homeLocations
+            : prev.homeLocations,
+      }));
+    }
   }, [getData]);
 
   const handleChange = useCallback((field: string, value: string) => {

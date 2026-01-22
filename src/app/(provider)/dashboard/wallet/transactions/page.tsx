@@ -42,7 +42,7 @@ const formatRelativeTime = (value: string) => {
 };
 
 export default function TransactionsPage() {
-  const [currentMonth, setCurrentMonth] = useState("December 2025");
+  const [currentMonth] = useState("December 2025");
   const { transactions, isLoading, error } = useWallet();
 
   return (

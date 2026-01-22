@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function middleware(_request: NextRequest) {
+  void _request;
   return NextResponse.next();
 }
 
