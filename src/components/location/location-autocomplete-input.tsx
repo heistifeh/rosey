@@ -22,10 +22,12 @@ export function LocationAutocompleteInput({
   className,
   countryRestriction,
 }: LocationAutocompleteInputProps) {
-  const { query, setQuery, results, isLoading, error } =
-    useLocationAutocomplete(value?.fullLabel ?? "", {
+  const { setQuery, results, isLoading, error } = useLocationAutocomplete(
+    value?.fullLabel ?? "",
+    {
       country: countryRestriction,
-    });
+    }
+  );
   const [inputValue, setInputValue] = useState(value?.fullLabel ?? "");
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);

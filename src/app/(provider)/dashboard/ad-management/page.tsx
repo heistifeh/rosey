@@ -24,10 +24,6 @@ import { apiBuilder } from "@/api/builder";
 import { useMyAds } from "@/hooks/use-my-ads";
 import { useAdStats } from "@/hooks/use-ad-stats";
 import { DashboardCardSkeleton } from "@/components/skeletons/dashboard-card-skeleton";
-import {
-  AdSummarySkeleton,
-  AdViewsChartSkeleton,
-} from "@/components/skeletons/ad-management-skeletons";
 
 type AdCityTarget = {
   country_slug: string;
@@ -71,12 +67,13 @@ export default function AdManagementPage() {
       setSelectedAdId(undefined);
       return;
     }
-    if (!selectedAdId || !ads.find((ad) => ad.id === selectedAdId)) {
+    if (!selectedAdId || !ads.find((ad: { id: string }) => ad.id === selectedAdId)) {
       setSelectedAdId(ads[0].id);
     }
   }, [ads, selectedAdId]);
 
-  const selectedAd = ads.find((ad) => ad.id === selectedAdId) ?? ads[0];
+  const selectedAd =
+    ads.find((ad: { id: string }) => ad.id === selectedAdId) ?? ads[0];
 
   const {
     points,
@@ -264,7 +261,7 @@ export default function AdManagementPage() {
                     <SelectValue placeholder="Choose your ad" />
                   </SelectTrigger>
                   <SelectContent>
-                    {ads.map((ad) => (
+                  {ads.map((ad: { id: string; title?: string }) => (
                       <SelectItem key={ad.id} value={ad.id}>
                         {ad.title || "Untitled Ad"}
                       </SelectItem>

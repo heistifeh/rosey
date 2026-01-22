@@ -647,7 +647,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FooterSection } from "@/components/home/footer-section";
 
-const categories = ["Interview", "Adult", "Sex Talk", "Lifestyle"];
+// const categories = ["Interview", "Adult", "Sex Talk", "Lifestyle"];
 
 const hotArticles = [
   {

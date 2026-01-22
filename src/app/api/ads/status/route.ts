@@ -60,7 +60,13 @@ export async function POST(req: Request) {
       .from("ads")
       .select("id,title,status,profile_id,profiles!inner(user_id)")
       .eq("id", adId)
-      .maybeSingle();
+      .maybeSingle<{
+        id: string;
+        title: string | null;
+        status: string;
+        profile_id: string;
+        profiles: { user_id: string } | null;
+      }>();
 
     if (adError || !ad) {
       return NextResponse.json(

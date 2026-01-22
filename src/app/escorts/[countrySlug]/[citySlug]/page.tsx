@@ -21,10 +21,6 @@ export async function generateMetadata({
   };
 }
 
-type PageProps = {
-  params: CityPageParams;
-};
-
 export default async function CityPage({
   params,
 }: {

@@ -15,8 +15,14 @@ export function AvailabilityForm() {
 
   useEffect(() => {
     const savedData = getData("availability");
-    if (savedData?.selectedDays) {
-      setSelectedDays(savedData.selectedDays);
+    const savedDays =
+      savedData && Array.isArray((savedData as any).selectedDays)
+        ? (savedData as any).selectedDays
+        : null;
+    if (savedDays) {
+      setSelectedDays(
+        savedDays.map((day: unknown) => String(day)).filter(Boolean)
+      );
     }
   }, [getData]);
 

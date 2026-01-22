@@ -1,7 +1,6 @@
  "use client";
 
 import { Menu, Search } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useState, use } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -510,6 +509,7 @@ export default function ProfilePage({
       const parsedRate = Number(item.price.replace(/[^0-9.]/g, ""));
       return {
         id: String(item.id),
+        user_id: "fallback",
         working_name: item.name,
         base_hourly_rate: Number.isFinite(parsedRate) ? parsedRate : undefined,
         base_currency: item.price.startsWith("$") ? "$" : undefined,

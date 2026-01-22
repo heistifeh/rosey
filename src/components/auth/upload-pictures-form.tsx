@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { CloudUpload, Upload, Trash2, Loader2 } from "lucide-react";
+import { CloudUpload, Trash2, Loader2 } from "lucide-react";
 import { apiBuilder } from "@/api/builder";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
@@ -156,9 +156,10 @@ export function UploadPicturesForm() {
       const allData = getAllData();
 
       // Helper to parse ints
-      const parseIntSafe = (val: string) => {
-        const parsed = parseInt(val);
-        return isNaN(parsed) ? null : parsed;
+      const parseIntSafe = (val: unknown) => {
+        if (typeof val !== "string" && typeof val !== "number") return null;
+        const parsed = parseInt(String(val));
+        return Number.isNaN(parsed) ? null : parsed;
       };
 
       // 3. Construct Profile Payload
@@ -177,10 +178,15 @@ export function UploadPicturesForm() {
         | LocationSuggestion
         | undefined;
 
+      const rawHomeLocations =
+        typeof allData.homeLocations === "string"
+          ? allData.homeLocations
+          : "";
+
       const normalizedHomeLocations = locationSuggestion
         ? [locationSuggestion.fullLabel]
-        : allData.homeLocations
-        ? allData.homeLocations.split(",").map((s: string) => s.trim())
+        : rawHomeLocations
+        ? rawHomeLocations.split(",").map((s: string) => s.trim())
         : [];
 
       const city =
@@ -195,14 +201,28 @@ export function UploadPicturesForm() {
       const country_slug =
         locationSuggestion?.country_slug ?? slugify(country);
 
+      const normalizedProfileType =
+        typeof allData.profileType === "string"
+          ? allData.profileType
+          : "escort";
+
+      const rawCatersTo =
+        typeof allData.catersTo === "string" ? allData.catersTo : "";
+      const catersToArray = rawCatersTo
+        ? rawCatersTo.split(",").map((s: string) => s.trim()).filter(Boolean)
+        : [];
+
+      const normalizedBaseCurrency =
+        typeof allData.baseCurrency === "string"
+          ? allData.baseCurrency
+          : "NGN";
+
       // 3. Construct Profile Payload
       const profilePayload = {
         user_id: userId,
         working_name: allData.workingName,
         username: allData.profileUsername,
-        profile_type: allData.profileType
-          ? allData.profileType.toLowerCase()
-          : "escort",
+        profile_type: normalizedProfileType.toLowerCase(),
         gender: allData.gender,
         gender_presentation: allData.genderPresentation,
         pronouns: allData.pronouns ? [allData.pronouns] : [],
@@ -216,9 +236,7 @@ export function UploadPicturesForm() {
         appear_on_other_profiles: allData.appearOnOtherProfiles !== "Disabled",
         temporary_hide_days:
           parseIntSafe(allData.temporaryProfileHiding) || null,
-        caters_to: allData.catersTo
-          ? allData.catersTo.split(",").map((s: string) => s.trim())
-          : [],
+        caters_to: catersToArray,
         home_locations: normalizedHomeLocations,
         city: city,
         state: state,
@@ -234,7 +252,7 @@ export function UploadPicturesForm() {
         tagline: allData.tagline,
         about: allData.about,
         base_hourly_rate: parseIntSafe(allData.baseHourlyRates),
-        base_currency: (allData.baseCurrency || "NGN").substring(0, 3).toUpperCase(),
+        base_currency: normalizedBaseCurrency.substring(0, 3).toUpperCase(),
         available_days: allData.availableDays || [],
         ethnicity_category: allData.ethnicityCategory,
         body_type: allData.bodyType,

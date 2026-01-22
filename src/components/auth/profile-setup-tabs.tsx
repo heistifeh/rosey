@@ -1,6 +1,6 @@
 "use client";
 
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GeneralInformationFormContent } from "./general-information-form-content";
 import { ProfileSetupFormContent } from "./profile-setup-form-content";
 import { useState, useEffect } from "react";

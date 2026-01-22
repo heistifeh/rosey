@@ -2,7 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, X } from "lucide-react";
+import { Camera } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Webcam from "react-webcam";
 
@@ -58,13 +58,6 @@ export function TakePhotoForm() {
       console.error("Exception during capture:", error);
     }
   }, [isWebcamReady]);
-
-  const handlePhotoClick = () => {
-    if (capturedImage) {
-      setCapturedImage(null);
-      setIsCameraActive(true);
-    }
-  };
 
   const handleTakeAgain = () => {
     setCapturedImage(null);
@@ -144,6 +137,7 @@ export function TakePhotoForm() {
               </div>
             ) : capturedImage ? (
               <div className="relative w-full h-full rounded-full overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={capturedImage}
                   alt="Captured"

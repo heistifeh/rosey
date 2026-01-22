@@ -16,7 +16,6 @@ import { BlogSection } from "@/components/home/blog-section";
 import { FAQSection } from "@/components/home/faq-section";
 import { FooterSection } from "@/components/home/footer-section";
 import { AvailableNowSection } from "@/components/home/available-now-section";
-import { apiBuilder } from "@/api/builder";
 
 export default function Home() {
   const [activeNav, setActiveNav] = useState("Home");
@@ -38,7 +37,6 @@ export default function Home() {
   const user = useAuthStore((state) => state.user);
   const clearUser = useAuthStore((state) => state.clearUser);
   const router = useRouter();
-  const isProvider = Boolean(user);
 
   //  useEffect(() => {
   //   const load = async () => {
