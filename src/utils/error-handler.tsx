@@ -7,10 +7,11 @@ type MaybeRecord = Record<string, unknown>;
 export type ErrorType = {
   response?: {
     data?: {
-      data?: MaybeRecord;
-      message?: any;
-      error?: unknown | string[];
-      errors?: unknown;
+      data?: {};
+      message: any;
+      error?: {} | string[];
+      errors?: {};
+      error_description?: string;
     };
     status: number;
   };
@@ -32,12 +33,17 @@ export const errorMessageHandler = (obj: ErrorType) => {
     }
     if (obj.response.status === 404) {
       return toast.error(
-        "Page not found, Please contact the site administrator"
+        "Page not found, Please contact the site administrator",
       );
     }
     const data = obj?.response?.data?.data;
     const errors = obj?.response?.data?.errors;
     const message = obj?.response?.data?.message;
+    const errorDescription = obj?.response?.data?.error_description;
+
+    if (errorDescription) {
+      return toast.error(errorDescription);
+    }
 
     if (data && !message) {
       if (typeof data === "object")

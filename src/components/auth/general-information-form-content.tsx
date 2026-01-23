@@ -16,6 +16,7 @@ import { useProfileStore } from "@/hooks/use-profile-store";
 import { toast } from "react-hot-toast";
 import { LocationAutocompleteInput } from "@/components/location/location-autocomplete-input";
 import { LocationSuggestion } from "@/hooks/use-location-autocomplete";
+import { Loader2 } from "lucide-react";
 
 interface GeneralInformationFormContentProps {
   onNext?: () => void;
@@ -39,9 +40,7 @@ type FormState = {
   homeLocation: LocationSuggestion | null;
 };
 
-const isLocationSuggestion = (
-  value: unknown
-): value is LocationSuggestion => {
+const isLocationSuggestion = (value: unknown): value is LocationSuggestion => {
   if (!value || typeof value !== "object") return false;
   const candidate = value as Record<string, unknown>;
   return (
@@ -72,8 +71,9 @@ export function GeneralInformationFormContent({
     displayedAge: "",
     temporaryProfileHiding: "",
     homeLocations: "",
-    homeLocation: null as LocationSuggestion | null,
+    homeLocation: null,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const savedData = getData("general") as Partial<FormState> | null;
@@ -105,13 +105,34 @@ export function GeneralInformationFormContent({
         homeLocation: location,
       }));
     },
-    [setFormData]
+    [setFormData],
   );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const missingFields: string[] = [];
+    if (!formData.workingName.trim()) missingFields.push("Working name");
+    if (!formData.profileUsername.trim())
+      missingFields.push("Profile username");
+    if (!formData.gender.trim()) missingFields.push("Gender");
+    if (!formData.age.trim()) missingFields.push("Age");
+    if (!formData.homeLocations.trim()) missingFields.push("Location");
+
+    if (missingFields.length > 0) {
+      const list =
+        missingFields.length === 1
+          ? missingFields[0]
+          : missingFields.slice(0, -1).join(", ") +
+            " and " +
+            missingFields[missingFields.length - 1];
+      toast.error(`Please fill ${list} before continuing.`);
+      return;
+    }
+
+    // setIsSubmitting(true); // Removing synthetic delay
     saveData("general", formData);
-    toast.success("Progress saved");
+    // toast.success("Progress saved"); // Optional: remove toast for faster feel
     if (onNext) onNext();
   };
 
@@ -147,7 +168,7 @@ export function GeneralInformationFormContent({
                 Profile Type <span className="text-primary">*</span>
               </Label>
               <Select
-                value={formData.profileType}
+                value={formData.profileType || undefined}
                 onValueChange={(value) => handleChange("profileType", value)}
               >
                 <SelectTrigger>
@@ -170,14 +191,27 @@ export function GeneralInformationFormContent({
               >
                 Gender Presentation
               </Label>
-              <Input
-                id="genderPresentation"
-                type="text"
-                value={formData.genderPresentation}
-                onChange={(e) =>
-                  handleChange("genderPresentation", e.target.value)
+              <Select
+                value={
+                  formData.genderPresentation
+                    ? formData.genderPresentation
+                    : undefined
                 }
-              />
+                onValueChange={(value) =>
+                  handleChange("genderPresentation", value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select presentation" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Feminine">Feminine</SelectItem>
+                  <SelectItem value="Masculine">Masculine</SelectItem>
+                  <SelectItem value="Androgynous">Androgynous</SelectItem>
+                  <SelectItem value="Gender-neutral">Gender-neutral</SelectItem>
+                  <SelectItem value="Mixed or fluid">Mixed or fluid</SelectItem>
+                </SelectContent>
+              </Select>
               <p className="text-[12px] font-normal text-text-gray-opacity">
                 This affects your URL as well as the description when linking on
                 socials.
@@ -201,12 +235,9 @@ export function GeneralInformationFormContent({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Trans Woman">Trans Woman</SelectItem>
-                  <SelectItem value="Trans Man">Trans Man</SelectItem>
-                  <SelectItem value="Non-Binary">Non-Binary</SelectItem>
-                  <SelectItem value="Genderfluid">Genderfluid</SelectItem>
-                  <SelectItem value="Genderqueer">Genderqueer</SelectItem>
-                  <SelectItem value="Two-Spirit">Two-Spirit</SelectItem>
+                  <SelectItem value="Trans Woman">Yes</SelectItem>
+                  <SelectItem value="Trans Man">Yes, post-op</SelectItem>
+
                   <SelectItem value="Prefer not to say">
                     Prefer not to say
                   </SelectItem>
@@ -228,9 +259,13 @@ export function GeneralInformationFormContent({
               </Label>
               <Input
                 id="age"
-                type="text"
+                type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={formData.age}
-                onChange={(e) => handleChange("age", e.target.value)}
+                onChange={(e) =>
+                  handleChange("age", e.target.value.replace(/\D/g, ""))
+                }
               />
             </div>
 
@@ -242,7 +277,7 @@ export function GeneralInformationFormContent({
                 Appear on other profiles
               </Label>
               <Select
-                value={formData.appearOnOtherProfiles}
+                value={formData.appearOnOtherProfiles || undefined}
                 onValueChange={(value) =>
                   handleChange("appearOnOtherProfiles", value)
                 }
@@ -335,17 +370,10 @@ export function GeneralInformationFormContent({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Woman">Woman</SelectItem>
-                  <SelectItem value="Man">Man</SelectItem>
+                  <SelectItem value="Male">Male</SelectItem>
+                  <SelectItem value="Female">Female</SelectItem>
                   <SelectItem value="Non-Binary">Non-Binary</SelectItem>
-                  <SelectItem value="Genderfluid">Genderfluid</SelectItem>
-                  <SelectItem value="Genderqueer">Genderqueer</SelectItem>
-                  <SelectItem value="Agender">Agender</SelectItem>
-                  <SelectItem value="Bigender">Bigender</SelectItem>
-                  <SelectItem value="Two-Spirit">Two-Spirit</SelectItem>
-                  <SelectItem value="Prefer not to say">
-                    Prefer not to say
-                  </SelectItem>
+                  <SelectItem value="Trans">Trans</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -425,11 +453,15 @@ export function GeneralInformationFormContent({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Show actual age">
-                    Show actual age
-                  </SelectItem>
-                  <SelectItem value="Hide age">Hide age</SelectItem>
-                  <SelectItem value="Age range">Age range</SelectItem>
+                  <SelectItem value="Secret">Secret</SelectItem>
+                  <SelectItem value="18-19">18-19</SelectItem>
+                  <SelectItem value="20s">20s</SelectItem>
+                  <SelectItem value="30s">30s</SelectItem>
+                  <SelectItem value="40s">40s</SelectItem>
+                  <SelectItem value="50s">50s</SelectItem>
+                  <SelectItem value="60s">60s</SelectItem>
+                  <SelectItem value="Cougar">Cougar</SelectItem>
+                  <SelectItem value="MILF">MILF</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-[12px] font-normal text-text-gray-opacity">
@@ -492,10 +524,18 @@ export function GeneralInformationFormContent({
         <div className="flex justify-center pt-4">
           <Button
             type="submit"
-            className="w-full max-w-[628px] px-8 py-3 rounded-[200px] bg-primary text-white font-semibold text-base cursor-pointer"
+            disabled={isSubmitting}
+            className="w-full max-w-[628px] px-8 py-3 rounded-[200px] bg-primary text-white font-semibold text-base cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             size="default"
           >
-            Next
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Next"
+            )}
           </Button>
         </div>
       </form>

@@ -1,6 +1,7 @@
- "use client";
+"use client";
 
-import { Menu, Search } from "lucide-react";
+import { Menu, Search, Loader2 } from "lucide-react";
+
 import Link from "next/link";
 import { useState, use } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ import { ProfileContactSection } from "@/components/home/profile-contact-section
 import { ProfileReviewsSection } from "@/components/home/profile-reviews-section";
 import { SimilarProfilesSection } from "@/components/home/similar-profiles-section";
 import { ProfilePhotosTabSection } from "@/components/home/profile-photos-tab-section";
+import { getTimeSlotDetail } from "@/constants/availability";
 
 const allProfiles = [
   {
@@ -343,12 +345,13 @@ type SupabaseProfile = {
   eye_color?: string | null;
   languages?: string[];
   caters_to?: string[];
+
   available_days?: AvailabilityEntry[];
 };
 
 const mergeProfileData = (
   fallbackProfile: ReturnType<typeof getDefaultProfileData>,
-  supabaseProfile: SupabaseProfile | null
+  supabaseProfile: SupabaseProfile | null,
 ) => {
   if (!supabaseProfile) return fallbackProfile;
 
@@ -361,34 +364,29 @@ const mergeProfileData = (
     ? images.map((img) => img.public_url).filter(Boolean)
     : fallbackProfile.photos;
   const locationParts = [supabaseProfile.city, supabaseProfile.country].filter(
-    Boolean
+    Boolean,
   );
+  const normalizedLocation =
+    locationParts.length > 0 ? locationParts.join(", ") : "N/A";
+
   const price =
     supabaseProfile.base_currency && supabaseProfile.base_hourly_rate
       ? `${supabaseProfile.base_currency}${supabaseProfile.base_hourly_rate}`
       : fallbackProfile.price;
 
   const baseDetails = fallbackProfile.details;
-  const pronouns = supabaseProfile.pronouns
-    ?.filter(Boolean)
-    .join(", ")
-    .trim();
+  const pronouns = supabaseProfile.pronouns?.filter(Boolean).join(", ").trim();
   const languages = supabaseProfile.languages
     ?.filter(Boolean)
     .join(", ")
     .trim();
-  const catersTo = supabaseProfile.caters_to
-    ?.filter(Boolean)
-    .join(", ")
-    .trim();
+  const catersTo = supabaseProfile.caters_to?.filter(Boolean).join(", ").trim();
   const detailAge =
-    supabaseProfile.displayed_age ?? supabaseProfile.age ?? baseDetails.age;
-      const height =
-        supabaseProfile.height ??
-        (supabaseProfile.height_cm ? `${supabaseProfile.height_cm} cm` : undefined) ??
-        baseDetails.height;
+    supabaseProfile.displayed_age ?? supabaseProfile.age ?? "N/A";
 
-  const normalizedLocation = locationParts.join(", ");
+  const height =
+    supabaseProfile.height ??
+    (supabaseProfile.height_cm ? `${supabaseProfile.height_cm} cm` : "N/A");
 
   const normalizeDayName = (value?: string): WeekDay | undefined => {
     if (!value) return undefined;
@@ -401,12 +399,31 @@ const mergeProfileData = (
     const matched = WEEK_DAYS.find(
       (day) =>
         day.toLowerCase() === candidate.toLowerCase() ||
-        day.toLowerCase().startsWith(candidate.toLowerCase())
+        day.toLowerCase().startsWith(candidate.toLowerCase()),
     );
     return matched;
   };
 
-  const availability = { ...fallbackProfile.availability };
+  const availability = supabaseProfile
+    ? {
+        Monday: "Unavailable",
+        Tuesday: "Unavailable",
+        Wednesday: "Unavailable",
+        Thursday: "Unavailable",
+        Friday: "Unavailable",
+        Saturday: "Unavailable",
+        Sunday: "Unavailable",
+      }
+    : { ...fallbackProfile.availability };
+  const availabilityDetails: Record<WeekDay, string[]> = {
+    Monday: [],
+    Tuesday: [],
+    Wednesday: [],
+    Thursday: [],
+    Friday: [],
+    Saturday: [],
+    Sunday: [],
+  };
   if (Array.isArray(supabaseProfile.available_days)) {
     supabaseProfile.available_days.forEach((entry) => {
       let dayValue: string | undefined;
@@ -430,22 +447,42 @@ const mergeProfileData = (
 
       const normalizedDay = normalizeDayName(dayValue);
       if (normalizedDay) {
-        availability[normalizedDay] = timeValue;
+        const detail = getTimeSlotDetail(timeValue);
+        const existing = availabilityDetails[normalizedDay] ?? [];
+        if (!existing.includes(detail)) {
+          availabilityDetails[normalizedDay] = [...existing, detail];
+        }
       }
     });
   }
 
+  Object.entries(availabilityDetails).forEach(([day, details]) => {
+    if (!details.length) return;
+    const normalizedDay = day as WeekDay;
+    const hasAllDay = details.some(
+      (value) => value.toLowerCase() === "all day",
+    );
+    availability[normalizedDay] = hasAllDay ? "All Day" : details.join(", ");
+  });
+
   const mergedDetails = {
     ...baseDetails,
-    basedIn: normalizedLocation || baseDetails.basedIn,
-    colorsTo: baseDetails.colorsTo,
+    basedIn: normalizedLocation,
+    colorsTo: catersTo || "N/A",
     catersTo: catersTo || undefined,
-    pronouns: pronouns || baseDetails.pronouns,
-    age: detailAge,
-    height: height || baseDetails.height,
-    hairColor: supabaseProfile.hair_color ?? baseDetails.hairColor,
-    eyeColor: supabaseProfile.eye_color ?? baseDetails.eyeColor,
-    languages: languages || baseDetails.languages,
+    pronouns: pronouns || "N/A",
+    age: detailAge as any,
+    height: height,
+    hairColor: supabaseProfile.hair_color ?? "N/A",
+    eyeColor: supabaseProfile.eye_color ?? "N/A",
+    languages: languages || "N/A",
+  };
+
+  const contact = {
+    email: "N/A", // We don't have email in the profile select yet, or maybe we want to keep it private/hidden?
+    phone: "N/A",
+    instagram: "N/A",
+    location: normalizedLocation,
   };
 
   return {
@@ -456,9 +493,10 @@ const mergeProfileData = (
     photos,
     location: normalizedLocation || fallbackProfile.location,
     price,
-    bio: supabaseProfile.about ?? fallbackProfile.bio,
+    bio: supabaseProfile.about ?? "No bio available.",
     details: mergedDetails,
     availability,
+    contact,
   };
 };
 
@@ -474,32 +512,58 @@ export default function ProfilePage({
   const resolvedParams = use(params);
   const username = resolvedParams.id;
 
-  const { data: supabaseProfile } = useQuery({
+  useQuery({
+    queryKey: ["current-user"],
+    queryFn: () => apiBuilder.auth.getCurrentUser(),
+    enabled: true,
+  });
+
+  // We need to fetch current user to check ownership
+  // Since useQuery hook above might be async/cached, let's use a simpler effect or just separate query
+  // Actually, let's just add another useQuery for user
+  const { data: userData } = useQuery({
+    queryKey: ["current-user-data"],
+    queryFn: () => apiBuilder.auth.getCurrentUser(),
+  });
+
+  const { data: supabaseProfile, isLoading } = useQuery({
     queryKey: ["profile-detail", username],
     queryFn: () => apiBuilder.profiles.getProfileByUsername(username),
     enabled: Boolean(username),
   });
 
-  const {
-    data: similarProfiles = [],
-    isLoading: similarProfilesLoading,
-  } = useQuery<Profile[]>({
-    queryKey: [
-      "profile-similar",
-      supabaseProfile?.city_slug,
-      supabaseProfile?.country_slug,
-      supabaseProfile?.gender,
-    ],
-    enabled: Boolean(supabaseProfile?.city_slug && supabaseProfile?.country_slug),
-    queryFn: () =>
-      apiBuilder.profiles.getProfiles({
-        citySlug: supabaseProfile?.city_slug ?? undefined,
-        countrySlug: supabaseProfile?.country_slug ?? undefined,
-        gender: supabaseProfile?.gender,
-        applyDefaults: false,
-      }),
-  });
+  const { data: similarProfiles = [], isLoading: similarProfilesLoading } =
+    useQuery<Profile[]>({
+      queryKey: [
+        "profile-similar",
+        supabaseProfile?.city_slug,
+        supabaseProfile?.country_slug,
+        supabaseProfile?.gender,
+      ],
+      enabled: Boolean(
+        supabaseProfile?.city_slug && supabaseProfile?.country_slug,
+      ),
+      queryFn: () =>
+        apiBuilder.profiles.getProfiles({
+          citySlug: supabaseProfile?.city_slug ?? undefined,
+          countrySlug: supabaseProfile?.country_slug ?? undefined,
+          gender: supabaseProfile?.gender,
+          applyDefaults: false,
+        }),
+    });
 
+  const isOwner =
+    userData?.id &&
+    supabaseProfile?.user_id &&
+    userData.id === supabaseProfile.user_id;
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-primary-bg">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
   const fallbackProfile = getDefaultProfileData(allProfiles[0]);
   const profile = mergeProfileData(fallbackProfile, supabaseProfile);
   const filteredSimilarProfiles =
@@ -523,7 +587,7 @@ export default function ProfilePage({
           },
         ],
       };
-    }
+    },
   );
   const similarProfilesToShow =
     filteredSimilarProfiles.length > 0

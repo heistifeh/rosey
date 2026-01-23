@@ -36,7 +36,7 @@ export function NotificationBell() {
   }, []);
 
   return (
-    <div ref={wrapperRef} className="relative">
+    <div ref={wrapperRef} className="relative" suppressHydrationWarning>
       <button
         type="button"
         className="relative rounded-full bg-primary-bg flex items-center justify-center p-3"

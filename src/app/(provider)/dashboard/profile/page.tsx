@@ -1,6 +1,6 @@
 "use client";
 
-import { Shield, ShieldAlert, Info } from "lucide-react";
+import { Shield, ShieldAlert, Info, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
@@ -102,8 +102,8 @@ export default function ProfilePage() {
                 ? twoFactorLoading
                   ? "Loading..."
                   : twoFactorEnabled
-                  ? "Enabled"
-                  : "Disabled"
+                    ? "Enabled"
+                    : "Disabled"
                 : item.status;
               const statusClasses = isTwoFactor
                 ? twoFactorEnabled
@@ -176,6 +176,15 @@ export default function ProfilePage() {
                     ? "Loading..."
                     : homeLocation || "Not set"}
                 </p>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <Link href="/general-information?edit=true">
+                  <Button className="bg-primary hover:bg-primary/90 text-white w-full md:w-[169px] py-[10px] flex items-center gap-2">
+                    <Edit className="h-4 w-4" />
+                    Edit Profile
+                  </Button>
+                </Link>
               </div>
             </section>
 

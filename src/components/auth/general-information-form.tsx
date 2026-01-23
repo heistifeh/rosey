@@ -186,9 +186,13 @@ export function GeneralInformationForm() {
                   </Label>
                   <Input
                     id="age"
-                    type="text"
+                    type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={formData.age}
-                    onChange={(e) => handleChange("age", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("age", e.target.value.replace(/\D/g, ""))
+                    }
                   />
                 </div>
 
@@ -296,8 +300,9 @@ export function GeneralInformationForm() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Woman">Woman</SelectItem>
-                      <SelectItem value="Man">Man</SelectItem>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                      <SelectItem value="Transgender">Transgender</SelectItem>
                       <SelectItem value="Non-Binary">Non-Binary</SelectItem>
                       <SelectItem value="Genderfluid">Genderfluid</SelectItem>
                       <SelectItem value="Genderqueer">Genderqueer</SelectItem>
@@ -388,11 +393,15 @@ export function GeneralInformationForm() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Show actual age">
-                        Show actual age
-                      </SelectItem>
-                      <SelectItem value="Hide age">Hide age</SelectItem>
-                      <SelectItem value="Age range">Age range</SelectItem>
+                      <SelectItem value="Secret">Secret</SelectItem>
+                      <SelectItem value="18-19">18-19</SelectItem>
+                      <SelectItem value="20s">20s</SelectItem>
+                      <SelectItem value="30s">30s</SelectItem>
+                      <SelectItem value="40s">40s</SelectItem>
+                      <SelectItem value="50s">50s</SelectItem>
+                      <SelectItem value="60s">60s</SelectItem>
+                      <SelectItem value="Cougar">Cougar</SelectItem>
+                      <SelectItem value="MILF">MILF</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-[12px] font-normal text-text-gray-opacity">

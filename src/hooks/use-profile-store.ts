@@ -55,20 +55,24 @@ export function useProfileStore() {
   );
 
   const getData = useCallback(
-    (section: string) => {
+    <T extends SectionData = SectionData>(section: string): T | null => {
       const store = getStore();
-      return (store as StoreSchema)[section] ?? null;
+      return ((store as StoreSchema)[section] ?? null) as T | null;
     },
     [getStore]
   );
 
-  const getAllData = useCallback(() => {
-    const store = getStore();
-    return Object.values((store as StoreSchema) ?? {}).reduce(
-      (acc, section) => ({ ...acc, ...section }),
-      {}
-    );
-  }, [getStore]);
+  const getAllData = useCallback(
+    <T extends SectionData = SectionData>(): T => {
+      const store = getStore();
+      const merged = Object.values((store as StoreSchema) ?? {}).reduce(
+        (acc, section) => ({ ...acc, ...section }),
+        {}
+      );
+      return merged as T;
+    },
+    [getStore]
+  );
 
   const clearData = useCallback(() => {
     writeStore({});

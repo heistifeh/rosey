@@ -12,7 +12,7 @@ export default function AuthLayout({
         <Image
           src="/images/logo.svg"
           alt="Rosey"
-          width={150}
+          width={100}
           height={40}
           className="h-auto"
           priority

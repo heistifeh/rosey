@@ -12,7 +12,7 @@ type SearchPageProps = {
 };
 
 const toSingleValue = (value?: string | string[]) =>
-  Array.isArray(value) ? value[0] : value ?? undefined;
+  Array.isArray(value) ? value[0] : (value ?? undefined);
 
 const parseNumberParam = (value?: string) => {
   if (!value) return undefined;
