@@ -17,12 +17,14 @@ interface LocationFilterProps {
   value?: LocationValue;
   onChange?: (location: LocationValue | null) => void;
   className?: string;
+  variant?: "default" | "minimal";
 }
 
 export function LocationFilter({
   value,
   onChange,
   className,
+  variant = "default",
 }: LocationFilterProps) {
   const suggestionValue = useMemo<LocationSuggestion | null>(() => {
     if (!value) return null;
@@ -49,9 +51,16 @@ export function LocationFilter({
   };
 
   return (
-    <div className={cn("flex items-center gap-3 text-sm md:text-base", className)}>
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1f1f21] text-white">
-        <MapPin className="h-5 w-5" />
+    <div className={cn("flex items-center gap-2", className)}>
+      <div
+        className={cn(
+          "flex items-center justify-center text-white",
+          variant === "default"
+            ? "h-10 w-10 rounded-full bg-[#1f1f21]"
+            : "h-auto w-auto bg-transparent pl-2"
+        )}
+      >
+        <MapPin className={cn("h-5 w-5", variant === "minimal" && "text-[#8E8E93]")} />
       </div>
       <div className="flex-1">
         <LocationAutocompleteInput

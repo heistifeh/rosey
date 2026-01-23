@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const statistics = [
   {
@@ -35,6 +36,7 @@ const photoStatus = [
 ];
 
 export default function PhotosPage() {
+  const router = useRouter();
   return (
     <div className="w-full flex justify-center items-center md:-mx-8 lg:-mx-12 px-4 md:px-[180px] pt-8">
       <div className="max-w-[1200px] mx-auto w-full min-w-0">
@@ -99,7 +101,10 @@ export default function PhotosPage() {
               <h1 className="text-2xl md:text-3xl font-semibold text-primary-text">
                 Photos
               </h1>
-              <Button className="bg-primary hover:bg-primary/90 text-primary-text w-full sm:w-auto">
+              <Button
+                className="bg-primary hover:bg-primary/90 text-primary-text w-full sm:w-auto"
+                onClick={() => router.push("/dashboard/photos/manage")}
+              >
                 Manage Photos
               </Button>
             </div>

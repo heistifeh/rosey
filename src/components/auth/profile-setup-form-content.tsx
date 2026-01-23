@@ -14,6 +14,7 @@ import { TabsContent } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
 import { useProfileStore } from "@/hooks/use-profile-store";
 import { toast } from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
 interface ProfileSetupFormContentProps {
   onNext?: () => void;
@@ -33,7 +34,10 @@ export function ProfileSetupFormContent({
     bodyType: "",
     hairColor: "",
     friendly420: "",
+    phoneNumber: "",
+    instagramHandle: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const savedData = getData("profile");
@@ -48,8 +52,10 @@ export function ProfileSetupFormContent({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    // setIsSubmitting(true); // Removing synthetic delay
     saveData("profile", formData);
-    toast.success("Progress saved");
+    // toast.success("Progress saved");
     if (onNext) onNext();
   };
 
@@ -112,17 +118,20 @@ export function ProfileSetupFormContent({
               </Label>
               <Select
                 value={formData.ethnicityCategory || undefined}
-                onValueChange={(value) =>
-                  handleChange("ethnicityCategory", value)
-                }
+                onValueChange={(value) => handleChange("ethnicityCategory", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Asian, Black, White, Hispanic, Latino">
-                    Asian, Black, White, Hispanic, Latino
-                  </SelectItem>
+                <SelectContent className="max-h-44">
+                  <SelectItem value="Asian">Asian</SelectItem>
+                  <SelectItem value="Black">Black</SelectItem>
+                  <SelectItem value="White">White</SelectItem>
+                  <SelectItem value="Hispanic">Hispanic</SelectItem>
+                  <SelectItem value="Latino">Latino</SelectItem>
+                  <SelectItem value="Middle Eastern">Middle Eastern</SelectItem>
+                  <SelectItem value="Native American">Native American</SelectItem>
+                  <SelectItem value="Mixed">Mixed</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-[12px] font-normal text-text-gray-opacity">
@@ -202,43 +211,43 @@ export function ProfileSetupFormContent({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="4'0&quot;">4'0"</SelectItem>
-                  <SelectItem value="4'1&quot;">4'1"</SelectItem>
-                  <SelectItem value="4'2&quot;">4'2"</SelectItem>
-                  <SelectItem value="4'3&quot;">4'3"</SelectItem>
-                  <SelectItem value="4'4&quot;">4'4"</SelectItem>
-                  <SelectItem value="4'5&quot;">4'5"</SelectItem>
-                  <SelectItem value="4'6&quot;">4'6"</SelectItem>
-                  <SelectItem value="4'7&quot;">4'7"</SelectItem>
-                  <SelectItem value="4'8&quot;">4'8"</SelectItem>
-                  <SelectItem value="4'9&quot;">4'9"</SelectItem>
-                  <SelectItem value="4'10&quot;">4'10"</SelectItem>
-                  <SelectItem value="4'11&quot;">4'11"</SelectItem>
-                  <SelectItem value="5'0&quot;">5'0"</SelectItem>
-                  <SelectItem value="5'1&quot;">5'1"</SelectItem>
-                  <SelectItem value="5'2&quot;">5'2"</SelectItem>
-                  <SelectItem value="5'3&quot;">5'3"</SelectItem>
-                  <SelectItem value="5'4&quot;">5'4"</SelectItem>
-                  <SelectItem value="5'5&quot;">5'5"</SelectItem>
-                  <SelectItem value="5'6&quot;">5'6"</SelectItem>
-                  <SelectItem value="5'7&quot;">5'7"</SelectItem>
-                  <SelectItem value="5'8&quot;">5'8"</SelectItem>
-                  <SelectItem value="5'9&quot;">5'9"</SelectItem>
-                  <SelectItem value="5'10&quot;">5'10"</SelectItem>
-                  <SelectItem value="5'11&quot;">5'11"</SelectItem>
-                  <SelectItem value="6'0&quot;">6'0"</SelectItem>
-                  <SelectItem value="6'1&quot;">6'1"</SelectItem>
-                  <SelectItem value="6'2&quot;">6'2"</SelectItem>
-                  <SelectItem value="6'3&quot;">6'3"</SelectItem>
-                  <SelectItem value="6'4&quot;">6'4"</SelectItem>
-                  <SelectItem value="6'5&quot;">6'5"</SelectItem>
-                  <SelectItem value="6'6&quot;">6'6"</SelectItem>
-                  <SelectItem value="6'7&quot;">6'7"</SelectItem>
-                  <SelectItem value="6'8&quot;">6'8"</SelectItem>
-                  <SelectItem value="6'9&quot;">6'9"</SelectItem>
-                  <SelectItem value="6'10&quot;">6'10"</SelectItem>
-                  <SelectItem value="6'11&quot;">6'11"</SelectItem>
-                  <SelectItem value="7'0&quot;">7'0"</SelectItem>
+                  <SelectItem value="4'0">4'0"</SelectItem>
+                  <SelectItem value="4'1">4'1"</SelectItem>
+                  <SelectItem value="4'2">4'2"</SelectItem>
+                  <SelectItem value="4'3">4'3"</SelectItem>
+                  <SelectItem value="4'4">4'4"</SelectItem>
+                  <SelectItem value="4'5">4'5"</SelectItem>
+                  <SelectItem value="4'6">4'6"</SelectItem>
+                  <SelectItem value="4'7">4'7"</SelectItem>
+                  <SelectItem value="4'8">4'8"</SelectItem>
+                  <SelectItem value="4'9">4'9"</SelectItem>
+                  <SelectItem value="4'10">4'10"</SelectItem>
+                  <SelectItem value="4'11">4'11"</SelectItem>
+                  <SelectItem value="5'0">5'0"</SelectItem>
+                  <SelectItem value="5'1">5'1"</SelectItem>
+                  <SelectItem value="5'2">5'2"</SelectItem>
+                  <SelectItem value="5'3">5'3"</SelectItem>
+                  <SelectItem value="5'4">5'4"</SelectItem>
+                  <SelectItem value="5'5">5'5"</SelectItem>
+                  <SelectItem value="5'6">5'6"</SelectItem>
+                  <SelectItem value="5'7">5'7"</SelectItem>
+                  <SelectItem value="5'8">5'8"</SelectItem>
+                  <SelectItem value="5'9">5'9"</SelectItem>
+                  <SelectItem value="5'10">5'10"</SelectItem>
+                  <SelectItem value="5'11">5'11"</SelectItem>
+                  <SelectItem value="6'0">6'0"</SelectItem>
+                  <SelectItem value="6'1">6'1"</SelectItem>
+                  <SelectItem value="6'2">6'2"</SelectItem>
+                  <SelectItem value="6'3">6'3"</SelectItem>
+                  <SelectItem value="6'4">6'4"</SelectItem>
+                  <SelectItem value="6'5">6'5"</SelectItem>
+                  <SelectItem value="6'6">6'6"</SelectItem>
+                  <SelectItem value="6'7">6'7"</SelectItem>
+                  <SelectItem value="6'8">6'8"</SelectItem>
+                  <SelectItem value="6'9">6'9"</SelectItem>
+                  <SelectItem value="6'10">6'10"</SelectItem>
+                  <SelectItem value="6'11">6'11"</SelectItem>
+                  <SelectItem value="7'0">7'0"</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -278,7 +287,7 @@ export function ProfileSetupFormContent({
               </p>
             </div>
 
-            <div className="flex flex-col gap-2 ">
+            <div className="flex flex-col gap-2">
               <Label
                 htmlFor="bodyType"
                 className="text-[14px] font-semibold text-primary-text"
@@ -293,14 +302,13 @@ export function ProfileSetupFormContent({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Slim">Slim</SelectItem>
-                  <SelectItem value="Athletic">Athletic</SelectItem>
                   <SelectItem value="Average">Average</SelectItem>
+                  <SelectItem value="BBW">BBW</SelectItem>
                   <SelectItem value="Curvy">Curvy</SelectItem>
-                  <SelectItem value="Plus Size">Plus Size</SelectItem>
                   <SelectItem value="Muscular">Muscular</SelectItem>
                   <SelectItem value="Petite">Petite</SelectItem>
-                  <SelectItem value="Tall">Tall</SelectItem>
+                  <SelectItem value="Pregnant">Pregnant</SelectItem>
+                  <SelectItem value="Slim">Slim</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-[12px] font-normal text-text-gray-opacity">
@@ -329,20 +337,64 @@ export function ProfileSetupFormContent({
                 </SelectContent>
               </Select>
               <p className="text-[12px] font-normal text-text-gray-opacity">
-                If Yes is selected, this will appear on your profile, categorize
-                you correctly, and make you searchable.
+                Mark this field if you are 420-friendly; it helps with search.
               </p>
             </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex flex-col gap-2">
+            <Label
+              htmlFor="phoneNumber"
+              className="text-[14px] font-semibold text-primary-text"
+            >
+              Phone Number
+            </Label>
+            <Input
+              id="phoneNumber"
+              type="tel"
+              value={formData.phoneNumber}
+              onChange={(e) => handleChange("phoneNumber", e.target.value)}
+            />
+            <p className="text-[12px] font-normal text-text-gray-opacity">
+              Provide a number where clients can reach you for bookings.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label
+              htmlFor="instagramHandle"
+              className="text-[14px] font-semibold text-primary-text"
+            >
+              Instagram Handle
+            </Label>
+            <Input
+              id="instagramHandle"
+              type="text"
+              value={formData.instagramHandle}
+              onChange={(e) => handleChange("instagramHandle", e.target.value)}
+            />
+            <p className="text-[12px] font-normal text-text-gray-opacity">
+              Add your Instagram username so we can highlight your social media.
+            </p>
           </div>
         </div>
 
         <div className="flex justify-center pt-4">
           <Button
             type="submit"
-            className="w-full max-w-[628px] px-8 py-3 rounded-[200px] bg-primary text-white font-semibold text-base cursor-pointer"
+            disabled={isSubmitting}
+            className="w-full max-w-[628px] px-8 py-3 rounded-[200px] bg-primary text-white font-semibold text-base cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             size="default"
           >
-            Next
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Next"
+            )}
           </Button>
         </div>
       </form>

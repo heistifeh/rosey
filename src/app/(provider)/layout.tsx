@@ -27,16 +27,15 @@ import dynamic from "next/dynamic";
 import { useProfile } from "@/hooks/use-profile";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { LocationFilter } from "@/components/location-filter";
-import { ProviderProfileEditor } from "@/components/provider/profile-editor";
 import { useProfileImages } from "@/hooks/use-profile-images";
 const NotificationBell = dynamic(
   () =>
     import("@/components/dashboard/notification-bell").then(
-      (mod) => mod.NotificationBell
+      (mod) => mod.NotificationBell,
     ),
   {
     ssr: false,
-  }
+  },
 );
 export default function ProviderLayout({
   children,
@@ -46,6 +45,7 @@ export default function ProviderLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [showNotification, setShowNotification] = useState(true);
+  const [mounted, setMounted] = useState(false);
   useCurrentUser();
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: profileImages = [] } = useProfileImages(profile?.id);
@@ -65,6 +65,10 @@ export default function ProviderLayout({
       router.replace("/");
     }
   }, [profileLoading, profile, isEscort, router]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: Bell },
@@ -179,7 +183,6 @@ export default function ProviderLayout({
             <div className="flex items-center gap-4 lg:gap-6">
               <div className="hidden lg:flex lg:flex-col lg:w-[280px] gap-2">
                 <LocationFilter />
-                <ProviderProfileEditor />
               </div>
 
               <div className="flex items-center gap-2">
@@ -188,7 +191,8 @@ export default function ProviderLayout({
                   <div className="relative h-10 w-10 rounded-full overflow-hidden">
                     <Image
                       src={
-                        profileImages.find((img) => img.is_primary)?.public_url ||
+                        profileImages.find((img) => img.is_primary)
+                          ?.public_url ||
                         profileImages[0]?.public_url ||
                         "/images/girl1.png"
                       }
@@ -222,9 +226,9 @@ export default function ProviderLayout({
       </header>
 
       {showNotification &&
-      pathname !== "/dashboard/profile" &&
-      pathname !== "/dashboard/photos" &&
-      pathname !== "/manage-pictures" &&
+        pathname !== "/dashboard/profile" &&
+        pathname !== "/dashboard/photos" &&
+        pathname !== "/manage-pictures" &&
         pathname !== "/dashboard/wallet" &&
         pathname !== "/dashboard/wallet/transactions" &&
         pathname !== "/dashboard/ad-management" &&

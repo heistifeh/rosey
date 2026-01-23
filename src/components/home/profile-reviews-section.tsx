@@ -5,9 +5,8 @@ interface ProfileReviewsSectionProps {
   }[];
 }
 
-export function ProfileReviewsSection({
-  reviews,
-}: ProfileReviewsSectionProps) {
+export function ProfileReviewsSection({ reviews }: ProfileReviewsSectionProps) {
+  console.log(reviews, "reviews");
   return (
     <section>
       <h2 className="text-xl font-semibold text-primary-text mb-4">Reviews</h2>
@@ -25,4 +24,3 @@ export function ProfileReviewsSection({
     </section>
   );
 }
-

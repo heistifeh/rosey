@@ -18,6 +18,7 @@ import { Eye, EyeOff } from "lucide-react";
 type CreateAccountValues = {
   email: string;
   password: string;
+  confirmPassword: string;
   terms: boolean;
 };
 
@@ -28,10 +29,12 @@ export function CreateAccountForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    getValues,
   } = useForm<CreateAccountValues>({
     defaultValues: {
       email: "",
       password: "",
+      confirmPassword: "",
       terms: false,
     },
   });
@@ -69,6 +72,7 @@ export function CreateAccountForm() {
   };
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -178,6 +182,50 @@ export function CreateAccountForm() {
                   {errors.password && (
                     <span className="text-xs text-red-500">
                       {errors.password.message}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label
+                    htmlFor="confirmPassword"
+                    className="text-sm font-normal text-primary-text"
+                  >
+                    Confirm Password
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      aria-invalid={Boolean(errors.confirmPassword)}
+                      className="pr-12"
+                      {...register("confirmPassword", {
+                        required: "Confirm password is required",
+                        validate: (value) =>
+                          value === getValues("password") ||
+                          "Passwords do not match",
+                      })}
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-3 flex items-center text-white/70"
+                      onClick={() =>
+                        setShowConfirmPassword((prev) => !prev)
+                      }
+                      aria-label={
+                        showConfirmPassword ? "Hide confirm password" : "Show confirm password"
+                      }
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && (
+                    <span className="text-xs text-red-500">
+                      {errors.confirmPassword.message}
                     </span>
                   )}
                 </div>

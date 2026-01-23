@@ -111,6 +111,23 @@ export type Profile = {
   verified_at?: string | null;
   verification_notes?: string | null;
   is_fully_verified?: boolean;
+  // Additional fields used in profile setup
+  height_cm?: number | null;
+  eye_color?: string;
+  hair_color?: string;
+  trans_status?: string;
+  gender_presentation?: string;
+  appear_on_other_profiles?: boolean;
+  caters_to?: string[] | string;
+  pronouns?: string[] | string;
+  trans_only?: boolean;
+  displayed_age?: number;
+  temporary_hide_days?: number;
+  home_locations?: string[];
+  languages?: string[] | string;
+  age?: number;
+  about?: string;
+
   [key: string]: unknown;
 };
 
@@ -126,9 +143,11 @@ export type AvailableNowItem = {
     base_currency: string | null;
     city: string | null;
     country: string | null;
-    images?: {
-      public_url: string;
-      is_primary: boolean | null;
-    }[] | null;
+    images?:
+      | {
+          public_url: string;
+          is_primary: boolean | null;
+        }[]
+      | null;
   } | null;
 };

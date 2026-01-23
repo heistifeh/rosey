@@ -29,7 +29,7 @@ const SUPABASE_URL =
 const STORAGE_BASE = `${SUPABASE_URL}/storage/v1`;
 
 const PROFILE_SELECT =
-  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images!inner(public_url,is_primary)";
+  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images!inner(public_url,is_primary), about,pronouns,languages,caters_to,age,height_cm,hair_color,eye_color,gender,gender_presentation,trans_status,appear_on_other_profiles,trans_only,temporary_hide_days";
 const SEARCH_PROFILE_SELECT =
   "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,country,city_slug,country_slug,images!inner(public_url,is_primary)";
 
@@ -66,7 +66,7 @@ export const apiBuilder = {
         params.city = `ilike.${query}*`;
       }
       return API.get("/city_locations", { params }).then(
-        (response) => response.data
+        (response) => response.data,
       );
     },
   },
@@ -130,7 +130,7 @@ export const apiBuilder = {
         citySlug?: string;
         countrySlug?: string;
         applyDefaults?: boolean;
-      } = {}
+      } = {},
     ) => {
       const {
         gender,
@@ -175,7 +175,7 @@ export const apiBuilder = {
       }
 
       return API.get<Profile[]>("/profiles", { params }).then(
-        (response) => response.data
+        (response) => response.data,
       );
     },
     searchProfiles: (paramsIn: {
@@ -222,7 +222,7 @@ export const apiBuilder = {
       }
 
       return API.get<Profile[]>("/profiles", { params }).then(
-        (response) => response.data ?? []
+        (response) => response.data ?? [],
       );
     },
     getCityProfiles: (paramsIn: { citySlug: string; countrySlug: string }) => {
@@ -234,7 +234,7 @@ export const apiBuilder = {
       params.append("country_slug", `eq.${paramsIn.countrySlug}`);
 
       return API.get<Profile[]>("/profiles", { params }).then(
-        (response) => response.data ?? []
+        (response) => response.data ?? [],
       );
     },
     getProfileByUsername: (username: string) => {
@@ -244,7 +244,7 @@ export const apiBuilder = {
       params.append("username", `eq.${username}`);
       params.append("limit", "1");
       return API.get("/profiles", { params }).then(
-        (response) => response.data?.[0] ?? null
+        (response) => response.data?.[0] ?? null,
       );
     },
     getProfileByUserId: (userId: string) => {
@@ -254,16 +254,16 @@ export const apiBuilder = {
       params.append("user_id", `eq.${userId}`);
       params.append("limit", "1");
       return API.get("/profiles", { params }).then(
-        (response) => response.data?.[0] ?? null
+        (response) => response.data?.[0] ?? null,
       );
     },
     updateProfile: (id: string, data: any) =>
       API.patch(`/profiles?id=eq.${id}`, data).then(
-        (response) => response.data
+        (response) => response.data,
       ),
     updateProfileByUserId: (userId: string, data: any) =>
       API.patch(`/profiles?user_id=eq.${userId}`, data).then(
-        (response) => response.data
+        (response) => response.data,
       ),
     createProfile: (data: any) =>
       API.post(`/profiles?on_conflict=user_id`, data, {
@@ -283,6 +283,8 @@ export const apiBuilder = {
         path: data.path,
         is_primary: data.is_primary,
       }).then((response) => response.data),
+    deleteImage: (imageId: string) =>
+      API.delete(`/images?id=eq.${imageId}`).then((response) => response.data),
     // getProfileByUserId: (userId: string) => {
     //   const params = new URLSearchParams();
     //   params.append("select", "*");
@@ -297,11 +299,11 @@ export const apiBuilder = {
         return Promise.resolve(null);
       }
       const params = new URLSearchParams();
-      params.append("select", "*");
+      params.append("select", PROFILE_SELECT);
       params.append("user_id", `eq.${userId}`);
       params.append("limit", "1");
       return API.get<Profile[]>("/profiles", { params }).then(
-        (response) => response.data?.[0] ?? null
+        (response) => response.data?.[0] ?? null,
       );
     },
   },
@@ -330,16 +332,16 @@ export const apiBuilder = {
       const params = new URLSearchParams();
       params.append(
         "select",
-        "id,user_id,two_factor_enabled,two_factor_method"
+        "id,user_id,two_factor_enabled,two_factor_method",
       );
       params.append("user_id", `eq.${userId}`);
       params.append("limit", "1");
       return API.get<Account[]>("/user_accounts", { params }).then(
-        (response) => response.data?.[0] ?? null
+        (response) => response.data?.[0] ?? null,
       );
     },
     updateAccount: (
-      data: Partial<Pick<Account, "two_factor_enabled" | "two_factor_method">>
+      data: Partial<Pick<Account, "two_factor_enabled" | "two_factor_method">>,
     ) => {
       const userId = getUserId();
       if (!userId) {
@@ -372,7 +374,7 @@ export const apiBuilder = {
           "country,",
           "images(public_url,is_primary)",
           ")",
-        ].join("")
+        ].join(""),
       );
 
       params.append("status", "eq.active");
@@ -386,7 +388,7 @@ export const apiBuilder = {
       params.append("limit", "12");
 
       return API.get<AvailableNowItem[]>("/ads", { params }).then(
-        (response) => response.data ?? []
+        (response) => response.data ?? [],
       );
     },
     getMyAds: (profileId: string) => {
@@ -430,30 +432,30 @@ export const apiBuilder = {
       const params = new URLSearchParams();
       params.append(
         "select",
-        `profile:profiles(${PROFILE_SELECT}),ad_city_targets!inner(city_slug,country_slug)`
+        `profile:profiles(${PROFILE_SELECT}),ad_city_targets!inner(city_slug,country_slug)`,
       );
       params.append("status", "eq.active");
       params.append("ad_city_targets.city_slug", `eq.${paramsIn.citySlug}`);
       params.append(
         "ad_city_targets.country_slug",
-        `eq.${paramsIn.countrySlug}`
+        `eq.${paramsIn.countrySlug}`,
       );
 
-      return API.get<Array<{ profile?: Profile | null }>>("/ads", { params }).then(
-        (response) => {
-          const rows = response.data ?? [];
-          const unique = new Map<string, Profile>();
+      return API.get<Array<{ profile?: Profile | null }>>("/ads", {
+        params,
+      }).then((response) => {
+        const rows = response.data ?? [];
+        const unique = new Map<string, Profile>();
 
-          rows.forEach((row) => {
-            const profile = row?.profile;
-            if (profile?.id && !unique.has(profile.id)) {
-              unique.set(profile.id, profile);
-            }
-          });
+        rows.forEach((row) => {
+          const profile = row?.profile;
+          if (profile?.id && !unique.has(profile.id)) {
+            unique.set(profile.id, profile);
+          }
+        });
 
-          return Array.from(unique.values());
-        }
-      );
+        return Array.from(unique.values());
+      });
     },
     placeAd: (payload: {
       title: string;
@@ -486,7 +488,7 @@ export const apiBuilder = {
         return Promise.resolve(null);
       }
       return API.patch(`/notifications?id=eq.${id}`, { is_read: true }).then(
-        (response) => response.data
+        (response) => response.data,
       );
     },
   },
@@ -514,6 +516,24 @@ export const apiBuilder = {
         publicUrl: `${supabaseUrl}/object/public/${bucket}/${fileName}`,
         path: fileName,
       };
+    },
+    deleteImage: async (path: string) => {
+      const bucket = "provider-images";
+      const supabaseUrl = STORAGE_BASE;
+      const token = getAccessToken();
+      const apiKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+      if (!token) {
+        throw new Error("Authentication required for image deletion");
+      }
+
+      const encodedPath = encodeURIComponent(path);
+      await axios.delete(`${supabaseUrl}/object/${bucket}/${encodedPath}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          apikey: apiKey,
+        },
+      });
     },
   },
 };

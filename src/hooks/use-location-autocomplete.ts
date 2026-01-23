@@ -9,6 +9,7 @@ import {
 } from "@/lib/google-places";
 
 export interface LocationSuggestion {
+  placeId?: string;
   city: string;
   state?: string;
   country: string;
@@ -125,7 +126,7 @@ export function useLocationAutocomplete(
                         }
                         if (
                           detailStatus !==
-                            google.maps.places.PlacesServiceStatus.OK ||
+                          google.maps.places.PlacesServiceStatus.OK ||
                           !details
                         ) {
                           resolve(null);
@@ -134,8 +135,8 @@ export function useLocationAutocomplete(
 
                         const components =
                           details.address_components as
-                            | AddressComponent[]
-                            | undefined;
+                          | AddressComponent[]
+                          | undefined;
                         const city =
                           getAddressComponentValue(components, [
                             "locality",
@@ -160,6 +161,7 @@ export function useLocationAutocomplete(
                         }
 
                         resolve({
+                          placeId: prediction.place_id,
                           city,
                           state: state ?? undefined,
                           country,

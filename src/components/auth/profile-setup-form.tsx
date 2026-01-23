@@ -497,10 +497,15 @@ export function ProfileSetupForm() {
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Asian, Black, White, Hispanic, Latino">
-                        Asian, Black, White, Hispanic, Latino
-                      </SelectItem>
+                    <SelectContent className="max-h-44">
+                      <SelectItem value="Asian">Asian</SelectItem>
+                      <SelectItem value="Black">Black</SelectItem>
+                      <SelectItem value="White">White</SelectItem>
+                      <SelectItem value="Hispanic">Hispanic</SelectItem>
+                      <SelectItem value="Latino">Latino</SelectItem>
+                      <SelectItem value="Middle Eastern">Middle Eastern</SelectItem>
+                      <SelectItem value="Native American">Native American</SelectItem>
+                      <SelectItem value="Mixed">Mixed</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-[12px] font-normal text-text-gray-opacity">
@@ -671,14 +676,13 @@ export function ProfileSetupForm() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Slim">Slim</SelectItem>
-                      <SelectItem value="Athletic">Athletic</SelectItem>
                       <SelectItem value="Average">Average</SelectItem>
+                      <SelectItem value="BBW">BBW</SelectItem>
                       <SelectItem value="Curvy">Curvy</SelectItem>
-                      <SelectItem value="Plus Size">Plus Size</SelectItem>
                       <SelectItem value="Muscular">Muscular</SelectItem>
                       <SelectItem value="Petite">Petite</SelectItem>
-                      <SelectItem value="Tall">Tall</SelectItem>
+                      <SelectItem value="Pregnant">Pregnant</SelectItem>
+                      <SelectItem value="Slim">Slim</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-[12px] font-normal text-text-gray-opacity">

@@ -26,7 +26,7 @@ export function LocationAutocompleteInput({
     value?.fullLabel ?? "",
     {
       country: countryRestriction,
-    }
+    },
   );
   const [inputValue, setInputValue] = useState(value?.fullLabel ?? "");
   const [open, setOpen] = useState(false);

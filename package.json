@@ -36,6 +36,7 @@
     "@eslint/eslintrc": "^3",
     "@netlify/next": "^1.4.9",
     "@tailwindcss/postcss": "^4",
+    "@types/google.maps": "^3.58.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
