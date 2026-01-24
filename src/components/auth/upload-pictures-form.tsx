@@ -58,7 +58,7 @@ type ProfileFormData = {
   selectedDays?: string[];
   ethnicityCategory?: string;
   bodyType?: string;
-  languages?: string;
+  languages?: string | string[];
   height?: string;
   eyeColor?: string;
   hairColor?: string;
@@ -433,7 +433,11 @@ export function UploadPicturesForm({
               : fallbackAvailability,
           ethnicity_category: allData.ethnicityCategory,
           body_type: allData.bodyType,
-          languages: allData.languages ? [allData.languages] : [],
+          languages: Array.isArray(allData.languages)
+            ? allData.languages
+            : allData.languages
+              ? [allData.languages]
+              : [],
 
           height_cm: feetToCm(allData.height),
           eye_color: allData.eyeColor,

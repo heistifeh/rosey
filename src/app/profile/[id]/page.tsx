@@ -318,9 +318,9 @@ type WeekDay = (typeof WEEK_DAYS)[number];
 type AvailabilityEntry =
   | string
   | {
-      day?: string;
-      time?: string;
-    };
+    day?: string;
+    time?: string;
+  };
 
 type SupabaseProfile = {
   id?: string;
@@ -406,14 +406,14 @@ const mergeProfileData = (
 
   const availability = supabaseProfile
     ? {
-        Monday: "Unavailable",
-        Tuesday: "Unavailable",
-        Wednesday: "Unavailable",
-        Thursday: "Unavailable",
-        Friday: "Unavailable",
-        Saturday: "Unavailable",
-        Sunday: "Unavailable",
-      }
+      Monday: "Unavailable",
+      Tuesday: "Unavailable",
+      Wednesday: "Unavailable",
+      Thursday: "Unavailable",
+      Friday: "Unavailable",
+      Saturday: "Unavailable",
+      Sunday: "Unavailable",
+    }
     : { ...fallbackProfile.availability };
   const availabilityDetails: Record<WeekDay, string[]> = {
     Monday: [],
@@ -557,6 +557,20 @@ export default function ProfilePage({
     supabaseProfile?.user_id &&
     userData.id === supabaseProfile.user_id;
 
+  const fallbackProfile = getDefaultProfileData(allProfiles[0]);
+  const profile = mergeProfileData(fallbackProfile, supabaseProfile);
+
+  const [localReviews, setLocalReviews] = useState(profile.reviews);
+
+  // Sync state if profile.reviews changes (e.g. from data fetch)
+  if (
+    localReviews !== profile.reviews &&
+    localReviews.length === 0 &&
+    profile.reviews.length > 0
+  ) {
+    setLocalReviews(profile.reviews);
+  }
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-primary-bg">
@@ -564,10 +578,10 @@ export default function ProfilePage({
       </div>
     );
   }
-  const fallbackProfile = getDefaultProfileData(allProfiles[0]);
-  const profile = mergeProfileData(fallbackProfile, supabaseProfile);
+
   const filteredSimilarProfiles =
     similarProfiles?.filter((item) => item.id !== profile.id) ?? [];
+
   const fallbackSimilarProfilesMapped: Profile[] = fallbackSimilarProfiles.map(
     (item) => {
       const parsedRate = Number(item.price.replace(/[^0-9.]/g, ""));
@@ -589,10 +603,15 @@ export default function ProfilePage({
       };
     },
   );
+
   const similarProfilesToShow =
     filteredSimilarProfiles.length > 0
       ? filteredSimilarProfiles
       : fallbackSimilarProfilesMapped;
+
+  const handleReviewSubmit = (review: { text: string; date: string }) => {
+    setLocalReviews((prev) => [review, ...prev]);
+  };
 
   const navLinks = [
     { label: "Home", href: "/" },
@@ -631,11 +650,10 @@ export default function ProfilePage({
                       setActiveNav(link.label);
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`rounded-[200px] px-4 py-2 text-sm font-medium ${
-                      activeNav === link.label
-                        ? "bg-primary text-primary-text"
-                        : "bg-tag-bg text-primary-text"
-                    }`}
+                    className={`rounded-[200px] px-4 py-2 text-sm font-medium ${activeNav === link.label
+                      ? "bg-primary text-primary-text"
+                      : "bg-tag-bg text-primary-text"
+                      }`}
                   >
                     {link.label}
                   </Link>
@@ -674,11 +692,10 @@ export default function ProfilePage({
                 key={link.label}
                 href={link.href}
                 onClick={() => setActiveNav(link.label)}
-                className={`text-base font-medium transition-colors ${
-                  activeNav === link.label
-                    ? "bg-primary rounded-[200px] py-2 px-[33px] text-primary-text"
-                    : "text-[#8E8E93]"
-                }`}
+                className={`text-base font-medium transition-colors ${activeNav === link.label
+                  ? "bg-primary rounded-[200px] py-2 px-[33px] text-primary-text"
+                  : "text-[#8E8E93]"
+                  }`}
               >
                 {link.label}
               </Link>
@@ -720,6 +737,7 @@ export default function ProfilePage({
             activeTab={activeTab}
             onTabChange={setActiveTab}
             tabs={tabs}
+            onReviewSubmit={handleReviewSubmit}
           />
 
           {activeTab === "Overview" && (
@@ -731,7 +749,7 @@ export default function ProfilePage({
               />
               <ProfileDetailsSection details={profile.details} />
               <ProfileAvailabilitySection availability={profile.availability} />
-              <ProfileReviewsSection reviews={profile.reviews} />
+              <ProfileReviewsSection reviews={localReviews} />
               <ProfileContactSection contact={profile.contact} />
             </div>
           )}
@@ -752,7 +770,7 @@ export default function ProfilePage({
           )}
 
           {activeTab === "Reviews" && (
-            <ProfileReviewsSection reviews={profile.reviews} />
+            <ProfileReviewsSection reviews={localReviews} />
           )}
 
           <SimilarProfilesSection

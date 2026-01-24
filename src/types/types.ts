@@ -59,6 +59,10 @@ export type SignInPayload = {
 export type SignUpPayload = {
   email: string;
   password: string;
+  data?: {
+    role: string;
+    [key: string]: unknown;
+  };
   [key: string]: unknown;
 };
 
@@ -144,10 +148,10 @@ export type AvailableNowItem = {
     city: string | null;
     country: string | null;
     images?:
-      | {
-          public_url: string;
-          is_primary: boolean | null;
-        }[]
-      | null;
+    | {
+      public_url: string;
+      is_primary: boolean | null;
+    }[]
+    | null;
   } | null;
 };

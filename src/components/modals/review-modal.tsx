@@ -17,9 +17,10 @@ interface ReviewModalProps {
     isOpen: boolean;
     onClose: () => void;
     profileName: string;
+    onSubmit?: (review: { text: string; date: string }) => void;
 }
 
-export function ReviewModal({ isOpen, onClose, profileName }: ReviewModalProps) {
+export function ReviewModal({ isOpen, onClose, profileName, onSubmit }: ReviewModalProps) {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,7 +40,16 @@ export function ReviewModal({ isOpen, onClose, profileName }: ReviewModalProps) 
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        toast.success("Review submitted! It will appear after approval.");
+        const newReview = {
+            text: comment,
+            date: new Date().toLocaleDateString("en-US", { year: 'numeric', month: 'long' })
+        };
+
+        if (onSubmit) {
+            onSubmit(newReview);
+        }
+
+        toast.success("Review submitted!");
         setIsSubmitting(false);
         setRating(0);
         setComment("");
