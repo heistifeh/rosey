@@ -258,7 +258,7 @@ export function UploadPicturesForm({
           path: image.path ?? null,
         });
         setPhotoItems((prev) => prev.filter((_, idx) => idx !== index));
-      } catch (error) {
+      } catch {
         return;
       }
       return;
