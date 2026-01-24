@@ -393,7 +393,7 @@ export function UploadPicturesForm({
           user_id: userId,
           working_name: allData.workingName,
           username: allData.profileUsername,
-          profile_type: allData.profileType,
+          profile_type: (allData.profileType ?? "escort").toLowerCase(),
           gender: allData.gender,
           gender_presentation: allData.genderPresentation,
           pronouns: allData.pronouns ? [allData.pronouns] : [],

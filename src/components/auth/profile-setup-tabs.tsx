@@ -26,7 +26,13 @@ export function ProfileSetupTabs() {
   }, [router, isEditMode]);
 
   const [activeTab, setActiveTab] = useState(tabParam || "general");
-  const { saveData } = useProfileStore();
+  const { saveData, clearData } = useProfileStore();
+
+  useEffect(() => {
+    if (!isEditMode) {
+      clearData();
+    }
+  }, [clearData, isEditMode]);
 
   // Use cached profile data
   const { data: profile, isLoading } = useProfile();

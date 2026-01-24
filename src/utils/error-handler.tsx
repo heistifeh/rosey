@@ -1,130 +1,129 @@
 // import { toast.error } from "./notification-handler";
 
+"use client";
+
 import { toast } from "react-hot-toast";
 
 type MaybeRecord = Record<string, unknown>;
 
 export type ErrorType = {
   response?: {
-    data?: {
-      data?: {};
-      message: any;
-      error?: {} | string[];
-      errors?: {};
-      error_description?: string;
-    };
+    data?: MaybeRecord | string;
     status: number;
   };
   message: string;
 };
+
+const shouldSkipKey = (key?: string) => {
+  if (!key) return false;
+  return /code|status|id$/i.test(key);
+};
+
+const gatherMessages = (
+  value: unknown,
+  container: string[],
+  key?: string,
+) => {
+  if (value === null || value === undefined) return;
+
+  if (typeof value === "string") {
+    if (!shouldSkipKey(key)) {
+      container.push(value);
+    }
+    return;
+  }
+
+  if (typeof value === "number" || typeof value === "boolean") {
+    if (!shouldSkipKey(key)) {
+      container.push(String(value));
+    }
+    return;
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => gatherMessages(item, container));
+    return;
+  }
+
+  if (typeof value === "object") {
+    Object.entries(value as MaybeRecord).forEach(([entryKey, entryValue]) => {
+      const priorityKeys = [
+        "message",
+        "msg",
+        "error",
+        "error_description",
+        "detail",
+      ];
+      if (
+        priorityKeys.includes(entryKey.toLowerCase()) &&
+        typeof entryValue === "string"
+      ) {
+        if (!shouldSkipKey(entryKey)) {
+          container.push(entryValue);
+          return;
+        }
+      }
+      gatherMessages(entryValue, container, entryKey);
+    });
+  }
+};
+
+const showBackendMessages = (responseData?: MaybeRecord | string) => {
+  const messages: string[] = [];
+
+  if (typeof responseData === "string") {
+    messages.push(responseData);
+  } else if (responseData && typeof responseData === "object") {
+    gatherMessages(responseData, messages);
+  }
+
+  if (messages.length) {
+    messages.forEach((msg) => toast.error(msg));
+    return true;
+  }
+  return false;
+};
+
 export const errorMessageHandler = (obj: ErrorType) => {
   if (obj.response) {
     if (obj.response.status === 401) {
       return (location.href = "/");
     }
+
     if (obj.response.status === 500) {
-      if (
-        obj?.response?.data?.error &&
-        typeof obj?.response?.data?.error === "string"
-      ) {
-        return toast.error(obj?.response?.data?.error);
+      if (showBackendMessages(obj.response.data)) {
+        return;
       }
-      return toast.error(obj?.response?.data?.message);
+      const fallback =
+        typeof obj.response.data === "object"
+          ? obj.response.data?.message
+          : null;
+      if (fallback) return toast.error(String(fallback));
+      return toast.error("Something went wrong on the server.");
     }
+
     if (obj.response.status === 404) {
       return toast.error(
         "Page not found, Please contact the site administrator",
       );
     }
-    const data = obj?.response?.data?.data;
-    const errors = obj?.response?.data?.errors;
-    const message = obj?.response?.data?.message;
-    const errorDescription = obj?.response?.data?.error_description;
 
-    if (errorDescription) {
-      return toast.error(errorDescription);
+    if (showBackendMessages(obj.response.data)) {
+      return;
     }
 
-    if (data && !message) {
-      if (typeof data === "object")
-        Object.entries(data)?.map((item: any[]) => {
-          if (item[1].length > 1) {
-            item[1].forEach((el: string) => toast.error(el));
-          } else {
-            toast.error(item[1]);
-          }
-        });
-    } else if (obj?.response?.data?.error) {
-      const error = obj.response.data.error;
-      if (typeof error !== "boolean") {
-        if (Array.isArray(error)) {
-          return error.forEach((el) => {
-            if (typeof el === "object") {
-              Object.entries(el).forEach(([k, v]) => {
-                toast.error(`${k}: ${v}`);
-              });
-            } else if (typeof el === "string") {
-              toast.error(el);
-            }
-          });
-        }
-        return toast.error(String(error));
-      }
-      if (obj.response.data.message) {
-        return toast.error(String(obj.response.data.message));
-      }
-      if (typeof error === "string") {
-        return toast.error(error);
-      }
-      if (Array.isArray(error))
-        return error.forEach((el) => {
-          if (typeof el === "object") {
-            Object.entries(el).forEach(([k, v]) => {
-              toast.error(`${k}: ${v}`);
-            });
-          } else toast.error(el);
-        });
-      Object.entries(error).map((item: any[]) => {
-        if (item[1].length > 1) {
-          item[1].forEach((el: any) => {
-            if (typeof el === "string") {
-              toast.error(el);
-            } else if (typeof el === "object") {
-              Object.entries(el).map((item: any[]) => {
-                toast.error(item[1]);
-              });
-            }
-          });
-        } else {
-          toast.error(item[1]);
-        }
-      });
-    } else if (errors) {
-      if (typeof errors === "object") {
-        Object.entries(errors)?.forEach(([, v]) => {
-          if (typeof v === "string") toast.error(v);
-          else if (Array.isArray(v)) {
-            v?.forEach((el) => {
-              if (typeof el === "string") {
-                toast.error(el);
-              } else if (typeof el === "object" && !Array.isArray(el)) {
-                Object.entries(el).forEach(([key, val]) => {
-                  if (key === "message") {
-                    if (typeof val === "string") {
-                      toast.error(val);
-                    }
-                  }
-                });
-              }
-            });
-          }
-        });
-      }
-      if (typeof errors === "string") toast.error(errors);
-    } else if (obj?.response.data?.message) {
+    const data = obj.response.data;
+    if (typeof data === "object" && data && "message" in data) {
+      const message = (data as MaybeRecord).message;
       if (typeof message === "string") {
         toast.error(message);
+        return;
       }
     }
-  } else toast.error(obj.message);
+
+    toast.error(obj.message);
+    return;
+  }
+
+  toast.error(obj.message);
 };
