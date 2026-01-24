@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
@@ -23,18 +23,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TIME_SLOT_OPTIONS } from "@/constants/availability";
-import { Loader2 } from "lucide-react";
-
 export function AvailabilityForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { saveData, getData } = useProfileStore();
-
-  type AvailabilityStoreData = {
-    selectedDays: string[];
-    dayTimes: Record<string, string[]>;
-  };
 
   const [selectedDays, setSelectedDays] = useState<string[]>(["Monday"]);
   const [dayTimes, setDayTimes] = useState<Record<string, string[]>>({
@@ -189,11 +181,10 @@ export function AvailabilityForm() {
                 <button
                   key={step.number}
                   onClick={() => handleTabClick(step.value)}
-                  className={`px-3 py-2 sm:px-4 rounded-[200px] border text-primary-text text-xs sm:text-sm font-medium shrink-0 cursor-pointer ${
-                    step.isActive
-                      ? "bg-primary text-white border-primary"
-                      : "bg-tag-bg border-primary"
-                  }`}
+                  className={`px-3 py-2 sm:px-4 rounded-[200px] border text-primary-text text-xs sm:text-sm font-medium shrink-0 cursor-pointer ${step.isActive
+                    ? "bg-primary text-white border-primary"
+                    : "bg-tag-bg border-primary"
+                    }`}
                 >
                   {step.number}. {step.label}
                 </button>
@@ -220,16 +211,14 @@ export function AvailabilityForm() {
                   <div key={day} className="space-y-2">
                     <div
                       onClick={() => handleDayToggle(day)}
-                      className={`flex items-center justify-between px-4 py-4 rounded-lg cursor-pointer transition-colors ${
-                        isSelected
-                          ? "bg-tag-bg border border-primary"
-                          : "bg-input-bg border border-transparent hover:border-primary/50"
-                      }`}
+                      className={`flex items-center justify-between px-4 py-4 rounded-lg cursor-pointer transition-colors ${isSelected
+                        ? "bg-tag-bg border border-primary"
+                        : "bg-input-bg border border-transparent hover:border-primary/50"
+                        }`}
                     >
                       <span
-                        className={`text-sm sm:text-base font-medium ${
-                          isSelected ? "text-white" : "text-primary-text"
-                        }`}
+                        className={`text-sm sm:text-base font-medium ${isSelected ? "text-white" : "text-primary-text"
+                          }`}
                       >
                         {day}
                       </span>
@@ -241,11 +230,10 @@ export function AvailabilityForm() {
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => handleDayToggle(day)}
-                          className={`h-[18px] w-[18px] rounded-[4px] border cursor-pointer ${
-                            isSelected
-                              ? "border-transparent bg-primary"
-                              : "border-border-gray bg-transparent"
-                          }`}
+                          className={`h-[18px] w-[18px] rounded-[4px] border cursor-pointer ${isSelected
+                            ? "border-transparent bg-primary"
+                            : "border-border-gray bg-transparent"
+                            }`}
                           style={{ appearance: "none" }}
                         />
                         {isSelected && (

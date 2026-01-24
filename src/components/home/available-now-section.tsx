@@ -14,7 +14,7 @@ const tabs = ["All", "Female", "Male", "Trans", "Non-Binary"];
 interface AvailableNowSectionProps {
   filters: {
     gender: string;
-    priceRange?: string;
+    priceRange: string;
     location?: {
       city: string;
       country: string;
@@ -25,7 +25,7 @@ interface AvailableNowSectionProps {
   setFilters: React.Dispatch<
     React.SetStateAction<{
       gender: string;
-      priceRange?: string;
+      priceRange: string;
       location?: {
         city: string;
         country: string;
@@ -97,11 +97,10 @@ export function AvailableNowSection({
             <button
               key={tab}
               onClick={() => setFilters((prev) => ({ ...prev, gender: tab }))}
-              className={`flex-1 min-w-[80px] md:flex-none md:min-w-0 px-3 py-1.5 md:px-6 md:py-2.5 text-xs md:text-sm font-medium rounded-full transition whitespace-nowrap cursor-pointer ${
-                filters.gender === tab
+              className={`flex-1 min-w-[80px] md:flex-none md:min-w-0 px-3 py-1.5 md:px-6 md:py-2.5 text-xs md:text-sm font-medium rounded-full transition whitespace-nowrap cursor-pointer ${filters.gender === tab
                   ? "bg-primary text-primary-text"
                   : "bg-primary-bg text-primary-text hover:bg-[#2a2a2d]"
-              }`}
+                }`}
             >
               {tab}
             </button>
@@ -122,53 +121,53 @@ export function AvailableNowSection({
         <div className="flex gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
           {isLoading
             ? Array.from({ length: 6 }).map((_, i) => (
-                <BaseCardSkeleton key={i} />
-              ))
+              <BaseCardSkeleton key={i} />
+            ))
             : normalized.map((item, index) => (
-                <Link
-                  key={item.adId}
-                  href={`/profile/${item.username || item.profileId}`}
-                  className={`flex h-full flex-col overflow-hidden p-3 md:p-4 rounded-[24px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[280px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity`}
-                >
-                  <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.workingName}
-                      fill
-                      className="object-cover object-center"
-                      sizes="(max-width: 768px) 100vw, 25vw"
-                      priority={index < 4}
-                    />
+              <Link
+                key={item.adId}
+                href={`/profile/${item.username || item.profileId}`}
+                className={`flex h-full flex-col overflow-hidden p-3 md:p-4 rounded-[24px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[280px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity`}
+              >
+                <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.workingName}
+                    fill
+                    className="object-cover object-center"
+                    sizes="(max-width: 768px) 100vw, 25vw"
+                    priority={index < 4}
+                  />
+                </div>
+
+                <div className="flex flex-1 flex-col justify-between gap-3 md:gap-[22px] pt-3 md:pt-[22px]">
+                  <div className="flex  justify-between gap-2 items-center">
+                    <p className="text-base md:text-lg lg:text-[24px] font-normal text-primary-text">
+                      {item.workingName}
+                    </p>
+                    <p className="text-xl md:text-2xl lg:text-[36px] font-semibold text-primary-text">
+                      {item.baseCurrency}
+                      {item.baseHourlyRate}
+                    </p>
                   </div>
 
-                  <div className="flex flex-1 flex-col justify-between gap-3 md:gap-[22px] pt-3 md:pt-[22px]">
-                    <div className="flex  justify-between gap-2 items-center">
-                      <p className="text-base md:text-lg lg:text-[24px] font-normal text-primary-text">
-                        {item.workingName}
-                      </p>
-                      <p className="text-xl md:text-2xl lg:text-[36px] font-semibold text-primary-text">
-                        {item.baseCurrency}
-                        {item.baseHourlyRate}
-                      </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-2.5 w-2.5 md:h-3 md:w-3" />
+                      <span className="text-xs md:text-sm lg:text-[16px] font-normal text-text-gray-opacity">
+                        {item.locationLabel}
+                      </span>
                     </div>
-
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-2.5 w-2.5 md:h-3 md:w-3" />
-                        <span className="text-xs md:text-sm lg:text-[16px] font-normal text-text-gray-opacity">
-                          {item.locationLabel}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 md:gap-2 bg-input-bg rounded-[200px] px-2 py-1 md:px-3 md:py-2">
-                        <Circle className="h-1.5 w-1.5 md:h-2 md:w-2 fill-current text-emerald-400" />
-                        <span className="text-xs md:text-sm lg:text-[16px] font-normal text-primary-text">
-                          Available Now
-                        </span>
-                      </div>
+                    <div className="flex items-center gap-1.5 md:gap-2 bg-input-bg rounded-[200px] px-2 py-1 md:px-3 md:py-2">
+                      <Circle className="h-1.5 w-1.5 md:h-2 md:w-2 fill-current text-emerald-400" />
+                      <span className="text-xs md:text-sm lg:text-[16px] font-normal text-primary-text">
+                        Available Now
+                      </span>
                     </div>
                   </div>
-                </Link>
-              ))}
+                </div>
+              </Link>
+            ))}
           {!isLoading && normalized.length === 0 && (
             <div className="col-span-full py-10 text-center text-text-gray-opacity">
               No providers are currently marked as Available Now

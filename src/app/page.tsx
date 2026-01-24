@@ -17,20 +17,23 @@ import { FAQSection } from "@/components/home/faq-section";
 import { FooterSection } from "@/components/home/footer-section";
 import { AvailableNowSection } from "@/components/home/available-now-section";
 
+interface Filters {
+  gender: string;
+  priceRange: string;
+  location?: {
+    city: string;
+    country: string;
+    city_slug: string;
+    country_slug: string;
+  };
+}
+
 export default function Home() {
   const [activeNav, setActiveNav] = useState("Home");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [filters, setFilters] = useState<{
-    gender: string;
-    priceRange?: string;
-    location?: {
-      city: string;
-      country: string;
-      city_slug: string;
-      country_slug: string;
-    };
-  }>({
+  const [filters, setFilters] = useState<Filters>({
     gender: "All",
+    priceRange: "",
   });
 
   useCurrentUser();
@@ -140,7 +143,7 @@ export default function Home() {
                           </p>
                           <Link
                             href="/create-account"
-                            className="cursor-pointer text-primary-text text-sm font-semibold"
+                            className="text-primary-text text-sm font-semibold hover:text-primary transition-colors"
                           >
                             Signup
                           </Link>
@@ -169,11 +172,10 @@ export default function Home() {
                     key={link.label}
                     href={link.href}
                     onClick={() => setActiveNav(link.label)}
-                    className={`text-base font-medium transition-colors ${
-                      activeNav === link.label
+                    className={`text-base font-medium transition-colors ${activeNav === link.label
                         ? "bg-primary rounded-[200px] py-2 px-[33px] text-primary-text"
                         : "text-[#8E8E93]"
-                    }`}
+                      }`}
                   >
                     {link.label}
                   </Link>

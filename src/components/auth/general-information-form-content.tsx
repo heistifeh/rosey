@@ -58,7 +58,7 @@ export function GeneralInformationFormContent({
   const { saveData, getData } = useProfileStore();
   const [formData, setFormData] = useState<FormState>({
     workingName: "",
-    profileType: "Escort",
+    profileType: "escort",
     genderPresentation: "",
     transgenderStatus: "",
     age: "",
@@ -84,6 +84,9 @@ export function GeneralInformationFormContent({
       setFormData((prev) => ({
         ...prev,
         ...savedData,
+        profileType: savedData.profileType
+          ? savedData.profileType.toLowerCase()
+          : prev.profileType,
         homeLocation: nextHomeLocation,
         homeLocations:
           typeof savedData.homeLocations === "string"
@@ -175,7 +178,7 @@ export function GeneralInformationFormContent({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Escort">Escort</SelectItem>
+                  <SelectItem value="escort">Escort</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-[12px] font-normal text-text-gray-opacity">

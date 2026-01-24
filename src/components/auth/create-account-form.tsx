@@ -170,7 +170,9 @@ export function CreateAccountForm() {
                       type="button"
                       className="absolute inset-y-0 right-3 flex items-center text-white/70"
                       onClick={() => setShowPassword((prev) => !prev)}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                     >
                       {showPassword ? (
                         <EyeOff className="h-4 w-4" />
@@ -209,11 +211,11 @@ export function CreateAccountForm() {
                     <button
                       type="button"
                       className="absolute inset-y-0 right-3 flex items-center text-white/70"
-                      onClick={() =>
-                        setShowConfirmPassword((prev) => !prev)
-                      }
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
                       aria-label={
-                        showConfirmPassword ? "Hide confirm password" : "Show confirm password"
+                        showConfirmPassword
+                          ? "Hide confirm password"
+                          : "Show confirm password"
                       }
                     >
                       {showConfirmPassword ? (
@@ -294,6 +296,13 @@ export function CreateAccountForm() {
               className="text-primary hover:underline font-medium"
             >
               Login
+            </Link>
+            <p>or</p>
+            <Link
+              href="/claim-profile"
+              className="text-primary hover:underline font-medium"
+            >
+              Claim Profile
             </Link>
           </div>
         </div>

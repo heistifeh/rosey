@@ -22,7 +22,7 @@ import {
 interface HeroSectionProps {
   filters: {
     gender: string;
-    priceRange?: string;
+    priceRange: string;
     location?: {
       city: string;
       country: string;
@@ -33,7 +33,7 @@ interface HeroSectionProps {
   setFilters: React.Dispatch<
     React.SetStateAction<{
       gender: string;
-      priceRange?: string;
+      priceRange: string;
       location?: {
         city: string;
         country: string;
@@ -143,7 +143,8 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
           </Select>
 
           <Select
-            value={filters.priceRange}
+            key={`price-select-${filters.priceRange || "empty"}`}
+            value={filters.priceRange || undefined}
             onValueChange={(val) =>
               setFilters((prev) => ({ ...prev, priceRange: val }))
             }

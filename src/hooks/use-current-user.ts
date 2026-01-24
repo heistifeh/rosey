@@ -5,15 +5,15 @@ import { getAccessToken, getAuthData } from "@/api/axios-config";
 export function useCurrentUser() {
   const setUser = useAuthStore((state) => state.setUser);
   const clearUser = useAuthStore((state) => state.clearUser);
-  const token = getAccessToken();
-  const authData = getAuthData();
 
   useEffect(() => {
+    const token = getAccessToken();
     if (!token) {
       clearUser();
       return;
     }
 
+    const authData = getAuthData();
     const user = authData?.user;
     if (!user?.id) {
       clearUser();
@@ -25,5 +25,5 @@ export function useCurrentUser() {
       email: user.email ?? user.user_metadata?.email,
       name: user.user_metadata?.name,
     });
-  }, [authData?.user, clearUser, setUser, token]);
+  }, [clearUser, setUser]);
 }
