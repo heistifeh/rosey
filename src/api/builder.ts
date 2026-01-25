@@ -562,18 +562,24 @@ export const apiBuilder = {
     },
   },
   clients: {
-    getMyClientProfile: () => {
-      const userId = getUserId();
+    getMyClientProfile: (userIdOverride?: string | null) => {
+      const userId = userIdOverride ?? getUserId();
       if (!userId) {
         return Promise.resolve(null);
       }
       const params = new URLSearchParams();
-      params.append("select", "id,user_id,username,email");
+      params.append("select", "id,user_id,email,status,created_at");
       params.append("user_id", `eq.${userId}`);
       params.append("limit", "1");
       return API.get("/clients", { params }).then(
         (response) => response.data?.[0] ?? null,
       );
+    },
+    createClientProfile: (data: { user_id: string; email?: string | null }) => {
+      if (!data?.user_id) {
+        return Promise.reject(new Error("Missing user_id for client profile"));
+      }
+      return API.post("/clients", data).then((response) => response.data?.[0] ?? response.data);
     },
   },
   storage: {

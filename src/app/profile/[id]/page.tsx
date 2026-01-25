@@ -530,9 +530,13 @@ export default function ProfilePage({
     enabled: !!userData?.id,
   });
 
-  const { data: myClient } = useQuery({
-    queryKey: ["my-client"],
-    queryFn: () => apiBuilder.clients.getMyClientProfile(),
+  const {
+    data: myClient,
+    isLoading: isLoadingClient,
+    refetch: refetchClient,
+  } = useQuery({
+    queryKey: ["my-client", userData?.id],
+    queryFn: () => apiBuilder.clients.getMyClientProfile(userData?.id),
     enabled: !!userData?.id,
   });
 
@@ -636,11 +640,43 @@ export default function ProfilePage({
       throw new Error("You must be logged in to review");
     }
 
-    const reviewerId = myClient?.id || myProfile?.id;
+    let reviewerId = myClient?.id;
 
-    // if (!reviewerId) {
-    //   throw new Error("You must have a client account to submit a review");
-    // }
+    if (!reviewerId && isLoadingClient) {
+      const refreshed = await refetchClient();
+      reviewerId = refreshed.data?.id;
+    }
+
+    if (!reviewerId) {
+      try {
+        const created = await apiBuilder.clients.createClientProfile({
+          user_id: userData.id,
+          email: (userData as any)?.email ?? undefined,
+        });
+        reviewerId = created?.id;
+        if (!reviewerId) {
+          throw new Error("Unable to create client profile");
+        }
+      } catch (error: any) {
+        // Handle duplicate client rows by refetching
+        const duplicate =
+          error?.response?.data?.code === "23505" ||
+          error?.code === "23505";
+        if (duplicate) {
+          const existing = await refetchClient();
+          reviewerId = existing.data?.id;
+        }
+
+        console.error("Failed to ensure client profile", error);
+        if (!reviewerId) {
+          throw new Error("You must have a client account to submit a review");
+        }
+      }
+    }
+
+    if (!reviewerId) {
+      throw new Error("You must have a client account to submit a review");
+    }
 
     if (userData.id === supabaseProfile.user_id) {
       throw new Error("You cannot review your own profile");
