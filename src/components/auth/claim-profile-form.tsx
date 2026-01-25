@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { apiBuilder } from "@/api/builder";
+import { getAccessToken } from "@/api/axios-config";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { CodeInput } from "@/components/ui/code-input";
@@ -53,7 +54,6 @@ export function ClaimProfileForm() {
   }, [otpCountdown]);
 
   const onSearchSubmit = async (values: ClaimProfileValues) => {
-    // Ensure we pass empty strings if undefined, though hook form handles this
     const emailToCheck = values.email?.trim() || "";
     const phoneToCheck = values.phone?.trim() || "";
 
@@ -73,10 +73,9 @@ export function ClaimProfileForm() {
         setFoundProfileId(profile.id);
         setContactInfo(values);
 
-        // Trigger OTP
+
         toast.loading("Sending OTP...", { id: "send-otp" });
         if (values.email) {
-          // Use type: "email" to request a code instead of a magic link
           await apiBuilder.auth.sendOtp({
             email: values.email,
             type: "email",
@@ -107,8 +106,7 @@ export function ClaimProfileForm() {
     try {
       let authResponse;
       if (contactInfo.email) {
-        // We used POST /otp with type: "email", so verification must be type: "email"
-        // Ensure email is clean
+
         const cleanEmail = contactInfo.email.trim().toLowerCase();
 
         authResponse = await apiBuilder.auth.verifyOtp({
@@ -124,17 +122,35 @@ export function ClaimProfileForm() {
         });
       }
 
-      // Link profile to the verified user
+
       if (authResponse?.user?.id && foundProfileId) {
-        await apiBuilder.profiles.updateProfile(foundProfileId, {
+        const updateResult = await apiBuilder.profiles.updateProfile(foundProfileId, {
           user_id: authResponse.user.id,
           claim_status: "claimed",
+          profile_type: "Escort", // Ensure access to provider dashboard
         });
+
+
+        if (!updateResult || (Array.isArray(updateResult) && updateResult.length === 0)) {
+          toast.error("Unable to claim profile. Please contact support.", { id: "verify-otp" });
+          return;
+        }
+
         toast.success("Profile claimed successfully!", { id: "verify-otp" });
-        router.push("/dashboard/profile");
+
+        if (!getAccessToken()) {
+          toast.error("Session creation failed. You may need to login manually.");
+          return;
+        }
+
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1500);
       } else {
-        toast.success("Verified successfully!", { id: "verify-otp" });
-        router.push("/dashboard/profile");
+        toast.success("Verified successfully! Redirecting...", { id: "verify-otp" });
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1500);
       }
     } catch (error: unknown) {
       console.error("OTP verification failed", error);
@@ -193,7 +209,7 @@ export function ClaimProfileForm() {
 
           <div className="flex flex-col gap-[26px] sm:gap-10">
             <section className=" flex flex-col gap-4 sm:gap-6">
-              <CodeInput length={8} onComplete={handleOtpComplete} />
+              <CodeInput length={6} onComplete={handleOtpComplete} />
 
               <div className="flex justify-center">
                 <button

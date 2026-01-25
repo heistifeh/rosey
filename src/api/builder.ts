@@ -29,7 +29,7 @@ const SUPABASE_URL =
 const STORAGE_BASE = `${SUPABASE_URL}/storage/v1`;
 
 const PROFILE_SELECT =
-  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images!inner(public_url,is_primary), about,pronouns,languages,caters_to,age,height_cm,hair_color,eye_color,gender,gender_presentation,profile_type,trans_status,appear_on_other_profiles,trans_only,temporary_hide_days";
+  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images(public_url,is_primary), about,pronouns,languages,caters_to,age,height_cm,hair_color,eye_color,gender,gender_presentation,profile_type,trans_status,appear_on_other_profiles,trans_only,temporary_hide_days";
 const SEARCH_PROFILE_SELECT =
   "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,country,city_slug,country_slug,images!inner(public_url,is_primary)";
 
@@ -159,7 +159,7 @@ export const apiBuilder = {
       params.append("select", PROFILE_SELECT);
       params.append("limit", "10");
 
-      // Only add filters if they're explicitly provided
+
       if (applyDefaults) {
         params.append("is_active", "eq.true");
         params.append("order", "created_at.desc");
@@ -284,13 +284,9 @@ export const apiBuilder = {
       const params = new URLSearchParams();
       params.append("select", "id,username,working_name");
 
-      // If we have both, use OR
+
       if (email && phone) {
-        // Enclose values in quotes to handle special characters slightly better, 
-        // though strictly URL encoding is handled by URLSearchParams, the internal logic of OR needs care.
-        // Actually, for OR syntax: (col.eq.val,col2.eq.val2)
-        // If val contains comma, it breaks.
-        // PostGTREST usually doesn't need quotes if simple, but for emails it's safer.
+
         params.append("or", `(contact_email.eq.${email},contact_phone.eq.${phone})`);
       } else if (email) {
         params.append("contact_email", `eq.${email}`);
@@ -322,9 +318,11 @@ export const apiBuilder = {
       );
     },
     updateProfile: (id: string, data: any) =>
-      API.patch(`/profiles?id=eq.${id}`, data).then(
-        (response) => response.data,
-      ),
+      API.patch(`/profiles?id=eq.${id}`, data, {
+        headers: {
+          Prefer: "return=representation",
+        },
+      }).then((response) => response.data),
     updateProfileByUserId: (userId: string, data: any) =>
       API.patch(`/profiles?user_id=eq.${userId}`, data).then(
         (response) => response.data,
