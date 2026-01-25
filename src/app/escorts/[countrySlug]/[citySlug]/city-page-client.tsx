@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiBuilder } from "@/api/builder";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
+import { SafeImage } from "@/components/ui/safe-image";
 import type { Profile } from "@/types/types";
 
 export type CityPageClientProps = {
@@ -94,7 +94,7 @@ export function CityPageClient({ params }: CityPageClientProps) {
                     className="flex h-full flex-col overflow-hidden rounded-[24px] border border-[#26262a] bg-primary-bg p-3 shadow-sm transition-opacity hover:opacity-90 md:p-4"
                   >
                     <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
-                      <Image
+                      <SafeImage
                         src={
                           profile.images?.[0]?.public_url || "/images/girl1.png"
                         }

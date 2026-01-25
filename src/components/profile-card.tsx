@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import type { Profile } from "@/types/types";
+import { SafeImage } from "@/components/ui/safe-image";
 
 interface ProfileCardProps {
   profile: Profile;
@@ -24,7 +24,7 @@ export function ProfileCard({ profile, isSponsored = false }: ProfileCardProps) 
       className="relative flex h-full flex-col overflow-hidden rounded-[24px] border border-[#26262a] bg-primary-bg p-3 shadow-sm transition-opacity hover:opacity-90 md:p-4"
     >
       <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
-        <Image
+        <SafeImage
           src={imageUrl}
           alt={profile.working_name ?? "Profile"}
           fill

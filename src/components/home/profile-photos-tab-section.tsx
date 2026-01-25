@@ -1,4 +1,6 @@
-import Image from "next/image";
+"use client";
+
+import { SafeImage } from "@/components/ui/safe-image";
 
 interface ProfilePhotosTabSectionProps {
   photos: string[];
@@ -18,7 +20,7 @@ export function ProfilePhotosTabSection({
             key={index}
             className="relative aspect-square rounded-xl overflow-hidden"
           >
-            <Image
+            <SafeImage
               src={photo}
               alt={`${name} photo ${index + 1}`}
               fill
@@ -31,4 +33,3 @@ export function ProfilePhotosTabSection({
     </section>
   );
 }
-

@@ -1,8 +1,8 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import Image from "next/image";
 import { useRef, useState } from "react";
+import { SafeImage } from "@/components/ui/safe-image";
 
 interface ProfilePhotosSectionProps {
   photos: string[];
@@ -58,7 +58,7 @@ export function ProfilePhotosSection({
               data-carousel-item
               className="relative h-32 w-32 shrink-0 snap-start overflow-hidden rounded-xl"
             >
-              <Image
+              <SafeImage
                 src={photo}
                 alt={`${name} photo ${index + 1}`}
                 fill

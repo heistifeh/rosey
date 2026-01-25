@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 import { ArrowRight, MapPin, Circle } from "lucide-react";
@@ -8,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiBuilder } from "@/api/builder";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
 import { AvailableNowItem } from "@/types/types";
+import { SafeImage } from "@/components/ui/safe-image";
 
 const tabs = ["All", "Female", "Male", "Trans", "Non-Binary"];
 
@@ -130,7 +130,7 @@ export function AvailableNowSection({
                 className={`flex h-full flex-col overflow-hidden p-3 md:p-4 rounded-[24px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[280px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity`}
               >
                 <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
-                  <Image
+                  <SafeImage
                     src={item.imageUrl}
                     alt={item.workingName}
                     fill
