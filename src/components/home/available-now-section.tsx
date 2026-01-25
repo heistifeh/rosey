@@ -98,8 +98,8 @@ export function AvailableNowSection({
               key={tab}
               onClick={() => setFilters((prev) => ({ ...prev, gender: tab }))}
               className={`flex-1 min-w-[80px] md:flex-none md:min-w-0 px-3 py-1.5 md:px-6 md:py-2.5 text-xs md:text-sm font-medium rounded-full transition whitespace-nowrap cursor-pointer ${filters.gender === tab
-                  ? "bg-primary text-primary-text"
-                  : "bg-primary-bg text-primary-text hover:bg-[#2a2a2d]"
+                ? "bg-primary text-primary-text"
+                : "bg-primary-bg text-primary-text hover:bg-[#2a2a2d]"
                 }`}
             >
               {tab}
@@ -112,10 +112,23 @@ export function AvailableNowSection({
             Available Now
           </h2>
 
-          <button className="ml-auto inline-flex items-center gap-1 md:gap-2 rounded-full bg-primary px-3 py-1.5 md:px-[42px] md:py-[13px] text-xs font-semibold text-primary-text cursor-pointer">
-            See All
-            <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
-          </button>
+          {normalized.length >= 12 ? (
+            <Link
+              href="/search?availableNow=true"
+              className="ml-auto inline-flex items-center gap-1 md:gap-2 rounded-full bg-primary px-3 py-1.5 md:px-[42px] md:py-[13px] text-xs font-semibold text-primary-text cursor-pointer hover:bg-primary/90 transition-colors"
+            >
+              See All
+              <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
+            </Link>
+          ) : (
+            <button
+              disabled
+              className="ml-auto inline-flex items-center gap-1 md:gap-2 rounded-full bg-primary/50 px-3 py-1.5 md:px-[42px] md:py-[13px] text-xs font-semibold text-primary-text/50 cursor-not-allowed"
+            >
+              See All
+              <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
+            </button>
+          )}
         </div>
 
         <div className="flex gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">

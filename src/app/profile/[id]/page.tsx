@@ -318,9 +318,9 @@ type WeekDay = (typeof WEEK_DAYS)[number];
 type AvailabilityEntry =
   | string
   | {
-      day?: string;
-      time?: string;
-    };
+    day?: string;
+    time?: string;
+  };
 
 type SupabaseProfile = {
   id?: string;
@@ -406,14 +406,14 @@ const mergeProfileData = (
 
   const availability = supabaseProfile
     ? {
-        Monday: "Unavailable",
-        Tuesday: "Unavailable",
-        Wednesday: "Unavailable",
-        Thursday: "Unavailable",
-        Friday: "Unavailable",
-        Saturday: "Unavailable",
-        Sunday: "Unavailable",
-      }
+      Monday: "Unavailable",
+      Tuesday: "Unavailable",
+      Wednesday: "Unavailable",
+      Thursday: "Unavailable",
+      Friday: "Unavailable",
+      Saturday: "Unavailable",
+      Sunday: "Unavailable",
+    }
     : { ...fallbackProfile.availability };
   const availabilityDetails: Record<WeekDay, string[]> = {
     Monday: [],
@@ -518,12 +518,22 @@ export default function ProfilePage({
     enabled: true,
   });
 
-  // We need to fetch current user to check ownership
-  // Since useQuery hook above might be async/cached, let's use a simpler effect or just separate query
-  // Actually, let's just add another useQuery for user
+
   const { data: userData } = useQuery({
     queryKey: ["current-user-data"],
     queryFn: () => apiBuilder.auth.getCurrentUser(),
+  });
+
+  const { data: myProfile } = useQuery({
+    queryKey: ["my-profile"],
+    queryFn: () => apiBuilder.profiles.getMyProfile(),
+    enabled: !!userData?.id,
+  });
+
+  const { data: myClient } = useQuery({
+    queryKey: ["my-client"],
+    queryFn: () => apiBuilder.clients.getMyClientProfile(),
+    enabled: !!userData?.id,
   });
 
   const { data: supabaseProfile, isLoading } = useQuery({
@@ -557,6 +567,20 @@ export default function ProfilePage({
     supabaseProfile?.user_id &&
     userData.id === supabaseProfile.user_id;
 
+  const fallbackProfile = getDefaultProfileData(allProfiles[0]);
+  const profile = mergeProfileData(fallbackProfile, supabaseProfile);
+
+  const [localReviews, setLocalReviews] = useState(profile.reviews);
+
+  // Sync state if profile.reviews changes (e.g. from data fetch)
+  if (
+    localReviews !== profile.reviews &&
+    localReviews.length === 0 &&
+    profile.reviews.length > 0
+  ) {
+    setLocalReviews(profile.reviews);
+  }
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-primary-bg">
@@ -564,10 +588,10 @@ export default function ProfilePage({
       </div>
     );
   }
-  const fallbackProfile = getDefaultProfileData(allProfiles[0]);
-  const profile = mergeProfileData(fallbackProfile, supabaseProfile);
+
   const filteredSimilarProfiles =
     similarProfiles?.filter((item) => item.id !== profile.id) ?? [];
+
   const fallbackSimilarProfilesMapped: Profile[] = fallbackSimilarProfiles.map(
     (item) => {
       const parsedRate = Number(item.price.replace(/[^0-9.]/g, ""));
@@ -589,10 +613,64 @@ export default function ProfilePage({
       };
     },
   );
+
   const similarProfilesToShow =
     filteredSimilarProfiles.length > 0
       ? filteredSimilarProfiles
       : fallbackSimilarProfilesMapped;
+
+  const handleReviewSubmit = async ({
+    rating,
+    title,
+    comment,
+  }: {
+    rating: number;
+    title: string;
+    comment: string;
+  }) => {
+    if (!supabaseProfile?.id) {
+      throw new Error("Unable to identify this profile");
+    }
+
+    if (!userData?.id) {
+      throw new Error("You must be logged in to review");
+    }
+
+    const reviewerId = myClient?.id || myProfile?.id;
+
+    // if (!reviewerId) {
+    //   throw new Error("You must have a client account to submit a review");
+    // }
+
+    if (userData.id === supabaseProfile.user_id) {
+      throw new Error("You cannot review your own profile");
+    }
+
+    console.log("review payload", {
+      profile_id: supabaseProfile.id,
+      client_id: reviewerId,
+      rating,
+      title,
+      body: comment,
+    });
+    await apiBuilder.reviews.createReview({
+      profile_id: supabaseProfile.id,
+      client_id: reviewerId,
+      rating,
+      title,
+      body: comment,
+    });
+
+    const newReview = {
+      text: comment,
+      date: new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+      }),
+    };
+
+    setLocalReviews((prev) => [newReview, ...prev]);
+  };
 
   const navLinks = [
     { label: "Home", href: "/" },
@@ -631,11 +709,10 @@ export default function ProfilePage({
                       setActiveNav(link.label);
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`rounded-[200px] px-4 py-2 text-sm font-medium ${
-                      activeNav === link.label
-                        ? "bg-primary text-primary-text"
-                        : "bg-tag-bg text-primary-text"
-                    }`}
+                    className={`rounded-[200px] px-4 py-2 text-sm font-medium ${activeNav === link.label
+                      ? "bg-primary text-primary-text"
+                      : "bg-tag-bg text-primary-text"
+                      }`}
                   >
                     {link.label}
                   </Link>
@@ -674,11 +751,10 @@ export default function ProfilePage({
                 key={link.label}
                 href={link.href}
                 onClick={() => setActiveNav(link.label)}
-                className={`text-base font-medium transition-colors ${
-                  activeNav === link.label
-                    ? "bg-primary rounded-[200px] py-2 px-[33px] text-primary-text"
-                    : "text-[#8E8E93]"
-                }`}
+                className={`text-base font-medium transition-colors ${activeNav === link.label
+                  ? "bg-primary rounded-[200px] py-2 px-[33px] text-primary-text"
+                  : "text-[#8E8E93]"
+                  }`}
               >
                 {link.label}
               </Link>
@@ -720,6 +796,7 @@ export default function ProfilePage({
             activeTab={activeTab}
             onTabChange={setActiveTab}
             tabs={tabs}
+            onReviewSubmit={isOwner ? undefined : handleReviewSubmit}
           />
 
           {activeTab === "Overview" && (
@@ -731,7 +808,7 @@ export default function ProfilePage({
               />
               <ProfileDetailsSection details={profile.details} />
               <ProfileAvailabilitySection availability={profile.availability} />
-              <ProfileReviewsSection reviews={profile.reviews} />
+              <ProfileReviewsSection reviews={localReviews} />
               <ProfileContactSection contact={profile.contact} />
             </div>
           )}
@@ -752,7 +829,7 @@ export default function ProfilePage({
           )}
 
           {activeTab === "Reviews" && (
-            <ProfileReviewsSection reviews={profile.reviews} />
+            <ProfileReviewsSection reviews={localReviews} />
           )}
 
           <SimilarProfilesSection

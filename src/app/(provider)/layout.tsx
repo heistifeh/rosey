@@ -125,11 +125,10 @@ export default function ProviderLayout({
                         <SheetClose key={item.href} asChild>
                           <Link
                             href={item.href}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                              isActive
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
                                 ? "bg-primary text-primary-text"
                                 : "text-text-gray-opacity hover:bg-primary-bg"
-                            }`}
+                              }`}
                           >
                             <Icon className="h-5 w-5" />
                             <span className="text-sm font-medium">
@@ -163,11 +162,10 @@ export default function ProviderLayout({
                   >
                     <Link
                       href={item.href}
-                      className={`flex items-center gap-2 text-sm font-medium transition-colors ${
-                        isActive
+                      className={`flex items-center gap-2 text-sm font-medium transition-colors ${isActive
                           ? "text-primary"
                           : "text-[#8E8E93] hover:text-primary-text"
-                      }`}
+                        }`}
                     >
                       <Icon className="h-4 w-4" />
                       <span>{item.label}</span>

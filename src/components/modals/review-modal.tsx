@@ -12,21 +12,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { errorMessageHandler } from "@/utils/error-handler";
 
 interface ReviewModalProps {
     isOpen: boolean;
     onClose: () => void;
     profileName: string;
+    onSubmit?: (review: { rating: number; title: string; comment: string }) => Promise<void>;
 }
 
-export function ReviewModal({ isOpen, onClose, profileName }: ReviewModalProps) {
+export function ReviewModal({ isOpen, onClose, profileName, onSubmit }: ReviewModalProps) {
     const [rating, setRating] = useState(0);
+    const [title, setTitle] = useState("");
     const [comment, setComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async () => {
         if (rating === 0) {
             toast.error("Please select a rating");
+            return;
+        }
+        if (!title.trim()) {
+            toast.error("Please provide a title");
             return;
         }
         if (!comment.trim()) {
@@ -36,14 +43,20 @@ export function ReviewModal({ isOpen, onClose, profileName }: ReviewModalProps) 
 
         setIsSubmitting(true);
 
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        toast.success("Review submitted! It will appear after approval.");
-        setIsSubmitting(false);
-        setRating(0);
-        setComment("");
-        onClose();
+        try {
+            if (onSubmit) {
+                await onSubmit({ rating, title, comment });
+            }
+            toast.success("Review submitted!");
+            setRating(0);
+            setTitle("");
+            setComment("");
+            onClose();
+        } catch (error) {
+            errorMessageHandler(error as any);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -78,6 +91,23 @@ export function ReviewModal({ isOpen, onClose, profileName }: ReviewModalProps) 
                                 </button>
                             ))}
                         </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label
+                            htmlFor="title"
+                            className="text-sm font-medium text-gray-700"
+                        >
+                            Title
+                        </label>
+                        <input
+                            id="title"
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="e.g. Amazing experience!"
+                            className="text-black w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
                     </div>
 
                     <div className="flex flex-col gap-2">

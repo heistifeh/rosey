@@ -27,6 +27,7 @@ interface ProfileHeroSectionProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   tabs: string[];
+  onReviewSubmit?: (review: { rating: number; title: string; comment: string }) => Promise<void>;
 }
 
 export function ProfileHeroSection({
@@ -34,6 +35,7 @@ export function ProfileHeroSection({
   activeTab,
   onTabChange,
   tabs,
+  onReviewSubmit,
 }: ProfileHeroSectionProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -130,9 +132,8 @@ export function ProfileHeroSection({
               <button
                 key={tab}
                 onClick={() => onTabChange(tab)}
-                className={`relative shrink-0 pb-2 text-sm font-medium transition-colors md:text-base ${
-                  activeTab === tab ? "text-primary" : "text-[#8E8E93]"
-                }`}
+                className={`relative shrink-0 pb-2 text-sm font-medium transition-colors md:text-base ${activeTab === tab ? "text-primary" : "text-[#8E8E93]"
+                  }`}
               >
                 {tab}
                 {activeTab === tab && (
@@ -151,9 +152,8 @@ export function ProfileHeroSection({
             </button>
             <button
               onClick={handleLike}
-              className={`p-2 rounded-full bg-primary-bg hover:bg-input-bg transition-colors ${
-                isLiked ? "text-red-500" : "text-text-gray-opacity"
-              }`}
+              className={`p-2 rounded-full bg-primary-bg hover:bg-input-bg transition-colors ${isLiked ? "text-red-500" : "text-text-gray-opacity"
+                }`}
               title="Like profile"
             >
               <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
@@ -172,6 +172,7 @@ export function ProfileHeroSection({
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
         profileName={profile.name}
+        onSubmit={onReviewSubmit}
       />
     </>
   );

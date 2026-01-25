@@ -40,10 +40,23 @@ export function LoginForm() {
         password: values.password,
       }),
     mutationKey: ["auth", "signIn"],
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Welcome back.");
       reset();
-      router.push("/dashboard");
+
+      try {
+        const profile = await apiBuilder.profiles.getMyProfile();
+        const profileType = typeof profile?.profile_type === "string" ? profile.profile_type : "";
+
+        if (profile && profileType.toLowerCase() === "escort") {
+          router.push("/dashboard");
+        } else {
+          router.push("/");
+        }
+      } catch (error) {
+        // If fetching profile fails or no profile exists, redirect to home
+        router.push("/");
+      }
     },
     onError: (error) => {
       errorMessageHandler(error as ErrorType);

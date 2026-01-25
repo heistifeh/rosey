@@ -40,13 +40,17 @@ export function CreateAccountForm() {
   });
 
   const { mutate, isPending: isLoading } = useMutation({
-    mutationFn: (values: CreateAccountValues) =>
+    mutationFn: (values: CreateAccountValues & { role?: string }) =>
       apiBuilder.auth.signUp({
         email: values.email,
         password: values.password,
+        data: {
+          role: values.role || "escort", // Default to escort if not specified
+        },
       }),
     mutationKey: ["auth", "signUp"],
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Signup successful, response data:", data);
       toast.success("Account created successfully");
       reset();
     },
@@ -56,7 +60,7 @@ export function CreateAccountForm() {
   });
 
   const onSubmit = (values: CreateAccountValues) => {
-    mutate(values, {
+    mutate({ ...values, role: "escort" }, {
       onSuccess: () => {
         router.push("/general-information");
       },
@@ -64,7 +68,7 @@ export function CreateAccountForm() {
   };
 
   const onClientSubmit = (values: CreateAccountValues) => {
-    mutate(values, {
+    mutate({ ...values, role: "client" }, {
       onSuccess: () => {
         router.push("/");
       },

@@ -21,7 +21,7 @@ const AUTH_COOKIE_KEY = "rosey-auth";
 
 const readCookie = (name: string): string | null => {
   if (typeof document === "undefined") return null;
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
   return match ? decodeURIComponent(match[1]) : null;
 };
 
@@ -89,6 +89,10 @@ API.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = getAccessToken();
     if (token) {
+      console.log("Attaching auth token to request", token.substring(0, 10) + "...");
+      // Ensure we don't send duplicate headers by removing any defaults
+      delete config.headers.Authorization;
+      delete config.headers.authorization;
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;

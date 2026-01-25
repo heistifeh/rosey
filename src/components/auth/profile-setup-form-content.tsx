@@ -29,7 +29,7 @@ export function ProfileSetupFormContent({
     tagline: "",
     height: "",
     ethnicityCategory: "",
-    languages: "",
+    languages: [] as string[],
     eyeColor: "",
     bodyType: "",
     hairColor: "",
@@ -40,9 +40,17 @@ export function ProfileSetupFormContent({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const savedData = getData("profile");
+    const savedData = getData("profile") as any;
     if (savedData) {
-      setFormData((prev) => ({ ...prev, ...savedData }));
+      setFormData((prev) => ({
+        ...prev,
+        ...savedData,
+        languages: Array.isArray(savedData.languages)
+          ? savedData.languages
+          : savedData.languages
+            ? [savedData.languages]
+            : [],
+      }));
     }
   }, [getData]);
 
@@ -50,14 +58,43 @@ export function ProfileSetupFormContent({
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleAddLanguage = (value: string) => {
+    if (!formData.languages.includes(value)) {
+      setFormData((prev) => ({
+        ...prev,
+        languages: [...prev.languages, value],
+      }));
+    }
+  };
+
+  const handleRemoveLanguage = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      languages: prev.languages.filter((l) => l !== value),
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
-    // setIsSubmitting(true); // Removing synthetic delay
-    saveData("profile", formData);
-    // toast.success("Progress saved");
+
     if (onNext) onNext();
   };
+
+  const availableLanguages = [
+    "English",
+    "Spanish",
+    "French",
+    "German",
+    "Italian",
+    "Portuguese",
+    "Russian",
+    "Chinese",
+    "Japanese",
+    "Korean",
+    "Arabic",
+    "Hindi",
+  ];
 
   return (
     <TabsContent value="profile" className="mt-0">
@@ -259,27 +296,40 @@ export function ProfileSetupFormContent({
               >
                 Languages
               </Label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {formData.languages.map((lang) => (
+                  <span
+                    key={lang}
+                    className="flex items-center gap-1 rounded-full bg-primary text-primary-text px-3 py-1 text-xs font-semibold"
+                  >
+                    {lang}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveLanguage(lang)}
+                      className="ml-1 rounded-full hover:bg-white/20 p-0.5"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
               <Select
-                value={formData.languages || undefined}
-                onValueChange={(value) => handleChange("languages", value)}
+                value="" // Always empty to allow re-selection
+                onValueChange={handleAddLanguage}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Add a language..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="English">English</SelectItem>
-                  <SelectItem value="Spanish">Spanish</SelectItem>
-                  <SelectItem value="French">French</SelectItem>
-                  <SelectItem value="German">German</SelectItem>
-                  <SelectItem value="Italian">Italian</SelectItem>
-                  <SelectItem value="Portuguese">Portuguese</SelectItem>
-                  <SelectItem value="Russian">Russian</SelectItem>
-                  <SelectItem value="Chinese">Chinese</SelectItem>
-                  <SelectItem value="Japanese">Japanese</SelectItem>
-                  <SelectItem value="Korean">Korean</SelectItem>
-                  <SelectItem value="Arabic">Arabic</SelectItem>
-                  <SelectItem value="Hindi">Hindi</SelectItem>
-                  <SelectItem value="Multiple">Multiple</SelectItem>
+                  {availableLanguages.map((lang) => (
+                    <SelectItem
+                      key={lang}
+                      value={lang}
+                      disabled={formData.languages.includes(lang)}
+                    >
+                      {lang}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <p className="text-[12px] font-normal text-text-gray-opacity">

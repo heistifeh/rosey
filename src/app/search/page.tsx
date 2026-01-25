@@ -8,6 +8,7 @@ type SearchPageProps = {
     min?: string | string[];
     max?: string | string[];
     catersTo?: string | string[];
+    availableNow?: string | string[];
   }>;
 };
 
@@ -40,6 +41,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const countrySlug = toSingleValue(params?.country);
   const citySlug = toSingleValue(params?.city);
   const genderValue = toSingleValue(params?.gender);
+  const availableNowValue = toSingleValue(params?.availableNow) === "true";
 
   return (
     <SearchResultsClient
@@ -50,6 +52,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         minRate: parseNumberParam(toSingleValue(params?.min)),
         maxRate: parseNumberParam(toSingleValue(params?.max)),
         catersTo: parseCatersToParam(params?.catersTo),
+        availableNow: availableNowValue,
       }}
     />
   );
