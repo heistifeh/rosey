@@ -8,11 +8,11 @@ import {
   Venus,
   MessageSquare,
 } from "lucide-react";
-import Image from "next/image";
 import { Circle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { ReviewModal } from "@/components/modals/review-modal";
+import { SafeImage } from "@/components/ui/safe-image";
 
 interface ProfileHeroSectionProps {
   profile: {
@@ -51,7 +51,7 @@ export function ProfileHeroSection({
     try {
       await navigator.clipboard.writeText(window.location.href);
       toast.success("Profile link copied to clipboard");
-    } catch (_err) {
+    } catch {
       toast.error("Failed to copy link");
     }
   };
@@ -61,7 +61,7 @@ export function ProfileHeroSection({
       <div className="mb-6 mt-6 bg-primary-bg md:mt-[30px]">
         <div className="relative overflow-hidden rounded-3xl">
           <div className="relative h-[220px] overflow-hidden sm:h-[280px] md:h-[400px]">
-            <Image
+            <SafeImage
               src={profile.image}
               alt={profile.name}
               fill
@@ -79,7 +79,7 @@ export function ProfileHeroSection({
 
         <div className="flex flex-col items-center">
           <div className="relative h-24 w-24 -mt-14 mb-6 rounded-full border-4 border-transparent overflow-hidden sm:h-28 sm:w-28 sm:-mt-16 md:h-[300px] md:w-[300px] md:mb-10 md:mt-[-150px]">
-            <Image
+            <SafeImage
               src={profile.image}
               alt={profile.name}
               fill

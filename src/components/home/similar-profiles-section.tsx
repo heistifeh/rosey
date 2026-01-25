@@ -1,8 +1,10 @@
-import Image from "next/image";
+"use client";
+
 import Link from "next/link";
 import { MapPin, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Profile } from "@/types/types";
+import { SafeImage } from "@/components/ui/safe-image";
 
 interface SimilarProfilesSectionProps {
   profiles: Profile[];
@@ -55,7 +57,7 @@ export function SimilarProfilesSection({
                 className="flex min-w-0 flex-col rounded-xl border border-dark-border bg-primary-bg overflow-hidden transition-opacity hover:opacity-90"
               >
                 <div className="relative aspect-square w-full">
-                  <Image
+                  <SafeImage
                     src={imageUrl}
                     alt={profile.working_name ?? "Profile"}
                     fill

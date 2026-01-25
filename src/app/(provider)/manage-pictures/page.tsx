@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useRef, useState, type DragEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { CloudUpload, Trash2, Loader2 } from "lucide-react";
@@ -9,6 +8,7 @@ import { apiBuilder } from "@/api/builder";
 import { getUserId } from "@/api/axios-config";
 import { useProfile } from "@/hooks/use-profile";
 import { useProfileImages } from "@/hooks/use-profile-images";
+import { SafeImage } from "@/components/ui/safe-image";
 
 const MAX_IMAGES = 9;
 
@@ -231,7 +231,7 @@ export default function ManagePicturesPage() {
                     key={image.id}
                     className="relative w-[134px] h-[107px] rounded-[16px] overflow-hidden group cursor-pointer"
                   >
-                    <Image
+                    <SafeImage
                       src={image.public_url}
                       alt={`Uploaded image ${image.id}`}
                       width={134}

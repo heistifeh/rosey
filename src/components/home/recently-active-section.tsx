@@ -1,12 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 import { ArrowRight, MapPin, Circle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiBuilder } from "@/api/builder";
 import type { Profile } from "@/types/types";
+import { SafeImage } from "@/components/ui/safe-image";
 
 export function RecentlyActiveSection() {
   const { data: profiles = [], isLoading } = useQuery<Profile[]>({
@@ -78,7 +78,7 @@ export function RecentlyActiveSection() {
                   className={`flex h-full flex-col overflow-hidden p-3 md:p-4 rounded-[24px]  bg-input-bg shadow-sm min-w-[280px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity`}
                 >
                   <div className="relative aspect-3/4 w-full overflow-hidden rounded-[16px]">
-                    <Image
+                    <SafeImage
                       src={profile.image}
                       alt={profile.name}
                       fill
