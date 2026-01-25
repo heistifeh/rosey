@@ -27,7 +27,7 @@ interface ProfileHeroSectionProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   tabs: string[];
-  onReviewSubmit?: (review: { text: string; date: string }) => void;
+  onReviewSubmit?: (review: { rating: number; title: string; comment: string }) => Promise<void>;
 }
 
 export function ProfileHeroSection({

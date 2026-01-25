@@ -55,6 +55,21 @@ export const apiBuilder = {
       }
       return Promise.resolve(user ?? { id });
     },
+    // Hits Supabase Auth endpoint (POST /auth/v1/otp) - No custom backend required
+    sendOtp: (data: { email?: string; phone?: string }) =>
+      LOGINAPI.post("/otp", data).then((response) => response.data),
+    verifyOtp: (data: {
+      email?: string;
+      phone?: string;
+      token: string;
+      type: "sms" | "email" | "signup" | "magiclink";
+    }) =>
+      LOGINAPI.post("/verify", data).then((response) => {
+        if (response.data?.access_token) {
+          setAuthCookie(response.data);
+        }
+        return response.data;
+      }),
   },
   locations: {
     getLocations: (query: string) => {
@@ -179,17 +194,34 @@ export const apiBuilder = {
       );
     },
     searchProfiles: (paramsIn: {
-      countrySlug: string;
-      citySlug: string;
+      countrySlug?: string;
+      citySlug?: string;
       gender?: string;
       minRate?: number;
       maxRate?: number;
       catersTo?: string | string[];
+      availableNow?: boolean;
     }) => {
       const params = new URLSearchParams();
-      params.append("select", SEARCH_PROFILE_SELECT);
-      params.append("country_slug", `eq.${paramsIn.countrySlug}`);
-      params.append("city_slug", `eq.${paramsIn.citySlug}`);
+
+      const select = paramsIn.availableNow
+        ? `${SEARCH_PROFILE_SELECT},ads!inner(status)`
+        : SEARCH_PROFILE_SELECT;
+
+      params.append("select", select);
+
+      if (paramsIn.countrySlug) {
+        params.append("country_slug", `eq.${paramsIn.countrySlug}`);
+      }
+      if (paramsIn.citySlug) {
+        params.append("city_slug", `eq.${paramsIn.citySlug}`);
+      }
+
+      if (paramsIn.availableNow) {
+        params.append("ads.status", "eq.active");
+        params.append("ads.placement_available_now", "eq.true");
+      }
+
       params.append("is_active", "eq.true");
       params.append("order", "created_at.desc");
 
@@ -246,6 +278,33 @@ export const apiBuilder = {
       return API.get("/profiles", { params }).then(
         (response) => response.data?.[0] ?? null,
       );
+    },
+    verifyProfileContact: (email: string, phone: string) => {
+      // Verifying contact info for claim profile
+      const params = new URLSearchParams();
+      params.append("select", "id,username,working_name");
+
+      // If we have both, use OR
+      if (email && phone) {
+        params.append("or", `(contact_email.eq.${email},contact_phone.eq.${phone})`);
+      } else if (email) {
+        params.append("contact_email", `eq.${email}`);
+      } else if (phone) {
+        params.append("contact_phone", `eq.${phone}`);
+      } else {
+        return Promise.resolve(null);
+      }
+
+      params.append("claim_status", "eq.unclaimed");
+
+      params.append("limit", "1");
+
+      return API.get<Profile[]>("/profiles", { params }).then(
+        (response) => response.data?.[0] ?? null
+      ).catch(err => {
+        console.error("Error verifying profile contact:", err);
+        throw err;
+      });
     },
     getProfileByUserId: (userId: string) => {
       if (!userId) return Promise.resolve(null);
@@ -468,6 +527,16 @@ export const apiBuilder = {
     }) =>
       axios.post("/api/ads/place", payload).then((response) => response.data),
   },
+  reviews: {
+    createReview: (data: {
+      profile_id: string;
+      client_id: string;
+      rating: number;
+      title: string;
+      body: string;
+    }) =>
+      API.post("/profile_reviews", data).then((response) => response.data),
+  },
   notifications: {
     list: (limit = 20) => {
       const userId = getUserId();
@@ -489,6 +558,21 @@ export const apiBuilder = {
       }
       return API.patch(`/notifications?id=eq.${id}`, { is_read: true }).then(
         (response) => response.data,
+      );
+    },
+  },
+  clients: {
+    getMyClientProfile: () => {
+      const userId = getUserId();
+      if (!userId) {
+        return Promise.resolve(null);
+      }
+      const params = new URLSearchParams();
+      params.append("select", "id,user_id,username,email");
+      params.append("user_id", `eq.${userId}`);
+      params.append("limit", "1");
+      return API.get("/clients", { params }).then(
+        (response) => response.data?.[0] ?? null,
       );
     },
   },

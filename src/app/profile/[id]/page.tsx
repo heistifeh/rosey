@@ -518,12 +518,22 @@ export default function ProfilePage({
     enabled: true,
   });
 
-  // We need to fetch current user to check ownership
-  // Since useQuery hook above might be async/cached, let's use a simpler effect or just separate query
-  // Actually, let's just add another useQuery for user
+
   const { data: userData } = useQuery({
     queryKey: ["current-user-data"],
     queryFn: () => apiBuilder.auth.getCurrentUser(),
+  });
+
+  const { data: myProfile } = useQuery({
+    queryKey: ["my-profile"],
+    queryFn: () => apiBuilder.profiles.getMyProfile(),
+    enabled: !!userData?.id,
+  });
+
+  const { data: myClient } = useQuery({
+    queryKey: ["my-client"],
+    queryFn: () => apiBuilder.clients.getMyClientProfile(),
+    enabled: !!userData?.id,
   });
 
   const { data: supabaseProfile, isLoading } = useQuery({
@@ -609,8 +619,57 @@ export default function ProfilePage({
       ? filteredSimilarProfiles
       : fallbackSimilarProfilesMapped;
 
-  const handleReviewSubmit = (review: { text: string; date: string }) => {
-    setLocalReviews((prev) => [review, ...prev]);
+  const handleReviewSubmit = async ({
+    rating,
+    title,
+    comment,
+  }: {
+    rating: number;
+    title: string;
+    comment: string;
+  }) => {
+    if (!supabaseProfile?.id) {
+      throw new Error("Unable to identify this profile");
+    }
+
+    if (!userData?.id) {
+      throw new Error("You must be logged in to review");
+    }
+
+    const reviewerId = myClient?.id || myProfile?.id;
+
+    // if (!reviewerId) {
+    //   throw new Error("You must have a client account to submit a review");
+    // }
+
+    if (userData.id === supabaseProfile.user_id) {
+      throw new Error("You cannot review your own profile");
+    }
+
+    console.log("review payload", {
+      profile_id: supabaseProfile.id,
+      client_id: reviewerId,
+      rating,
+      title,
+      body: comment,
+    });
+    await apiBuilder.reviews.createReview({
+      profile_id: supabaseProfile.id,
+      client_id: reviewerId,
+      rating,
+      title,
+      body: comment,
+    });
+
+    const newReview = {
+      text: comment,
+      date: new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+      }),
+    };
+
+    setLocalReviews((prev) => [newReview, ...prev]);
   };
 
   const navLinks = [
@@ -737,7 +796,7 @@ export default function ProfilePage({
             activeTab={activeTab}
             onTabChange={setActiveTab}
             tabs={tabs}
-            onReviewSubmit={handleReviewSubmit}
+            onReviewSubmit={isOwner ? undefined : handleReviewSubmit}
           />
 
           {activeTab === "Overview" && (
