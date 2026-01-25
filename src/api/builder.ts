@@ -286,6 +286,11 @@ export const apiBuilder = {
 
       // If we have both, use OR
       if (email && phone) {
+        // Enclose values in quotes to handle special characters slightly better, 
+        // though strictly URL encoding is handled by URLSearchParams, the internal logic of OR needs care.
+        // Actually, for OR syntax: (col.eq.val,col2.eq.val2)
+        // If val contains comma, it breaks.
+        // PostGTREST usually doesn't need quotes if simple, but for emails it's safer.
         params.append("or", `(contact_email.eq.${email},contact_phone.eq.${phone})`);
       } else if (email) {
         params.append("contact_email", `eq.${email}`);

@@ -12,6 +12,10 @@ import { useRouter } from "next/navigation";
 import { CodeInput } from "@/components/ui/code-input";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import Image from "next/image";
+import {
+  errorMessageHandler,
+  type ErrorType,
+} from "@/utils/error-handler";
 
 type ClaimProfileValues = {
   email: string;
@@ -49,10 +53,20 @@ export function ClaimProfileForm() {
   }, [otpCountdown]);
 
   const onSearchSubmit = async (values: ClaimProfileValues) => {
+    // Ensure we pass empty strings if undefined, though hook form handles this
+    const emailToCheck = values.email?.trim() || "";
+    const phoneToCheck = values.phone?.trim() || "";
+
+    if (!emailToCheck && !phoneToCheck) {
+      toast.error("Please enter either an email address or phone number");
+      return;
+    }
+
     try {
+
       const profile = await apiBuilder.profiles.verifyProfileContact(
-        values.email,
-        values.phone,
+        emailToCheck,
+        phoneToCheck
       );
 
       if (profile) {
@@ -82,7 +96,7 @@ export function ClaimProfileForm() {
       }
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "Failed to verify profile contact.");
+      toast.error("Failed to verify profile contact. Please check your connection.");
     }
   };
 
@@ -93,8 +107,12 @@ export function ClaimProfileForm() {
     try {
       let authResponse;
       if (contactInfo.email) {
+        // We used POST /otp with type: "email", so verification must be type: "email"
+        // Ensure email is clean
+        const cleanEmail = contactInfo.email.trim().toLowerCase();
+
         authResponse = await apiBuilder.auth.verifyOtp({
-          email: contactInfo.email,
+          email: cleanEmail,
           token: code,
           type: "email",
         });
@@ -113,14 +131,15 @@ export function ClaimProfileForm() {
           claim_status: "claimed",
         });
         toast.success("Profile claimed successfully!", { id: "verify-otp" });
-        router.push("/dashboard");
+        router.push("/dashboard/profile");
       } else {
         toast.success("Verified successfully!", { id: "verify-otp" });
-        router.push("/dashboard");
+        router.push("/dashboard/profile");
       }
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || "Invalid OTP code", { id: "verify-otp" });
+    } catch (error: unknown) {
+      console.error("OTP verification failed", error);
+      errorMessageHandler(error as ErrorType);
+      toast.error("Invalid OTP code", { id: "verify-otp" });
     }
   };
 
@@ -174,17 +193,16 @@ export function ClaimProfileForm() {
 
           <div className="flex flex-col gap-[26px] sm:gap-10">
             <section className=" flex flex-col gap-4 sm:gap-6">
-              <CodeInput length={6} onComplete={handleOtpComplete} />
+              <CodeInput length={8} onComplete={handleOtpComplete} />
 
               <div className="flex justify-center">
                 <button
                   onClick={handleResendOtp}
                   disabled={otpCountdown > 0}
-                  className={`text-base font-normal ${
-                    otpCountdown > 0
-                      ? "text-text-gray cursor-not-allowed"
-                      : "text-primary hover:underline cursor-pointer"
-                  }`}
+                  className={`text-base font-normal ${otpCountdown > 0
+                    ? "text-text-gray cursor-not-allowed"
+                    : "text-primary hover:underline cursor-pointer"
+                    }`}
                 >
                   Resend Code {otpCountdown > 0 && `(${otpCountdown}s)`}
                 </button>
@@ -240,7 +258,7 @@ export function ClaimProfileForm() {
                     placeholder="Enter your email"
                     aria-invalid={Boolean(errors.email)}
                     {...register("email", {
-                      required: "Email is required",
+                      //   required: "Email is required",
                       pattern: {
                         value: /\S+@\S+\.\S+/,
                         message: "Enter a valid email",
@@ -266,9 +284,7 @@ export function ClaimProfileForm() {
                     type="tel"
                     placeholder="Enter your phone number"
                     aria-invalid={Boolean(errors.phone)}
-                    {...register("phone", {
-                      required: "Phone number is required",
-                    })}
+                    {...register("phone")}
                   />
                   {errors.phone && (
                     <span className="text-xs text-red-500">
