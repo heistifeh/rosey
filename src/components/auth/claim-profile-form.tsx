@@ -7,11 +7,16 @@ import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { apiBuilder } from "@/api/builder";
+import { getAccessToken } from "@/api/axios-config";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { CodeInput } from "@/components/ui/code-input";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import Image from "next/image";
+import {
+  errorMessageHandler,
+  type ErrorType,
+} from "@/utils/error-handler";
 
 type ClaimProfileValues = {
   email: string;
@@ -49,20 +54,28 @@ export function ClaimProfileForm() {
   }, [otpCountdown]);
 
   const onSearchSubmit = async (values: ClaimProfileValues) => {
+    const emailToCheck = values.email?.trim() || "";
+    const phoneToCheck = values.phone?.trim() || "";
+
+    if (!emailToCheck && !phoneToCheck) {
+      toast.error("Please enter either an email address or phone number");
+      return;
+    }
+
     try {
+
       const profile = await apiBuilder.profiles.verifyProfileContact(
-        values.email,
-        values.phone,
+        emailToCheck,
+        phoneToCheck
       );
 
       if (profile) {
         setFoundProfileId(profile.id);
         setContactInfo(values);
 
-        // Trigger OTP
+
         toast.loading("Sending OTP...", { id: "send-otp" });
         if (values.email) {
-          // Use type: "email" to request a code instead of a magic link
           await apiBuilder.auth.sendOtp({
             email: values.email,
             type: "email",
@@ -82,7 +95,7 @@ export function ClaimProfileForm() {
       }
     } catch (error: any) {
       console.error(error);
-      toast.error(error.message || "Failed to verify profile contact.");
+      toast.error("Failed to verify profile contact. Please check your connection.");
     }
   };
 
@@ -93,8 +106,11 @@ export function ClaimProfileForm() {
     try {
       let authResponse;
       if (contactInfo.email) {
+
+        const cleanEmail = contactInfo.email.trim().toLowerCase();
+
         authResponse = await apiBuilder.auth.verifyOtp({
-          email: contactInfo.email,
+          email: cleanEmail,
           token: code,
           type: "email",
         });
@@ -106,21 +122,40 @@ export function ClaimProfileForm() {
         });
       }
 
-      // Link profile to the verified user
+
       if (authResponse?.user?.id && foundProfileId) {
-        await apiBuilder.profiles.updateProfile(foundProfileId, {
+        const updateResult = await apiBuilder.profiles.updateProfile(foundProfileId, {
           user_id: authResponse.user.id,
           claim_status: "claimed",
+          profile_type: "Escort", // Ensure access to provider dashboard
         });
+
+
+        if (!updateResult || (Array.isArray(updateResult) && updateResult.length === 0)) {
+          toast.error("Unable to claim profile. Please contact support.", { id: "verify-otp" });
+          return;
+        }
+
         toast.success("Profile claimed successfully!", { id: "verify-otp" });
-        router.push("/dashboard");
+
+        if (!getAccessToken()) {
+          toast.error("Session creation failed. You may need to login manually.");
+          return;
+        }
+
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1500);
       } else {
-        toast.success("Verified successfully!", { id: "verify-otp" });
-        router.push("/dashboard");
+        toast.success("Verified successfully! Redirecting...", { id: "verify-otp" });
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1500);
       }
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || "Invalid OTP code", { id: "verify-otp" });
+    } catch (error: unknown) {
+      console.error("OTP verification failed", error);
+      errorMessageHandler(error as ErrorType);
+      toast.error("Invalid OTP code", { id: "verify-otp" });
     }
   };
 
@@ -180,11 +215,10 @@ export function ClaimProfileForm() {
                 <button
                   onClick={handleResendOtp}
                   disabled={otpCountdown > 0}
-                  className={`text-base font-normal ${
-                    otpCountdown > 0
-                      ? "text-text-gray cursor-not-allowed"
-                      : "text-primary hover:underline cursor-pointer"
-                  }`}
+                  className={`text-base font-normal ${otpCountdown > 0
+                    ? "text-text-gray cursor-not-allowed"
+                    : "text-primary hover:underline cursor-pointer"
+                    }`}
                 >
                   Resend Code {otpCountdown > 0 && `(${otpCountdown}s)`}
                 </button>
@@ -240,7 +274,7 @@ export function ClaimProfileForm() {
                     placeholder="Enter your email"
                     aria-invalid={Boolean(errors.email)}
                     {...register("email", {
-                      required: "Email is required",
+                      //   required: "Email is required",
                       pattern: {
                         value: /\S+@\S+\.\S+/,
                         message: "Enter a valid email",
@@ -266,9 +300,7 @@ export function ClaimProfileForm() {
                     type="tel"
                     placeholder="Enter your phone number"
                     aria-invalid={Boolean(errors.phone)}
-                    {...register("phone", {
-                      required: "Phone number is required",
-                    })}
+                    {...register("phone")}
                   />
                   {errors.phone && (
                     <span className="text-xs text-red-500">
