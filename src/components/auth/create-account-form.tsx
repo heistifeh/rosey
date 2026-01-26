@@ -49,20 +49,10 @@ export function CreateAccountForm() {
         },
       }),
     mutationKey: ["auth", "signUp"],
-    onSuccess: async (_data, variables) => {
-      try {
-        await apiBuilder.auth.sendOtp({
-          email: variables.email,
-          type: "email",
-        });
-        toast.success("Check your email for the 6-digit code");
-        router.push(`/enter-otp?email=${encodeURIComponent(variables.email)}`);
-      } catch (error) {
-        toast.error("Account created but failed to send code. Please resend.");
-        errorMessageHandler(error as ErrorType);
-      } finally {
-        reset();
-      }
+    onSuccess: (_data, variables) => {
+      toast.success("Account created. Check your email for the confirmation code.");
+      router.push(`/enter-otp?email=${encodeURIComponent(variables.email)}`);
+      reset();
     },
     onError: (error) => {
       errorMessageHandler(error as ErrorType);

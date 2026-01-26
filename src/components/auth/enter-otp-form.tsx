@@ -47,7 +47,7 @@ function EnterOtpFormContent() {
       await apiBuilder.auth.verifyOtp({
         email,
         token: otp,
-        type: "email",
+        type: "signup",
       });
       toast.success("Email verified successfully!");
       router.push("/enable-2fa");
@@ -72,12 +72,9 @@ function EnterOtpFormContent() {
 
     try {
       setIsResending(true);
-      await apiBuilder.auth.sendOtp({
-        email,
-        type: "email",
-      });
+      await apiBuilder.auth.resendConfirmation(email);
       setCountdown(45);
-      toast.success("Verification code resent!");
+      toast.success("Confirmation code resent!");
     } catch (error: any) {
       console.error("Resend error:", error);
       toast.error("Failed to resend code. Please try again.");
