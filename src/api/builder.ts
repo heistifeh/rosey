@@ -70,6 +70,10 @@ export const apiBuilder = {
         }
         return response.data;
       }),
+    resendConfirmation: (email: string) =>
+      LOGINAPI.post("/resend", { email, type: "signup" }).then(
+        (response) => response.data
+      ),
   },
   locations: {
     getLocations: (query: string) => {
@@ -280,7 +284,6 @@ export const apiBuilder = {
       );
     },
     verifyProfileContact: (email: string, phone: string) => {
-      // Verifying contact info for claim profile
       const params = new URLSearchParams();
       params.append("select", "id,username,working_name");
 
@@ -296,7 +299,7 @@ export const apiBuilder = {
         return Promise.resolve(null);
       }
 
-      params.append("claim_status", "eq.unclaimed");
+      // params.append("claim_status", "eq.unclaimed");
 
       params.append("limit", "1");
 
@@ -539,6 +542,22 @@ export const apiBuilder = {
       body: string;
     }) =>
       API.post("/profile_reviews", data).then((response) => response.data),
+
+    getReviews: (profileId: string) => {
+      if (!profileId) return Promise.resolve([]);
+      const params = new URLSearchParams();
+      params.append(
+        "select",
+        "id,rating,title,body,created_at,client_id",
+      );
+      params.append("profile_id", `eq.${profileId}`);
+      // params.append("status", "eq.approved");
+      params.append("order", "created_at.desc");
+
+      return API.get("/profile_reviews", { params }).then(
+        (response) => response.data,
+      );
+    },
   },
   notifications: {
     list: (limit = 20) => {

@@ -4,7 +4,7 @@ import { Menu, Search, Loader2 } from "lucide-react";
 
 import Link from "next/link";
 import { useState, use } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Profile } from "@/types/types";
 import { apiBuilder } from "@/api/builder";
 import { FooterSection } from "@/components/home/footer-section";
@@ -574,16 +574,8 @@ export default function ProfilePage({
   const fallbackProfile = getDefaultProfileData(allProfiles[0]);
   const profile = mergeProfileData(fallbackProfile, supabaseProfile);
 
-  const [localReviews, setLocalReviews] = useState(profile.reviews);
+  const queryClient = useQueryClient();
 
-  // Sync state if profile.reviews changes (e.g. from data fetch)
-  if (
-    localReviews !== profile.reviews &&
-    localReviews.length === 0 &&
-    profile.reviews.length > 0
-  ) {
-    setLocalReviews(profile.reviews);
-  }
 
   if (isLoading) {
     return (
@@ -658,7 +650,6 @@ export default function ProfilePage({
           throw new Error("Unable to create client profile");
         }
       } catch (error: any) {
-        // Handle duplicate client rows by refetching
         const duplicate =
           error?.response?.data?.code === "23505" ||
           error?.code === "23505";
@@ -705,7 +696,9 @@ export default function ProfilePage({
       }),
     };
 
-    setLocalReviews((prev) => [newReview, ...prev]);
+    queryClient.invalidateQueries({
+      queryKey: ["profile-reviews", supabaseProfile.id],
+    });
   };
 
   const navLinks = [
@@ -844,7 +837,7 @@ export default function ProfilePage({
               />
               <ProfileDetailsSection details={profile.details} />
               <ProfileAvailabilitySection availability={profile.availability} />
-              <ProfileReviewsSection reviews={localReviews} />
+              <ProfileReviewsSection profileId={String(profile.id ?? "")} />
               <ProfileContactSection contact={profile.contact} />
             </div>
           )}
@@ -865,7 +858,7 @@ export default function ProfilePage({
           )}
 
           {activeTab === "Reviews" && (
-            <ProfileReviewsSection reviews={localReviews} />
+            <ProfileReviewsSection profileId={String(profile.id ?? "")} />
           )}
 
           <SimilarProfilesSection

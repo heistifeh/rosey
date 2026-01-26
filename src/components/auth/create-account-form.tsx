@@ -51,7 +51,7 @@ export function CreateAccountForm() {
     mutationKey: ["auth", "signUp"],
     onSuccess: (data) => {
       console.log("Signup successful, response data:", data);
-      toast.success("Account created successfully");
+      toast.success("Check email for otp");
       reset();
     },
     onError: (error) => {
@@ -62,7 +62,7 @@ export function CreateAccountForm() {
   const onSubmit = (values: CreateAccountValues) => {
     mutate({ ...values, role: "escort" }, {
       onSuccess: () => {
-        router.push("/general-information");
+        router.push(`/enter-otp?email=${encodeURIComponent(values.email)}`);
       },
     });
   };
@@ -70,7 +70,7 @@ export function CreateAccountForm() {
   const onClientSubmit = (values: CreateAccountValues) => {
     mutate({ ...values, role: "client" }, {
       onSuccess: () => {
-        router.push("/");
+        router.push(`/enter-otp?email=${encodeURIComponent(values.email)}`);
       },
     });
   };

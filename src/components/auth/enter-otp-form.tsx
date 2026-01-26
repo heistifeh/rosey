@@ -3,14 +3,20 @@
 import { Button } from "@/components/ui/button";
 import { CodeInput } from "@/components/ui/code-input";
 import { ChevronLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
+import { toast } from "react-hot-toast";
+import { apiBuilder } from "@/api/builder";
 
-export function EnterOtpForm() {
+function EnterOtpFormContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
   const [countdown, setCountdown] = useState(45);
-  const [email] = useState("Johndoe419@gmail.com");
+  const [otp, setOtp] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -22,17 +28,53 @@ export function EnterOtpForm() {
   }, [countdown]);
 
   const handleCodeComplete = (code: string) => {
-    console.log("OTP entered:", code);
+    setOtp(code);
+  };
+
+  const verifyOtp = async () => {
+    if (!otp || otp.length < 6) {
+      toast.error("Please enter a valid 6-digit code");
+      return;
+    }
+
+    try {
+      setIsVerifying(true);
+      await apiBuilder.auth.verifyOtp({
+        email,
+        token: otp,
+        type: "signup",
+      });
+      toast.success("Email verified successfully!");
+      router.push("/enable-2fa");
+    } catch (error: any) {
+      console.error("Verification error:", error);
+      const msg =
+        error?.response?.data?.error_description ||
+        error?.response?.data?.msg ||
+        "Invalid OTP code. Please try again.";
+      toast.error(msg);
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   const handleConfirm = () => {
-    router.push("/enable-2fa");
+    verifyOtp();
   };
 
-  const handleResend = () => {
-    if (countdown === 0) {
+  const handleResend = async () => {
+    if (countdown > 0) return;
+
+    try {
+      setIsResending(true);
+      await apiBuilder.auth.resendConfirmation(email);
       setCountdown(45);
-      console.log("Resending code...");
+      toast.success("Verification code resent!");
+    } catch (error: any) {
+      console.error("Resend error:", error);
+      toast.error("Failed to resend code. Please try again.");
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -67,14 +109,13 @@ export function EnterOtpForm() {
             <div className="flex justify-center">
               <button
                 onClick={handleResend}
-                disabled={countdown > 0}
-                className={`text-base font-normal ${
-                  countdown > 0
-                    ? "text-text-gray cursor-not-allowed"
-                    : "text-primary hover:underline cursor-pointer"
-                }`}
+                disabled={countdown > 0 || isResending}
+                className={`text-base font-normal ${countdown > 0 || isResending
+                  ? "text-text-gray cursor-not-allowed"
+                  : "text-primary hover:underline cursor-pointer"
+                  }`}
               >
-                Resend Code {countdown > 0 && `(${countdown}s)`}
+                {isResending ? "Resending..." : `Resend Code ${countdown > 0 ? `(${countdown}s)` : ""}`}
               </button>
             </div>
           </section>
@@ -93,12 +134,21 @@ export function EnterOtpForm() {
               onClick={handleConfirm}
               className="flex-1 rounded-[200px] text-white font-semibold text-base cursor-pointer"
               size="default"
+              disabled={isVerifying || otp.length < 6}
             >
-              Confirm
+              {isVerifying ? "Verifying..." : "Confirm"}
             </Button>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export function EnterOtpForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <EnterOtpFormContent />
+    </Suspense>
   );
 }
