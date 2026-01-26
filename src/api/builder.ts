@@ -41,12 +41,7 @@ export const apiBuilder = {
         return response.data;
       }),
     signUp: (data: SignUpPayload) =>
-      LOGINAPI.post("/signup", data).then((response) => {
-        if (response.data?.access_token) {
-          setAuthCookie(response.data);
-        }
-        return response.data;
-      }),
+      LOGINAPI.post("/signup", data).then((response) => response.data),
     getCurrentUser: () => {
       const user = getStoredUser();
       const id = user?.id ?? getUserId();
@@ -56,8 +51,19 @@ export const apiBuilder = {
       return Promise.resolve(user ?? { id });
     },
     // Hits Supabase Auth endpoint (POST /auth/v1/otp) - No custom backend required
-    sendOtp: (data: { email?: string; phone?: string }) =>
-      LOGINAPI.post("/otp", data).then((response) => response.data),
+    sendOtp: (data: {
+      email?: string;
+      phone?: string;
+      type?: "signup" | "magiclink" | "recovery" | "invite" | "sms";
+      create_user?: boolean;
+    }) => {
+      const payload = {
+        type: data.type ?? "signup",
+        create_user: data.create_user ?? false,
+        ...data,
+      };
+      return LOGINAPI.post("/otp", payload).then((response) => response.data);
+    },
     verifyOtp: (data: {
       email?: string;
       phone?: string;

@@ -32,6 +32,11 @@ function EnterOtpFormContent() {
   };
 
   const verifyOtp = async () => {
+    if (!email) {
+      toast.error("Missing email address. Please restart signup.");
+      return;
+    }
+
     if (!otp || otp.length < 6) {
       toast.error("Please enter a valid 6-digit code");
       return;
@@ -42,7 +47,7 @@ function EnterOtpFormContent() {
       await apiBuilder.auth.verifyOtp({
         email,
         token: otp,
-        type: "signup",
+        type: "email",
       });
       toast.success("Email verified successfully!");
       router.push("/enable-2fa");
@@ -67,7 +72,10 @@ function EnterOtpFormContent() {
 
     try {
       setIsResending(true);
-      await apiBuilder.auth.resendConfirmation(email);
+      await apiBuilder.auth.sendOtp({
+        email,
+        type: "email",
+      });
       setCountdown(45);
       toast.success("Verification code resent!");
     } catch (error: any) {

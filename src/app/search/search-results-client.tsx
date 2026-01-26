@@ -314,7 +314,7 @@ export function SearchResultsClient({
                   ? `Find Independent Escorts in ${formatSlug(params.countrySlug)}`
                   : "Find Independent Escorts"}
             </h1>
-            <p className="text-xs font-normal text-text-white md:text-sm">
+            <p className="text-xs font-normal text-white md:text-sm">
               {params.citySlug
                 ? `Discover all the adult entertainers in ${formatSlug(params.citySlug)}. From Escorts, BDSM, Kink, Video, Massage and much more.`
                 : params.countrySlug

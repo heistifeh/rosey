@@ -28,8 +28,8 @@ export function CreateAccountForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    reset,
     getValues,
+    reset,
   } = useForm<CreateAccountValues>({
     defaultValues: {
       email: "",
@@ -49,10 +49,20 @@ export function CreateAccountForm() {
         },
       }),
     mutationKey: ["auth", "signUp"],
-    onSuccess: (data) => {
-      console.log("Signup successful, response data:", data);
-      toast.success("Check email for otp");
-      reset();
+    onSuccess: async (_data, variables) => {
+      try {
+        await apiBuilder.auth.sendOtp({
+          email: variables.email,
+          type: "email",
+        });
+        toast.success("Check your email for the 6-digit code");
+        router.push(`/enter-otp?email=${encodeURIComponent(variables.email)}`);
+      } catch (error) {
+        toast.error("Account created but failed to send code. Please resend.");
+        errorMessageHandler(error as ErrorType);
+      } finally {
+        reset();
+      }
     },
     onError: (error) => {
       errorMessageHandler(error as ErrorType);
@@ -60,19 +70,11 @@ export function CreateAccountForm() {
   });
 
   const onSubmit = (values: CreateAccountValues) => {
-    mutate({ ...values, role: "escort" }, {
-      onSuccess: () => {
-        router.push(`/enter-otp?email=${encodeURIComponent(values.email)}`);
-      },
-    });
+    mutate({ ...values, role: "escort" });
   };
 
   const onClientSubmit = (values: CreateAccountValues) => {
-    mutate({ ...values, role: "client" }, {
-      onSuccess: () => {
-        router.push(`/enter-otp?email=${encodeURIComponent(values.email)}`);
-      },
-    });
+    mutate({ ...values, role: "client" });
   };
 
   const [showPassword, setShowPassword] = useState(false);
