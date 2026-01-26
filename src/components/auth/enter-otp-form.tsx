@@ -44,13 +44,20 @@ function EnterOtpFormContent() {
 
     try {
       setIsVerifying(true);
-      await apiBuilder.auth.verifyOtp({
+      const data = await apiBuilder.auth.verifyOtp({
         email,
         token: otp,
         type: "signup",
       });
       toast.success("Email verified successfully!");
-      router.push("/enable-2fa");
+
+      const role = data?.user?.user_metadata?.role;
+
+      if (role === "client") {
+        router.push("/");
+      } else {
+        router.push("/enable-2fa");
+      }
     } catch (error: any) {
       console.error("Verification error:", error);
       const msg =
