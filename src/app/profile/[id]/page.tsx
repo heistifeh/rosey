@@ -351,19 +351,18 @@ type SupabaseProfile = {
 };
 
 const mergeProfileData = (
-  fallbackProfile: ReturnType<typeof getDefaultProfileData>,
-  supabaseProfile: SupabaseProfile | null,
+  supabaseProfile: SupabaseProfile,
 ) => {
-  if (!supabaseProfile) return fallbackProfile;
-
   const images = supabaseProfile.images ?? [];
   const heroImage =
     images.find((img) => img.is_primary)?.public_url ??
     images[0]?.public_url ??
-    fallbackProfile.image;
+    "/images/girl1.png"; // Default placeholder if NO images at all
+
   const photos = images.length
     ? images.map((img) => img.public_url).filter(Boolean)
-    : fallbackProfile.photos;
+    : [];
+
   const locationParts = [supabaseProfile.city, supabaseProfile.country].filter(
     Boolean,
   );
@@ -373,9 +372,8 @@ const mergeProfileData = (
   const price =
     supabaseProfile.base_currency && supabaseProfile.base_hourly_rate
       ? `${supabaseProfile.base_currency}${supabaseProfile.base_hourly_rate}`
-      : fallbackProfile.price;
+      : "N/A";
 
-  const baseDetails = fallbackProfile.details;
   const pronouns = supabaseProfile.pronouns?.filter(Boolean).join(", ").trim();
   const languages = supabaseProfile.languages
     ?.filter(Boolean)
@@ -386,7 +384,7 @@ const mergeProfileData = (
     supabaseProfile.displayed_age ?? supabaseProfile.age ?? "N/A";
 
   const height =
-    supabaseProfile.height ??
+    (supabaseProfile.height || null) ??
     (supabaseProfile.height_cm ? `${supabaseProfile.height_cm} cm` : "N/A");
 
   const normalizeDayName = (value?: string): WeekDay | undefined => {
@@ -405,17 +403,17 @@ const mergeProfileData = (
     return matched;
   };
 
-  const availability = supabaseProfile
-    ? {
-      Monday: "Unavailable",
-      Tuesday: "Unavailable",
-      Wednesday: "Unavailable",
-      Thursday: "Unavailable",
-      Friday: "Unavailable",
-      Saturday: "Unavailable",
-      Sunday: "Unavailable",
-    }
-    : { ...fallbackProfile.availability };
+  // Build availability object
+  const availability = {
+    Monday: "Unavailable",
+    Tuesday: "Unavailable",
+    Wednesday: "Unavailable",
+    Thursday: "Unavailable",
+    Friday: "Unavailable",
+    Saturday: "Unavailable",
+    Sunday: "Unavailable",
+  };
+
   const availabilityDetails: Record<WeekDay, string[]> = {
     Monday: [],
     Tuesday: [],
@@ -425,6 +423,7 @@ const mergeProfileData = (
     Saturday: [],
     Sunday: [],
   };
+
   if (Array.isArray(supabaseProfile.available_days)) {
     supabaseProfile.available_days.forEach((entry) => {
       let dayValue: string | undefined;
@@ -467,37 +466,39 @@ const mergeProfileData = (
   });
 
   const mergedDetails = {
-    ...baseDetails,
     basedIn: normalizedLocation,
-    colorsTo: catersTo || "N/A",
+    colorsTo: catersTo || "N/A", // keeping key for compatibility if needed
     catersTo: catersTo || undefined,
     pronouns: pronouns || "N/A",
     age: detailAge as any,
     height: height,
-    hairColor: supabaseProfile.hair_color ?? "N/A",
-    eyeColor: supabaseProfile.eye_color ?? "N/A",
+    hairColor: supabaseProfile.hair_color || "N/A",
+    eyeColor: supabaseProfile.eye_color || "N/A",
     languages: languages || "N/A",
   };
 
   const contact = {
-    email: "N/A", // We don't have email in the profile select yet, or maybe we want to keep it private/hidden?
+    email: "N/A",
     phone: "N/A",
     instagram: "N/A",
     location: normalizedLocation,
   };
 
   return {
-    ...fallbackProfile,
-    id: supabaseProfile.id ?? fallbackProfile.id,
-    name: supabaseProfile.working_name ?? fallbackProfile.name,
+    id: supabaseProfile.id,
+    name: supabaseProfile.working_name ?? "Provider",
     image: heroImage,
     photos,
-    location: normalizedLocation || fallbackProfile.location,
+    location: normalizedLocation,
     price,
     bio: supabaseProfile.about ?? "No bio available.",
     details: mergedDetails,
     availability,
     contact,
+    status: "Available", // Or derive from availability
+    gender: supabaseProfile.gender ?? "N/A",
+    lastActive: "Recently", // Placeholder
+    reviews: [] // Reviews are fetched separately
   };
 };
 
@@ -512,6 +513,7 @@ export default function ProfilePage({
 
   const resolvedParams = use(params);
   const username = resolvedParams.id;
+  const queryClient = useQueryClient();
 
   useQuery({
     queryKey: ["current-user"],
@@ -572,19 +574,22 @@ export default function ProfilePage({
     supabaseProfile?.user_id &&
     userData.id === supabaseProfile.user_id;
 
-  const fallbackProfile = getDefaultProfileData(allProfiles[0]);
-  const profile = mergeProfileData(fallbackProfile, supabaseProfile);
-
-  const queryClient = useQueryClient();
-
-
-  if (isLoading) {
+  if (!supabaseProfile) {
+    if (isLoading) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-primary-bg">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
+    }
     return (
-      <div className="flex min-h-screen items-center justify-center bg-primary-bg">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex min-h-screen items-center justify-center bg-primary-bg text-primary-text">
+        Profile not found
       </div>
     );
   }
+
+  const profile = mergeProfileData(supabaseProfile);
 
   const filteredSimilarProfiles =
     similarProfiles?.filter((item) => item.id !== profile.id) ?? [];
