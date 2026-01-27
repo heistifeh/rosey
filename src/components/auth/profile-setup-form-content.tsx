@@ -78,6 +78,7 @@ export function ProfileSetupFormContent({
     e.preventDefault();
     if (isSubmitting) return;
 
+    saveData("profile", formData);
     if (onNext) onNext();
   };
 
