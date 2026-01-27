@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { EmailConfirmationModal } from "@/components/modals/email-confirmation-modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiBuilder } from "@/api/builder";
@@ -39,6 +40,9 @@ export function CreateAccountForm() {
     },
   });
 
+  const [showModal, setShowModal] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState("");
+
   const { mutate, isPending: isLoading } = useMutation({
     mutationFn: (values: CreateAccountValues & { role?: string }) =>
       apiBuilder.auth.signUp({
@@ -49,12 +53,29 @@ export function CreateAccountForm() {
         },
       }),
     mutationKey: ["auth", "signUp"],
-    onSuccess: (_data, variables) => {
-      toast.success("Account created. Check your email for the confirmation code.");
-      router.push(`/enter-otp?email=${encodeURIComponent(variables.email)}`);
+    onSuccess: (data, variables) => {
+      console.log("Signup success response:", data);
+
+      // Handle Supabase Email Enumeration Protection (Fake Success)
+      if (data?.identities && data.identities.length === 0) {
+        toast.error("This email is already registered. Please log in instead.");
+        return;
+      }
+
+      setSubmittedEmail(variables.email);
+      setShowModal(true);
       reset();
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error("Signup error response:", error);
+      if (
+        error?.response?.status === 422 ||
+        error?.message?.toLowerCase().includes("registered") ||
+        error?.response?.data?.msg?.toLowerCase().includes("registered")
+      ) {
+        toast.error("This email is already registered. Please log in instead.");
+        return;
+      }
       errorMessageHandler(error as ErrorType);
     },
   });
@@ -71,238 +92,304 @@ export function CreateAccountForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="w-full max-w-md flex flex-col gap-10">
-        <div className="flex flex-col gap-2 text-center">
-          <h1 className="text-4xl font-semibold text-primary-text sm:text-4xl">
-            Create Your Account
-          </h1>
-          <p className=" text-text-gray text-base font-normal">
-            Enter your details to create an account.
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-10">
-          <Button
-            variant="outline"
-            size="default"
-            className="w-full justify-center rounded-[200px] bg-input-bg text-base font-normal"
-          >
-            <Image
-              src="/svg/google.svg"
-              alt="Google"
-              width={20}
-              height={20}
-              className="h-6 w-6"
-            />
-            Continue with Google
-          </Button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border-gray"></div>
+    <>
+      <EmailConfirmationModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onVerify={() => {
+          setShowModal(false);
+          router.push(`/enter-otp?email=${encodeURIComponent(submittedEmail)}`);
+        }}
+      />
+      <div className="w-full min-h-screen bg-primary-bg flex flex-col lg:flex-row">
+        {/* Left Side - Form */}
+        <div className="w-full lg:w-1/2 flex flex-col justify-center px-4 md:px-[60px] py-6 lg:py-4 h-screen overflow-y-auto">
+          <div className="flex flex-col gap-6 max-w-md mx-auto w-full">
+            <div className="flex justify-start mb-2">
+              <Link href="/" className="inline-flex items-center">
+                <Image
+                  src="/images/logo.svg"
+                  alt="Rosey"
+                  width={120}
+                  height={32}
+                  className="h-auto"
+                  priority
+                />
+              </Link>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-primary-bg text-text-gray text-base font-normal">
-                or sign up with
-              </span>
-            </div>
-          </div>
 
-          <form
-            className="flex flex-col gap-10"
-            onSubmit={handleSubmit(onSubmit)}
-          >
-            <section className=" flex flex-col gap-4">
-              <div className=" flex flex-col gap-6">
-                <div className="flex flex-col gap-2">
-                  <Label
-                    htmlFor="email"
-                    className="text-sm font-normal text-primary-text"
-                  >
-                    Email Address
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    aria-invalid={Boolean(errors.email)}
-                    {...register("email", {
-                      required: "Email is required",
-                      pattern: {
-                        value: /\S+@\S+\.\S+/,
-                        message: "Enter a valid email",
-                      },
-                    })}
-                  />
-                  {errors.email && (
-                    <span className="text-xs text-red-500">
-                      {errors.email.message}
-                    </span>
-                  )}
+            <div className="lg:hidden mb-2">
+              <div className="flex flex-col gap-1">
+                <h2 className="text-xl font-semibold text-white">
+                  Welcome to{" "}
+                  <span className="text-primary petemoss text-[32px]">
+                    Rosey
+                  </span>
+                </h2>
+                <p className="text-text-gray text-xs font-normal">
+                  A platform for adults providing companionship and paid intimate
+                  services.
+                </p>
+              </div>
+            </div>
+
+            <div className="w-full flex flex-col gap-4">
+              <div className="hidden lg:flex flex-col gap-1 items-start">
+                <h1 className="text-2xl font-semibold text-primary-text">
+                  Create Your Account
+                </h1>
+                <p className="text-text-gray text-sm font-normal">
+                  Enter your details to create an account.
+                </p>
+              </div>
+
+              <Button
+                variant="outline"
+                size="default"
+                className="w-full justify-center rounded-[200px] bg-input-bg text-sm font-normal h-10"
+              >
+                <Image
+                  src="/svg/google.svg"
+                  alt="Google"
+                  width={18}
+                  height={18}
+                  className="h-5 w-5 mr-2"
+                />
+                Continue with Google
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border-gray"></div>
                 </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="px-2 bg-primary-bg text-text-gray">
+                    or sign up with
+                  </span>
+                </div>
+              </div>
 
-                <div className="flex flex-col gap-2">
-                  <Label
-                    htmlFor="password"
-                    className="text-sm font-normal text-primary-text"
-                  >
-                    Password
-                  </Label>
-                  <div className="relative">
+              <form
+                className="flex flex-col gap-4"
+                onSubmit={handleSubmit(onSubmit)}
+              >
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <Label
+                      htmlFor="email"
+                      className="text-sm font-normal text-primary-text"
+                    >
+                      Email Address
+                    </Label>
                     <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      aria-invalid={Boolean(errors.password)}
-                      className="pr-12"
-                      {...register("password", {
-                        required: "Password is required",
-                        minLength: {
-                          value: 6,
-                          message: "Password must be at least 6 characters",
+                      id="email"
+                      type="email"
+                      className="h-10"
+                      aria-invalid={Boolean(errors.email)}
+                      {...register("email", {
+                        required: "Email is required",
+                        pattern: {
+                          value: /\S+@\S+\.\S+/,
+                          message: "Enter a valid email",
                         },
                       })}
                     />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-3 flex items-center text-white/70"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
+                    {errors.email && (
+                      <span className="text-xs text-red-500">
+                        {errors.email.message}
+                      </span>
+                    )}
                   </div>
-                  {errors.password && (
-                    <span className="text-xs text-red-500">
-                      {errors.password.message}
-                    </span>
-                  )}
+
+                  <div className="flex flex-col gap-1.5">
+                    <Label
+                      htmlFor="password"
+                      className="text-sm font-normal text-primary-text"
+                    >
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        aria-invalid={Boolean(errors.password)}
+                        className="pr-12 h-10"
+                        {...register("password", {
+                          required: "Password is required",
+                          minLength: {
+                            value: 6,
+                            message: "Password must be at least 6 characters",
+                          },
+                        })}
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-3 flex items-center text-white/70"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    {errors.password && (
+                      <span className="text-xs text-red-500">
+                        {errors.password.message}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <Label
+                      htmlFor="confirmPassword"
+                      className="text-sm font-normal text-primary-text"
+                    >
+                      Confirm Password
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        aria-invalid={Boolean(errors.confirmPassword)}
+                        className="pr-12 h-10"
+                        {...register("confirmPassword", {
+                          required: "Confirm password is required",
+                          validate: (value) =>
+                            value === getValues("password") ||
+                            "Passwords do not match",
+                        })}
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-3 flex items-center text-white/70"
+                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                        aria-label={
+                          showConfirmPassword
+                            ? "Hide confirm password"
+                            : "Show confirm password"
+                        }
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    {errors.confirmPassword && (
+                      <span className="text-xs text-red-500">
+                        {errors.confirmPassword.message}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="terms"
+                    className="mt-1"
+                    aria-invalid={Boolean(errors.terms)}
+                    {...register("terms", {
+                      required: "You must accept the terms",
+                    })}
+                  />
                   <Label
-                    htmlFor="confirmPassword"
-                    className="text-sm font-normal text-primary-text"
+                    htmlFor="terms"
+                    className="text-xs text-primary-text font-normal cursor-pointer leading-tight"
                   >
-                    Confirm Password
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      aria-invalid={Boolean(errors.confirmPassword)}
-                      className="pr-12"
-                      {...register("confirmPassword", {
-                        required: "Confirm password is required",
-                        validate: (value) =>
-                          value === getValues("password") ||
-                          "Passwords do not match",
-                      })}
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-3 flex items-center text-white/70"
-                      onClick={() => setShowConfirmPassword((prev) => !prev)}
-                      aria-label={
-                        showConfirmPassword
-                          ? "Hide confirm password"
-                          : "Show confirm password"
-                      }
+                    By checking this box, you confirm that you have read,
+                    understood, and agree to our{" "}
+                    <Link href="/terms" className="text-primary hover:underline">
+                      Terms and Conditions
+                    </Link>{" "}
+                    and{" "}
+                    <Link
+                      href="/privacy"
+                      className="text-primary hover:underline"
                     >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                  {errors.confirmPassword && (
-                    <span className="text-xs text-red-500">
-                      {errors.confirmPassword.message}
-                    </span>
-                  )}
+                      Privacy Policy
+                    </Link>
+                    .
+                  </Label>
                 </div>
-              </div>
+                {errors.terms && (
+                  <span className="text-xs text-red-500">
+                    {errors.terms.message}
+                  </span>
+                )}
 
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="terms"
-                  className="mt-1"
-                  aria-invalid={Boolean(errors.terms)}
-                  {...register("terms", {
-                    required: "You must accept the terms",
-                  })}
-                />
-                <Label
-                  htmlFor="terms"
-                  className="text-xs text-text-gray font-normal  cursor-pointer"
-                >
-                  By checking this box, you confirm that you have read,
-                  understood, and agree to our{" "}
-                  <Link href="/terms" className="text-primary hover:underline">
-                    Terms and Conditions
-                  </Link>{" "}
-                  and{" "}
-                  <Link
-                    href="/privacy"
-                    className="text-primary hover:underline"
+                <div className="flex flex-col gap-3 mt-1">
+                  <Button
+                    type="submit"
+                    className="w-full rounded-[200px] text-white font-semibold text-sm h-11"
+                    size="default"
+                    disabled={isSubmitting || isLoading}
                   >
-                    Privacy Policy
-                  </Link>
-                  .
-                </Label>
+                    {isSubmitting || isLoading ? "Creating..." : "Create Account"}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    className="w-full rounded-[200px] text-[#FCFCFD] font-semibold text-sm bg-[#222222] hover:bg-[#1a1a1a] h-11"
+                    size="default"
+                    onClick={handleSubmit(onClientSubmit)}
+                    disabled={isSubmitting || isLoading}
+                  >
+                    Sign Up as a Client Instead
+                  </Button>
+                </div>
+              </form>
+
+              <div className="text-center text-sm font-normal flex items-center justify-center gap-1">
+                <span className="text-text-gray">Already have an Account? </span>
+                <Link
+                  href="/login"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Login
+                </Link>
+                <span className="text-text-gray">or</span>
+                <Link
+                  href="/claim-profile"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Claim Profile
+                </Link>
               </div>
-              {errors.terms && (
-                <span className="text-xs text-red-500">
-                  {errors.terms.message}
-                </span>
-              )}
-            </section>
-
-            <div className="flex flex-col gap-4">
-              <Button
-                type="submit"
-                className="w-full rounded-[200px] text-white font-semibold text-base"
-                size="default"
-                disabled={isSubmitting || isLoading}
-              >
-                {isSubmitting || isLoading ? "Creating..." : "Create Account"}
-              </Button>
-              <Button
-                type="button"
-                className="w-full rounded-[200px] text-[#FCFCFD] font-semibold text-base bg-[#222222] hover:bg-[#1a1a1a]"
-                size="default"
-                onClick={handleSubmit(onClientSubmit)}
-                disabled={isSubmitting || isLoading}
-              >
-                Sign Up as a Client Instead
-              </Button>
             </div>
-          </form>
+          </div>
+        </div>
 
-          <div className="text-center text-base font-normal">
-            <span className="text-text-gray">Already have an Account? </span>
-            <Link
-              href="/login"
-              className="text-primary hover:underline font-medium"
-            >
-              Login
-            </Link>
-            <p>or</p>
-            <Link
-              href="/claim-profile"
-              className="text-primary hover:underline font-medium"
-            >
-              Claim Profile
-            </Link>
+        {/* Right Side - Image */}
+        <div
+          className="hidden lg:flex lg:w-1/2 relative bg-cover bg-no-repeat bg-position-[center_top]"
+          style={{ backgroundImage: "url('/images/setup-bg.png')" }}
+        >
+          <div className="absolute inset-0 flex items-end px-[52px] pb-[60px]">
+            <div className="flex flex-col gap-4 max-w-md">
+              <div className="flex flex-col gap-2">
+                <h2 className="text-2xl xl:text-4xl font-semibold text-white">
+                  Welcome to{" "}
+                  <span className="text-primary petemoss text-[40px] font-normal">
+                    {" "}
+                    Rosey
+                  </span>
+                </h2>
+                <p className="text-white text-sm xl:text-base font-normal leading-relaxed">
+                  A platform for adults providing companionship and paid
+                  intimate services, created by those who understand the work.
+                  Gain control, visibility, and a safe space to reach clients.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

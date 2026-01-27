@@ -645,6 +645,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Header } from "@/components/layout/header";
 import { FooterSection } from "@/components/home/footer-section";
 
 // const categories = ["Interview", "Adult", "Sex Talk", "Lifestyle"];
@@ -755,11 +756,10 @@ export default function BlogPage() {
                       setActiveNav(link.label);
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`rounded-[200px] px-4 py-2 text-sm font-medium ${
-                      activeNav === link.label
+                    className={`rounded-[200px] px-4 py-2 text-sm font-medium ${activeNav === link.label
                         ? "bg-primary text-primary-text"
                         : "bg-tag-bg text-primary-text"
-                    }`}
+                      }`}
                   >
                     {link.label}
                   </Link>
@@ -798,11 +798,10 @@ export default function BlogPage() {
                 key={link.label}
                 href={link.href}
                 onClick={() => setActiveNav(link.label)}
-                className={`text-base font-medium transition-colors ${
-                  activeNav === link.label
+                className={`text-base font-medium transition-colors ${activeNav === link.label
                     ? "bg-primary rounded-[200px] py-2 px-[33px] text-primary-text"
                     : "text-[#8E8E93]"
-                }`}
+                  }`}
               >
                 {link.label}
               </Link>

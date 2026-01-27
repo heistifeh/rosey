@@ -32,9 +32,9 @@ export function CityPageClient({ params }: CityPageClientProps) {
       invalidParams
         ? Promise.resolve([])
         : apiBuilder.profiles.getCityProfiles({
-            citySlug: citySlug!,
-            countrySlug: countrySlug!,
-          }),
+          citySlug: citySlug!,
+          countrySlug: countrySlug!,
+        }),
     enabled: !invalidParams,
   });
 
@@ -47,9 +47,9 @@ export function CityPageClient({ params }: CityPageClientProps) {
       invalidParams
         ? Promise.resolve([])
         : apiBuilder.ads.getSponsoredProfilesForCity({
-            citySlug: citySlug!,
-            countrySlug: countrySlug!,
-          }),
+          citySlug: citySlug!,
+          countrySlug: countrySlug!,
+        }),
     enabled: !invalidParams,
   });
 
@@ -83,59 +83,59 @@ export function CityPageClient({ params }: CityPageClientProps) {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {isLoading
             ? Array.from({ length: 8 }).map((_, index) => (
-                <BaseCardSkeleton key={index} />
-              ))
+              <BaseCardSkeleton key={index} />
+            ))
             : finalProfiles.map((profile, index) => {
-                const isSponsored = sponsoredIds.has(profile.id);
-                return (
-                  <Link
-                    key={profile.id}
-                    href={`/profile/${profile.username || profile.id}`}
-                    className="flex h-full flex-col overflow-hidden rounded-[24px] border border-[#26262a] bg-primary-bg p-3 shadow-sm transition-opacity hover:opacity-90 md:p-4"
-                  >
-                    <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
-                      <SafeImage
-                        src={
-                          profile.images?.[0]?.public_url || "/images/girl1.png"
-                        }
-                        alt={profile.working_name ?? "Profile"}
-                        fill
-                        className="object-cover object-center"
-                        sizes="(max-width: 768px) 100vw, 25vw"
-                        priority={index < 4}
-                      />
-                    </div>
+              const isSponsored = sponsoredIds.has(profile.id);
+              return (
+                <Link
+                  key={profile.id}
+                  href={`/profile/${profile.username || profile.id}`}
+                  className="flex h-full flex-col overflow-hidden rounded-[24px] border border-[#26262a] bg-primary-bg p-3 shadow-sm transition-opacity hover:opacity-90 md:p-4"
+                >
+                  <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
+                    <SafeImage
+                      src={
+                        profile.images?.[0]?.public_url || "/images/girl1.png"
+                      }
+                      alt={profile.working_name ?? "Profile"}
+                      fill
+                      className="object-cover object-center"
+                      sizes="(max-width: 768px) 100vw, 25vw"
+                      priority={index < 4}
+                    />
+                  </div>
 
-                    <div className="flex flex-1 flex-col justify-between gap-3 pt-3 md:gap-[22px] md:pt-[22px]">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <p className="text-base font-normal text-primary-text md:text-lg lg:text-[24px]">
-                            {profile.working_name ?? "Provider"}
-                          </p>
-                          {isSponsored && (
-                            <span className="rounded-full border border-primary bg-primary/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                              Sponsored
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xl font-semibold text-primary-text md:text-2xl lg:text-[36px]">
-                          {profile.base_currency}
-                          {profile.base_hourly_rate}
+                  <div className="flex flex-1 flex-col justify-between gap-3 pt-3 md:gap-[22px] md:pt-[22px]">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <p className="text-base font-normal text-primary-text md:text-lg lg:text-[24px]">
+                          {profile.working_name ?? "Provider"}
                         </p>
+                        {isSponsored && (
+                          <span className="rounded-full border border-primary bg-primary/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                            Sponsored
+                          </span>
+                        )}
                       </div>
-
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-2.5 w-2.5 md:h-3 md:w-3" />
-                        <span className="text-xs font-normal text-text-gray-opacity md:text-sm lg:text-[16px]">
-                          {[profile.city, profile.country]
-                            .filter(Boolean)
-                            .join(", ")}
-                        </span>
-                      </div>
+                      <p className="text-xl font-semibold text-primary-text md:text-2xl lg:text-[36px]">
+                        {profile.base_currency}
+                        {profile.base_hourly_rate}
+                      </p>
                     </div>
-                  </Link>
-                );
-              })}
+
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-2.5 w-2.5 md:h-3 md:w-3" />
+                      <span className="text-xs font-normal text-text-gray-opacity md:text-sm lg:text-[16px]">
+                        {[profile.city, profile.country]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
 
           {!isLoading && finalProfiles.length === 0 && (
             <div className="col-span-full py-10 text-center text-text-gray-opacity">

@@ -56,7 +56,7 @@ function EnterOtpFormContent() {
       if (role === "client") {
         router.push("/");
       } else {
-        router.push("/enable-2fa");
+        router.push("/verify-identity");
       }
     } catch (error: any) {
       console.error("Verification error:", error);

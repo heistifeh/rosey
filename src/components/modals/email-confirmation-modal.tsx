@@ -81,7 +81,7 @@ export function EmailConfirmationModal({
               A confirmation email has been sent. Please open
             </p>
             <p className="text-white text-base font-normal leading-relaxed">
-              it and follow the link to activate your account.
+              and use the codes to activate your account.
             </p>
           </div>
 

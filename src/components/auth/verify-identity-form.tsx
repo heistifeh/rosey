@@ -1,17 +1,34 @@
 "use client";
 
+import { apiBuilder } from "@/api/builder";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 export function VerifyIdentityForm() {
   const router = useRouter();
 
-  const handleNext = () => {
-    router.push("/capture-photo");
+  const handleNext = async () => {
+    try {
+      await apiBuilder.auth.updateUser({
+        onboarding_step: "/capture-photo"
+      });
+      router.push("/capture-photo");
+    } catch (error) {
+      console.error("Failed to save progress:", error);
+      router.push("/capture-photo");
+    }
   };
 
-  const handleSkip = () => {
-    router.push("/capture-photo");
+  const handleSkip = async () => {
+    try {
+      await apiBuilder.auth.updateUser({
+        onboarding_step: "/capture-photo"
+      });
+      router.push("/capture-photo");
+    } catch (error) {
+      console.error("Failed to save progress:", error);
+      router.push("/capture-photo");
+    }
   };
 
   const instructions = [

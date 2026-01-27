@@ -47,14 +47,15 @@ export default function ProviderLayout({
   const [showNotification, setShowNotification] = useState(true);
   const [mounted, setMounted] = useState(false);
   useCurrentUser();
-  const { data: profile, isLoading: profileLoading } = useProfile();
+  const { data: profile, isLoading: profileLoading, isFetching } = useProfile();
   const { data: profileImages = [] } = useProfileImages(profile?.id);
   const profileType =
     typeof profile?.profile_type === "string" ? profile.profile_type : "";
   const isEscort = profileType.toLowerCase() === "escort";
 
   useEffect(() => {
-    if (profileLoading) return;
+    // If loading or (fetching and we don't have a profile yet), wait.
+    if (profileLoading || (isFetching && !profile)) return;
 
     if (!profile) {
       router.replace("/login?redirect=/dashboard");
@@ -64,7 +65,7 @@ export default function ProviderLayout({
     if (!isEscort) {
       router.replace("/");
     }
-  }, [profileLoading, profile, isEscort, router]);
+  }, [profileLoading, isFetching, profile, isEscort, router]);
 
   useEffect(() => {
     setMounted(true);
@@ -83,7 +84,7 @@ export default function ProviderLayout({
     { label: "Wallet", href: "/dashboard/wallet", icon: Wallet },
   ];
 
-  if (profileLoading || !profile || !isEscort) {
+  if (profileLoading || (isFetching && !profile) || !profile || !isEscort) {
     return (
       <div className="min-h-screen bg-primary-bg flex items-center justify-center">
         <p className="text-primary-text text-sm">Checking your access…</p>
@@ -126,8 +127,8 @@ export default function ProviderLayout({
                           <Link
                             href={item.href}
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                                ? "bg-primary text-primary-text"
-                                : "text-text-gray-opacity hover:bg-primary-bg"
+                              ? "bg-primary text-primary-text"
+                              : "text-text-gray-opacity hover:bg-primary-bg"
                               }`}
                           >
                             <Icon className="h-5 w-5" />
@@ -163,8 +164,8 @@ export default function ProviderLayout({
                     <Link
                       href={item.href}
                       className={`flex items-center gap-2 text-sm font-medium transition-colors ${isActive
-                          ? "text-primary"
-                          : "text-[#8E8E93] hover:text-primary-text"
+                        ? "text-primary"
+                        : "text-[#8E8E93] hover:text-primary-text"
                         }`}
                     >
                       <Icon className="h-4 w-4" />

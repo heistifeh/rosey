@@ -29,7 +29,7 @@ const SUPABASE_URL =
 const STORAGE_BASE = `${SUPABASE_URL}/storage/v1`;
 
 const PROFILE_SELECT =
-  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images(public_url,is_primary), about,pronouns,languages,caters_to,age,height_cm,hair_color,eye_color,gender,gender_presentation,profile_type,trans_status,appear_on_other_profiles,trans_only,temporary_hide_days";
+  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images(public_url,is_primary), about,pronouns,languages,caters_to,age,height_cm,hair_color,eye_color,gender,gender_presentation,profile_type,trans_status,appear_on_other_profiles,trans_only,temporary_hide_days,onboarding_completed";
 const SEARCH_PROFILE_SELECT =
   "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,country,city_slug,country_slug,images!inner(public_url,is_primary)";
 
@@ -80,6 +80,14 @@ export const apiBuilder = {
       LOGINAPI.post("/resend", { email, type: "signup" }).then(
         (response) => response.data
       ),
+    updateUser: (metadata: { [key: string]: any }) => {
+      return LOGINAPI.put("/user", { data: metadata }).then(
+        (response) => {
+          setAuthCookie(response.data); // Update cookie with new metadata
+          return response.data;
+        }
+      );
+    },
   },
   locations: {
     getLocations: (query: string) => {

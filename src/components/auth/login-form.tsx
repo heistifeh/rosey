@@ -45,16 +45,48 @@ export function LoginForm() {
       reset();
 
       try {
-        const profile = await apiBuilder.profiles.getMyProfile();
-        const profileType = typeof profile?.profile_type === "string" ? profile.profile_type : "";
+        const user = await apiBuilder.auth.getCurrentUser();
+        const onboardingStep = user?.user_metadata?.onboarding_step;
+        const role = user?.user_metadata?.role;
 
-        if (profile && profileType.toLowerCase() === "escort") {
-          router.push("/dashboard");
+        const profile = await apiBuilder.profiles.getMyProfile();
+
+        // If profile exists...
+        if (profile) {
+          const profileType = typeof profile?.profile_type === "string" ? profile.profile_type : "";
+
+          // Check if onboarding is completed
+          if (profile.onboarding_completed) {
+            if (profileType.toLowerCase() === "escort") {
+              router.push("/dashboard");
+            } else {
+              router.push("/");
+            }
+            return;
+          } else {
+            // Profile exists but incomplete
+            // If we have a stored step, go there. 
+            // If NOT, and profile exists, the next logical step isn't 'setup-account' (which creates the profile), 
+            // but likely 'general-information' or 'verify-identity' depending on flow.
+            // Let's assume general-information is safe if they have a profile row but no specific step.
+            console.log("Profile incomplete, resuming to:", onboardingStep);
+            router.push(onboardingStep || "/general-information");
+            return;
+          }
+        }
+
+        // If no profile found, check user metadata for role/step
+        if (role === "escort") {
+          console.log("No profile found, resuming to:", onboardingStep);
+          // If no profile, they definitely need to go to setup-account to create one.
+          // Unless they have a specific step saved that is AFTER setup-account.
+          router.push(onboardingStep || "/setup-account");
         } else {
           router.push("/");
         }
+
       } catch (error) {
-        // If fetching profile fails or no profile exists, redirect to home
+        // Fallback
         router.push("/");
       }
     },

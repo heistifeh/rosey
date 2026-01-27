@@ -161,7 +161,7 @@ export function SetupAccountForm() {
                 </div>
               </div>
 
-              <div className="flex items-start space-x-2  ">
+              <div className="flex items-start space-x-2">
                 <Checkbox
                   id="agreement"
                   checked={formData.agreed}
@@ -206,17 +206,6 @@ export function SetupAccountForm() {
           <div className="absolute inset-0 flex items-end  px-[52px] pb-[87px]">
             <div className="flex flex-col gap-6 max-w-md">
               <div className="flex flex-col gap-4">
-                {/* <article className=" flex items-center ">
-                <h2 className="text-2xl xl:text-4xl font-semibold text-white">
-                  Welcome to{" "}
-                  <span className="text-primary petemoss text-[60px] font-normal">
-                {" "}  Rosey
-                </span>
-                </h2>
-                <span className="text-primary petemoss text-[60px] font-normal">
-                  Rosey
-                </span>
-              </article> */}
                 <h2 className="text-2xl xl:text-4xl font-semibold text-white">
                   Welcome to{" "}
                   <span className="text-primary petemoss text-[50px] font-normal">
