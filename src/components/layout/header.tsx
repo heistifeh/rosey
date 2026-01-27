@@ -6,14 +6,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuthStore } from "@/stores/auth-store";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 export function Header() {
     const [activeNav, setActiveNav] = useState("Home");
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+    useCurrentUser();
     const user = useAuthStore((state) => state.user);
     const clearUser = useAuthStore((state) => state.clearUser);
     const router = useRouter();
+    const isEscort = (user?.role ?? "").toLowerCase() === "escort";
 
     const handleAuthAction = () => {
         if (user) {
@@ -75,6 +78,15 @@ export function Header() {
                                 />
                             </div>
                             <div className="flex items-center justify-center gap-3 cursor-pointer">
+                                {isEscort && (
+                                    <Link
+                                        href="/dashboard"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="rounded-[200px] bg-primary px-6 py-3 text-sm font-semibold text-primary-text text-center w-full"
+                                    >
+                                        Dashboard
+                                    </Link>
+                                )}
                                 <button
                                     type="button"
                                     onClick={handleAuthAction}
@@ -128,6 +140,14 @@ export function Header() {
                         />
                     </div>
                     <div className="flex items-center gap-2">
+                        {isEscort && (
+                            <Link
+                                href="/dashboard"
+                                className="cursor-pointer rounded-[200px] border border-primary px-[24px] py-[12px] text-primary text-base font-semibold whitespace-nowrap hover:bg-primary/10 transition-colors"
+                            >
+                                Dashboard
+                            </Link>
+                        )}
                         <button
                             type="button"
                             onClick={handleAuthAction}

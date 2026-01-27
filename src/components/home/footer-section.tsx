@@ -44,7 +44,31 @@ const locationLinks = [
   { label: "Escorts in Miami", href: "/escorts/us/miami" },
 ];
 
-export function FooterSection() {
+type FooterSectionProps = {
+  relatedLocations?: { label: string; href: string }[];
+  relatedHeading?: string;
+  relatedDescription?: string;
+};
+
+export function FooterSection({
+  relatedLocations,
+  relatedHeading,
+  relatedDescription,
+}: FooterSectionProps) {
+  const hasRelated = Boolean(relatedLocations && relatedLocations.length > 0);
+  const locationsToRender = hasRelated ? relatedLocations! : locationLinks;
+  const chunkSize =
+    locationsToRender.length > 0
+      ? Math.ceil(locationsToRender.length / 4)
+      : 0;
+  const locationColumns =
+    chunkSize > 0
+      ? Array.from({ length: Math.ceil(locationsToRender.length / chunkSize) })
+        .map((_, idx) =>
+          locationsToRender.slice(idx * chunkSize, (idx + 1) * chunkSize),
+        )
+      : [];
+
   return (
     <footer className="w-full bg-primary-bg">
       <div className="px-4 md:px-[60px] py-8 md:py-12">
@@ -173,20 +197,33 @@ export function FooterSection() {
         <div className="border-t border-dark-border my-8"></div>
 
         {/* Bottom Section - Location Links */}
-        <div className="pt-4 md:pt-8 grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-8">
-          {[1, 2, 3, 4].map((colIndex) => (
-            <div key={colIndex} className="flex flex-col gap-2 md:gap-3">
-              {locationLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className="text-text-gray text-sm md:text-base hover:text-primary-text transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          ))}
+        <div className="pt-4 md:pt-8 flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <h3 className="text-base md:text-lg font-semibold text-primary-text">
+              {hasRelated ? relatedHeading || "Related cities" : "Locations"}
+            </h3>
+            <p className="text-sm text-text-gray-opacity">
+              {hasRelated
+                ? relatedDescription ||
+                "Explore nearby cities to find more providers."
+                : "Browse popular locations on Rosey."}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-8">
+            {locationColumns.map((column, idx) => (
+              <div key={idx} className="flex flex-col gap-2 md:gap-3">
+                {column.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    className="text-text-gray text-sm md:text-base hover:text-primary-text transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </footer>

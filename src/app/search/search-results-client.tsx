@@ -17,7 +17,7 @@ import { apiBuilder } from "@/api/builder";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
 import { ProfileCard } from "@/components/profile-card";
 import type { Profile } from "@/types/types";
-
+import { FooterSection } from "@/components/home/footer-section";
 import { useLocationAutocomplete } from "@/hooks/use-location-autocomplete";
 
 const formatSlug = (slug: string) =>
@@ -41,6 +41,42 @@ type SearchResultsClientProps = {
 };
 
 const genderOptions = ["All", "Female", "Male", "Trans", "Non-Binary"];
+
+const FALLBACK_CITIES_BY_COUNTRY: Record<string, string[]> = {
+  nigeria: ["lagos", "abuja", "port-harcourt", "ibadan", "kano"],
+  us: ["new-york", "los-angeles", "miami", "chicago", "las-vegas", "houston"],
+  "united-kingdom": ["london", "manchester", "birmingham", "liverpool"],
+  france: ["paris", "marseille", "lyon"],
+  canada: ["toronto", "vancouver", "montreal", "calgary"],
+  germany: ["berlin", "munich", "hamburg", "frankfurt"],
+  spain: ["madrid", "barcelona", "valencia", "sevilla"],
+  "united-arab-emirates": ["dubai", "abu-dhabi", "sharjah"],
+  mexico: ["mexico-city", "guadalajara", "monterrey"],
+  australia: ["sydney", "melbourne", "brisbane"],
+  japan: ["tokyo", "osaka", "yokohama"],
+  brazil: ["rio-de-janeiro", "sao-paulo", "brasilia"],
+  netherlands: ["amsterdam", "rotterdam", "the-hague"],
+  kenya: ["nairobi", "mombasa", "kisumu"],
+  "south-africa": ["cape-town", "johannesburg", "durban"],
+  thailand: ["bangkok", "chiang-mai", "phuket"],
+};
+
+const normalizeCountryKey = (slug?: string) => {
+  if (!slug) return undefined;
+  const key = slug.toLowerCase();
+  const aliases: Record<string, string> = {
+    usa: "us",
+    "u.s.": "us",
+    "u.s.a": "us",
+    "united-states": "us",
+    "united-states-of-america": "us",
+    uk: "united-kingdom",
+    "u.k.": "united-kingdom",
+    uae: "united-arab-emirates",
+    "u.a.e.": "united-arab-emirates",
+  };
+  return aliases[key] ?? key;
+};
 
 export function SearchResultsClient({
   initialParams,
@@ -230,6 +266,73 @@ export function SearchResultsClient({
 
   const showEmptyState = enabled && !loading && finalProfiles.length === 0;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const relatedCities = useMemo(() => {
+    const seen = new Set<string>();
+    const locations: { label: string; href: string }[] = [];
+    const genderQuery =
+      params.gender && params.gender !== "All" ? params.gender : undefined;
+
+    const buildHref = (citySlug?: string, countrySlug?: string) => {
+      const search = new URLSearchParams();
+      if (countrySlug) search.set("country", countrySlug);
+      if (citySlug) search.set("city", citySlug);
+      if (genderQuery) search.set("gender", genderQuery);
+      return `/search${search.toString() ? `?${search.toString()}` : ""}`;
+    };
+
+    [...sponsoredProfiles, ...organicProfiles].forEach((profile) => {
+      const citySlug = profile.city_slug;
+      const countrySlug = profile.country_slug;
+      if (!citySlug || !countrySlug) return;
+      if (params.citySlug && citySlug === params.citySlug) return;
+      const key = `${citySlug}-${countrySlug}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+
+      const cityLabel = formatSlug(citySlug);
+      const countryLabel = formatSlug(countrySlug);
+      locations.push({
+        label: `${cityLabel}, ${countryLabel}`,
+        href: buildHref(citySlug, countrySlug),
+      });
+    });
+
+    const normalizedCountry = normalizeCountryKey(params.countrySlug);
+
+    if (locations.length === 0 && normalizedCountry) {
+      locations.push({
+        label: `All escorts in ${formatSlug(params.countrySlug)}`,
+        href: buildHref(undefined, params.countrySlug),
+      });
+    }
+
+    if (locations.length < 16) {
+      const inferredCountry =
+        normalizedCountry ||
+        normalizeCountryKey(
+          organicProfiles[0]?.country_slug ||
+          sponsoredProfiles[0]?.country_slug,
+        );
+
+      const fallbackCities =
+        (inferredCountry && FALLBACK_CITIES_BY_COUNTRY[inferredCountry]) ?? [];
+      fallbackCities.forEach((citySlug) => {
+        if (locations.length >= 16) return;
+        const key = `${citySlug}-${inferredCountry}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        locations.push({
+          label: `${formatSlug(citySlug)}, ${formatSlug(
+            inferredCountry || params.countrySlug || "",
+          )}`,
+          href: buildHref(citySlug, inferredCountry),
+        });
+      });
+    }
+
+    return locations.slice(0, 16);
+  }, [organicProfiles, params.citySlug, params.gender, params.countrySlug, sponsoredProfiles]);
 
   return (
     <section className="relative z-10 w-full bg-input-bg pb-12 pt-0 md:pb-16">
@@ -497,7 +600,13 @@ export function SearchResultsClient({
             </div>
           )}
         </div>
+
       </div>
+      <FooterSection
+        relatedLocations={relatedCities}
+        relatedHeading="Related cities"
+        relatedDescription="Explore other nearby cities to find more providers."
+      />
     </section>
   );
 }

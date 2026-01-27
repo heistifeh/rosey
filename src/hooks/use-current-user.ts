@@ -24,6 +24,7 @@ export function useCurrentUser() {
       id: user.id,
       email: user.email ?? user.user_metadata?.email,
       name: user.user_metadata?.name,
+      role: user.user_metadata?.role,
     });
   }, [clearUser, setUser]);
 }

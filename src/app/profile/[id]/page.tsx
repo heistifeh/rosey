@@ -98,7 +98,7 @@ const allProfiles = [
     name: "Natalie Fox",
     price: "$250",
     location: "Michigan, Detroit",
-    status: "Unavailable",
+    status: "Available",
     image: "/images/girl10.png",
   },
   {
@@ -122,7 +122,7 @@ const allProfiles = [
     name: "Jessy Hollywood",
     price: "$250",
     location: "Michigan, Detroit",
-    status: "Unavailable",
+    status: "Available",
     image: "/images/girl13.png",
   },
   {
@@ -138,7 +138,7 @@ const allProfiles = [
     name: "Eva Damsel",
     price: "$150",
     location: "Michigan, Detroit",
-    status: "Unavailable",
+    status: "Available",
     image: "/images/girl15.png",
   },
   {

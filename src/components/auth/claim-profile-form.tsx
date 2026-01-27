@@ -78,12 +78,14 @@ export function ClaimProfileForm() {
         if (values.email) {
           await apiBuilder.auth.sendOtp({
             email: values.email,
-            type: "email",
+            type: "signup",
+            create_user: true,
           } as any);
         } else if (values.phone) {
           await apiBuilder.auth.sendOtp({
             phone: values.phone,
             type: "sms",
+            create_user: true,
           } as any);
         }
         toast.success("Profile found! OTP sent.", { id: "send-otp" });
@@ -112,7 +114,7 @@ export function ClaimProfileForm() {
         authResponse = await apiBuilder.auth.verifyOtp({
           email: cleanEmail,
           token: code,
-          type: "email",
+          type: "signup",
         });
       } else if (contactInfo.phone) {
         authResponse = await apiBuilder.auth.verifyOtp({
@@ -166,12 +168,14 @@ export function ClaimProfileForm() {
         if (contactInfo.email) {
           await apiBuilder.auth.sendOtp({
             email: contactInfo.email,
-            type: "email",
+            type: "signup",
+            create_user: true,
           } as any);
         } else {
           await apiBuilder.auth.sendOtp({
             phone: contactInfo.phone,
             type: "sms",
+            create_user: true,
           } as any);
         }
         toast.success("OTP Code resent!");

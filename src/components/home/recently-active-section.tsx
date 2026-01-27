@@ -34,7 +34,7 @@ export function RecentlyActiveSection() {
         name: profile.working_name ?? "Provider",
         price,
         location,
-        status: profile.is_active ? "Available" : "Unavailable",
+        status: "Available",
         image: imageUrl,
         username: profile.username,
       };
@@ -106,12 +106,7 @@ export function RecentlyActiveSection() {
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 md:gap-2 rounded-[200px] px-2 py-1 md:px-3 md:py-2">
-                      <Circle
-                        className={`h-1.5 w-1.5 md:h-2 md:w-2 fill-current ${profile.status === "Unavailable"
-                          ? "text-red-500"
-                          : "text-emerald-400"
-                          }`}
-                      />
+                      <Circle className="h-1.5 w-1.5 md:h-2 md:w-2 fill-current text-emerald-400" />
                       <span className="text-xs md:text-sm lg:text-[16px] font-normal text-primary-text">
                         {profile.status}
                       </span>
