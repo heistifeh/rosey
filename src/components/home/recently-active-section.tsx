@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { ArrowRight, MapPin, Circle } from "lucide-react";
+import { ArrowRight, Circle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiBuilder } from "@/api/builder";
 import type { Profile } from "@/types/types";
@@ -23,17 +23,9 @@ export function RecentlyActiveSection() {
       const primaryImage =
         images.find((img) => img.is_primary) ?? images[0];
       const imageUrl = primaryImage?.public_url || "/images/girl1.png";
-      const location = [profile.city, profile.country].filter(Boolean).join(", ");
-      const price =
-        profile.base_currency && profile.base_hourly_rate
-          ? `${profile.base_currency}${profile.base_hourly_rate}`
-          : "—";
-
       return {
         id: profile.id,
         name: profile.working_name ?? "Provider",
-        price,
-        location,
         status: "Available",
         image: imageUrl,
         username: profile.username,
@@ -93,24 +85,13 @@ export function RecentlyActiveSection() {
                     <p className="text-base md:text-lg lg:text-[24px] font-normal text-primary-text">
                       {profile.name}
                     </p>
-                    <p className="text-xl md:text-2xl lg:text-[36px] font-semibold text-primary-text">
-                      {profile.price}
-                    </p>
                   </div>
 
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-2.5 w-2.5 md:h-3 md:w-3" />
-                      <span className="text-xs md:text-sm lg:text-[16px] font-normal text-text-gray-opacity">
-                        {profile.location || "—"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 md:gap-2 rounded-[200px] px-2 py-1 md:px-3 md:py-2">
-                      <Circle className="h-1.5 w-1.5 md:h-2 md:w-2 fill-current text-emerald-400" />
-                      <span className="text-xs md:text-sm lg:text-[16px] font-normal text-primary-text">
-                        {profile.status}
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-1.5 md:gap-2 rounded-[200px] px-2 py-1 md:px-3 md:py-2">
+                    <Circle className="h-1.5 w-1.5 md:h-2 md:w-2 fill-current text-emerald-400" />
+                    <span className="text-xs md:text-sm lg:text-[16px] font-normal text-primary-text">
+                      {profile.status}
+                    </span>
                   </div>
                 </div>
               </Link>

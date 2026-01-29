@@ -424,7 +424,7 @@ export function UploadPicturesForm({
           tagline: allData.tagline,
           about: allData.about,
           base_hourly_rate: parseIntSafe(allData.baseHourlyRates),
-          base_currency: (allData.baseCurrency || "NGN")
+          base_currency: (allData.baseCurrency || "$")
             .substring(0, 3)
             .toUpperCase(),
           available_days:

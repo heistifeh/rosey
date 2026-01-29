@@ -124,7 +124,7 @@ export function ProfileSetupTabs() {
 
         const ratesData = {
           baseHourlyRates: profile.base_hourly_rate?.toString() || "",
-          baseCurrency: profile.base_currency || "NGN",
+          baseCurrency: profile.base_currency || "$",
         };
 
         // Parse availability

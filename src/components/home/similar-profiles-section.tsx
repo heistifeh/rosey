@@ -45,11 +45,6 @@ export function SimilarProfilesSection({
             const locationLabel = [profile.city, profile.country]
               .filter(Boolean)
               .join(", ");
-            const priceLabel =
-              profile.base_currency && profile.base_hourly_rate
-                ? `${profile.base_currency}${profile.base_hourly_rate}`
-                : "—";
-
             return (
               <Link
                 key={profile.id}
@@ -69,9 +64,6 @@ export function SimilarProfilesSection({
                   <div className="flex items-start justify-between gap-2 mb-2 min-w-0">
                     <p className="text-sm font-semibold text-primary-text leading-snug min-w-0">
                       {profile.working_name ?? "Provider"}
-                    </p>
-                    <p className="text-sm sm:text-base font-semibold text-primary-text whitespace-nowrap">
-                      {priceLabel}
                     </p>
                   </div>
                   <div className="flex flex-col items-start gap-2 text-xs sm:flex-row sm:items-center sm:justify-between">

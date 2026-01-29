@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { ArrowRight, MapPin, Circle } from "lucide-react";
+import { ArrowRight, Circle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { apiBuilder } from "@/api/builder";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
@@ -41,9 +41,6 @@ type NormalizedAvailableNowItem = {
   profileId: string;
   username: string | null;
   workingName: string;
-  baseCurrency: string | null;
-  baseHourlyRate: number | null;
-  locationLabel: string;
   imageUrl: string;
 };
 
@@ -69,18 +66,11 @@ export function AvailableNowSection({
           const images = profile.images ?? [];
           const primary = images.find((img) => img.is_primary) ?? images[0];
           const imageUrl = primary?.public_url || "/images/girl1.png";
-          const locationLabel = [profile.city, profile.country]
-            .filter(Boolean)
-            .join(", ");
-
           return {
             adId: ad.id,
             profileId: profile.id,
             username: profile.username,
             workingName: profile.working_name ?? "Provider",
-            baseCurrency: profile.base_currency,
-            baseHourlyRate: profile.base_hourly_rate,
-            locationLabel,
             imageUrl,
           };
         })
@@ -158,25 +148,13 @@ export function AvailableNowSection({
                     <p className="text-base md:text-lg lg:text-[24px] font-normal text-primary-text">
                       {item.workingName}
                     </p>
-                    <p className="text-xl md:text-2xl lg:text-[36px] font-semibold text-primary-text">
-                      {item.baseCurrency}
-                      {item.baseHourlyRate}
-                    </p>
                   </div>
 
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-2.5 w-2.5 md:h-3 md:w-3" />
-                      <span className="text-xs md:text-sm lg:text-[16px] font-normal text-text-gray-opacity">
-                        {item.locationLabel}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 md:gap-2 bg-input-bg rounded-[200px] px-2 py-1 md:px-3 md:py-2">
-                      <Circle className="h-1.5 w-1.5 md:h-2 md:w-2 fill-current text-emerald-400" />
-                      <span className="text-xs md:text-sm lg:text-[16px] font-normal text-primary-text">
-                        Available Now
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-1.5 md:gap-2 bg-input-bg rounded-[200px] px-2 py-1 md:px-3 md:py-2">
+                    <Circle className="h-1.5 w-1.5 md:h-2 md:w-2 fill-current text-emerald-400" />
+                    <span className="text-xs md:text-sm lg:text-[16px] font-normal text-primary-text">
+                      Available Now
+                    </span>
                   </div>
                 </div>
               </Link>
