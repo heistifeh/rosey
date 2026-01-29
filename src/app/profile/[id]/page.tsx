@@ -557,16 +557,41 @@ export default function ProfilePage({
         supabaseProfile?.country_slug,
         supabaseProfile?.gender,
       ],
-      enabled: Boolean(
-        supabaseProfile?.city_slug && supabaseProfile?.country_slug,
-      ),
-      queryFn: () =>
-        apiBuilder.profiles.getProfiles({
-          citySlug: supabaseProfile?.city_slug ?? undefined,
-          countrySlug: supabaseProfile?.country_slug ?? undefined,
-          gender: supabaseProfile?.gender,
-          applyDefaults: false,
-        }),
+      enabled: Boolean(supabaseProfile?.country_slug),
+      queryFn: async () => {
+        if (!supabaseProfile?.country_slug) return [];
+
+        const gender = supabaseProfile.gender;
+        const countrySlug = supabaseProfile.country_slug;
+        const citySlug = supabaseProfile.city_slug ?? undefined;
+
+        let results: Profile[] = [];
+        if (citySlug) {
+          results =
+            (await apiBuilder.profiles.getProfiles({
+              citySlug,
+              countrySlug,
+              gender,
+              applyDefaults: false,
+            })) ?? [];
+        }
+
+        const filtered = results.filter(
+          (item) => item.id !== supabaseProfile.id,
+        );
+
+        if (filtered.length > 0 || !countrySlug) {
+          return results;
+        }
+
+        return (
+          (await apiBuilder.profiles.getProfiles({
+            countrySlug,
+            gender,
+            applyDefaults: false,
+          })) ?? []
+        );
+      },
     });
 
   const isOwner =
