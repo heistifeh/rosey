@@ -12,6 +12,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { apiBuilder } from "@/api/builder";
 import { useWallet } from "@/hooks/use-wallet";
 
@@ -154,6 +162,7 @@ const makeCityKey = (
 export default function PlaceAdPage() {
   const [selectedCities, setSelectedCities] = useState<Record<string, SelectedCity>>({});
   const [isPlacing, setIsPlacing] = useState(false);
+  const [isLowBalanceOpen, setIsLowBalanceOpen] = useState(false);
   const [adTitle, setAdTitle] = useState("");
   const [placementAvailableNow, setPlacementAvailableNow] = useState(false);
   const router = useRouter();
@@ -171,6 +180,7 @@ export default function PlaceAdPage() {
   );
   const trimmedTitle = adTitle.trim();
   const hasTitle = trimmedTitle.length > 0;
+  const hasInsufficientCredits = creditsUsed > availableCredits;
 
   const isAllSelected = useMemo(
     () =>
@@ -244,8 +254,7 @@ export default function PlaceAdPage() {
     setSelectedCities(next);
   }, [isAllSelected]);
 
-  const canPlaceAd =
-    hasTitle && citiesSelected > 0 && creditsUsed <= availableCredits;
+  const canPlaceAd = hasTitle && citiesSelected > 0;
 
   const handlePlaceAd = useCallback(async () => {
     if (!hasTitle) {
@@ -256,10 +265,8 @@ export default function PlaceAdPage() {
       toast.error("Select at least one city.");
       return;
     }
-    if (creditsUsed > availableCredits) {
-      toast.error(
-        `Not enough credits. You need ${creditsUsed}, you have ${availableCredits}.`
-      );
+    if (hasInsufficientCredits) {
+      setIsLowBalanceOpen(true);
       return;
     }
 
@@ -282,11 +289,12 @@ export default function PlaceAdPage() {
     }
   }, [
     citiesSelected,
-    creditsUsed,
     availableCredits,
+    creditsUsed,
     selectedValues,
     trimmedTitle,
     hasTitle,
+    hasInsufficientCredits,
     placementAvailableNow,
     router,
   ]);
@@ -450,6 +458,32 @@ export default function PlaceAdPage() {
           </Button>
         </div>
       </div>
+
+      <Dialog open={isLowBalanceOpen} onOpenChange={setIsLowBalanceOpen}>
+        <DialogContent className="sm:max-w-md bg-[#1E1E1E] border-border-gray text-white">
+          <DialogHeader>
+            <DialogTitle>Insufficient credits</DialogTitle>
+            <DialogDescription className="text-text-gray">
+              You need {creditsUsed.toLocaleString()} credits to place this ad,
+              but your wallet has {availableCredits.toLocaleString()}.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setIsLowBalanceOpen(false)}
+              className="bg-transparent border-border-gray text-white hover:bg-white/10"
+            >
+              Close
+            </Button>
+            <Link href="/dashboard/wallet" className="w-full sm:w-auto">
+              <Button className="w-full bg-primary text-white hover:bg-primary/90">
+                Add credits
+              </Button>
+            </Link>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

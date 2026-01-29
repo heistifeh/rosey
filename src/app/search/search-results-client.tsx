@@ -409,20 +409,20 @@ export function SearchResultsClient({
 
       <div className="mx-auto flex w-full flex-col gap-6 px-4 md:px-[60px] pt-10">
         <div className="flex flex-col gap-6 ">
-          <div className="mb-2 flex flex-col gap-1 md:gap-2">
+          <div className="mb-2 flex flex-col gap-1 md:gap-2 text-center">
             <h1 className="text-2xl font-bold text-primary-text md:text-4xl">
               {params.citySlug
-                ? `Find Independent Escorts in ${formatSlug(params.citySlug)}`
+                ? `Find independent escorts in ${formatSlug(params.citySlug)}`
                 : params.countrySlug
-                  ? `Find Independent Escorts in ${formatSlug(params.countrySlug)}`
-                  : "Find Independent Escorts"}
+                  ? `Find independent escorts in ${formatSlug(params.countrySlug)}`
+                  : "Find independent escorts"}
             </h1>
             <p className="text-xs font-normal text-white md:text-sm">
               {params.citySlug
-                ? `Discover all the adult entertainers in ${formatSlug(params.citySlug)}. From Escorts, BDSM, Kink, Video, Massage and much more.`
+                ? "Fast, real, and unforgettable. Explore escorts, BDSM, kink, video, massage, and more."
                 : params.countrySlug
-                  ? `Discover all the adult entertainers in ${formatSlug(params.countrySlug)}. From Escorts, BDSM, Kink, Video, Massage and much more.`
-                  : "Discover adult entertainers worldwide. From Escorts, BDSM, Kink, Video, Massage and much more."}
+                  ? "Fast, real, and unforgettable. Explore escorts, BDSM, kink, video, massage, and more."
+                  : "Fast, real, and unforgettable. Explore escorts, BDSM, kink, video, massage, and more."}
             </p>
           </div>
           <div className="flex flex-col gap-3 rounded-[24px] bg-primary-bg p-3 shadow-sm md:p-4">
