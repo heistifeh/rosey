@@ -1,5 +1,7 @@
 import { Mail, Phone, MapPin, ArrowRight as ArrowRightIcon } from "lucide-react";
 import { Instagram } from "lucide-react";
+import { EmailProviderButton } from "@/components/email-provider-button";
+import { TextProviderButton } from "@/components/text-provider-button";
 
 interface ProfileContactSectionProps {
   contact: {
@@ -27,9 +29,7 @@ export function ProfileContactSection({
               <p className="text-sm text-primary-text">{contact.email}</p>
             </div>
           </div>
-          <button className="p-2 rounded-full bg-primary text-primary-text hover:bg-primary/90 transition-colors">
-            <ArrowRightIcon className="h-4 w-4" />
-          </button>
+          <EmailProviderButton providerEmail={contact.email} />
         </div>
         <div className="flex items-center justify-between bg-primary-bg rounded-xl p-3 border border-dark-border">
           <div className="flex items-center gap-3">
@@ -41,9 +41,7 @@ export function ProfileContactSection({
               <p className="text-sm text-primary-text">{contact.phone}</p>
             </div>
           </div>
-          <button className="p-2 rounded-full bg-primary text-primary-text hover:bg-primary/90 transition-colors">
-            <ArrowRightIcon className="h-4 w-4" />
-          </button>
+          <TextProviderButton providerPhone={contact.phone} />
         </div>
         {contact.instagram && (
           <div className="flex items-center justify-between bg-primary-bg rounded-xl p-3 border border-dark-border">
@@ -79,4 +77,3 @@ export function ProfileContactSection({
     </section>
   );
 }
-
