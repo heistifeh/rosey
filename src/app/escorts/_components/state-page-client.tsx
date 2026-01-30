@@ -9,47 +9,11 @@ import { SafeImage } from "@/components/ui/safe-image";
 import { FooterSection } from "@/components/home/footer-section";
 import type { Profile } from "@/types/types";
 
-export type CityPageClientProps = {
+export type StatePageClientProps = {
   params?: {
     countrySlug: string;
-    citySlug: string;
+    stateSlug: string;
   };
-};
-
-const FALLBACK_CITIES_BY_COUNTRY: Record<string, string[]> = {
-  nigeria: ["lagos", "abuja", "port-harcourt", "ibadan", "kano"],
-  us: ["new-york", "los-angeles", "miami", "chicago", "las-vegas", "houston"],
-  "united-kingdom": ["london", "manchester", "birmingham", "liverpool"],
-  france: ["paris", "marseille", "lyon"],
-  canada: ["toronto", "vancouver", "montreal", "calgary"],
-  germany: ["berlin", "munich", "hamburg", "frankfurt"],
-  spain: ["madrid", "barcelona", "valencia", "sevilla"],
-  "united-arab-emirates": ["dubai", "abu-dhabi", "sharjah"],
-  mexico: ["mexico-city", "guadalajara", "monterrey"],
-  australia: ["sydney", "melbourne", "brisbane"],
-  japan: ["tokyo", "osaka", "yokohama"],
-  brazil: ["rio-de-janeiro", "sao-paulo", "brasilia"],
-  netherlands: ["amsterdam", "rotterdam", "the-hague"],
-  kenya: ["nairobi", "mombasa", "kisumu"],
-  "south-africa": ["cape-town", "johannesburg", "durban"],
-  thailand: ["bangkok", "chiang-mai", "phuket"],
-};
-
-const normalizeCountryKey = (slug?: string) => {
-  if (!slug) return undefined;
-  const key = slug.toLowerCase();
-  const aliases: Record<string, string> = {
-    usa: "us",
-    "u.s.": "us",
-    "u.s.a": "us",
-    "united-states": "us",
-    "united-states-of-america": "us",
-    uk: "united-kingdom",
-    "u.k.": "united-kingdom",
-    uae: "united-arab-emirates",
-    "u.a.e.": "united-arab-emirates",
-  };
-  return aliases[key] ?? key;
 };
 
 const formatSlug = (slug: string) =>
@@ -58,24 +22,23 @@ const formatSlug = (slug: string) =>
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-export function CityPageClient({ params }: CityPageClientProps) {
-  console.log("CityPageClient params:", params);
-  const { countrySlug, citySlug } = params || {};
+export function StatePageClient({ params }: StatePageClientProps) {
+  const { countrySlug, stateSlug } = params || {};
 
-  const invalidParams = !citySlug || !countrySlug;
-  const cityName = citySlug ? citySlug.replace(/-/g, " ") : "";
+  const invalidParams = !stateSlug || !countrySlug;
+  const stateName = stateSlug ? stateSlug.replace(/-/g, " ") : "";
   const countryName = countrySlug ? countrySlug.replace(/-/g, " ") : "";
 
   const {
     data: organicProfiles = [],
     isLoading: loadingOrganic,
   } = useQuery<Profile[]>({
-    queryKey: ["city-organic", countrySlug, citySlug],
+    queryKey: ["state-organic", countrySlug, stateSlug],
     queryFn: () =>
       invalidParams
         ? Promise.resolve([])
-        : apiBuilder.profiles.getCityProfiles({
-          citySlug: citySlug!,
+        : apiBuilder.profiles.getStateProfiles({
+          stateSlug: stateSlug!,
           countrySlug: countrySlug!,
         }),
     enabled: !invalidParams,
@@ -85,12 +48,12 @@ export function CityPageClient({ params }: CityPageClientProps) {
     data: sponsoredProfiles = [],
     isLoading: loadingSponsored,
   } = useQuery<Profile[]>({
-    queryKey: ["city-sponsored", countrySlug, citySlug],
+    queryKey: ["state-sponsored", countrySlug, stateSlug],
     queryFn: () =>
       invalidParams
         ? Promise.resolve([])
-        : apiBuilder.ads.getSponsoredProfilesForCity({
-          citySlug: citySlug!,
+        : apiBuilder.ads.getSponsoredProfilesForState({
+          stateSlug: stateSlug!,
           countrySlug: countrySlug!,
         }),
     enabled: !invalidParams,
@@ -109,64 +72,24 @@ export function CityPageClient({ params }: CityPageClientProps) {
     const seen = new Set<string>();
     const locations: { label: string; href: string }[] = [];
 
-    const buildHref = (city?: string, country?: string) => {
-      const search = new URLSearchParams();
-      if (country) search.set("country", country);
-      if (city) search.set("city", city);
-      return `/search${search.toString() ? `?${search.toString()}` : ""}`;
-    };
-
     [...sponsoredProfiles, ...organicProfiles].forEach((profile) => {
       const cSlug = profile.city_slug;
-      const coSlug = profile.country_slug;
-      if (!cSlug || !coSlug) return;
-      if (cSlug === citySlug && coSlug === countrySlug) return;
+      const sSlug = profile.state_slug ?? stateSlug;
+      const coSlug = profile.country_slug ?? countrySlug;
+      if (!cSlug || !sSlug || !coSlug) return;
 
-      const key = `${cSlug}-${coSlug}`;
+      const key = `${cSlug}-${sSlug}-${coSlug}`;
       if (seen.has(key)) return;
       seen.add(key);
 
       locations.push({
-        label: `${formatSlug(cSlug)}, ${formatSlug(coSlug)}`,
-        href: buildHref(cSlug, coSlug),
+        label: `${formatSlug(cSlug)}, ${formatSlug(sSlug)}`,
+        href: `/escorts/${coSlug}/${sSlug}/${cSlug}`,
       });
     });
 
-    const normalizedCountry = normalizeCountryKey(countrySlug);
-
-    if (locations.length === 0 && normalizedCountry) {
-      locations.push({
-        label: `All escorts in ${formatSlug(countrySlug)}`,
-        href: buildHref(undefined, countrySlug),
-      });
-    }
-
-    if (locations.length < 16) {
-      const inferredCountry =
-        normalizedCountry ||
-        normalizeCountryKey(
-          organicProfiles[0]?.country_slug ||
-          sponsoredProfiles[0]?.country_slug,
-        );
-
-      const fallbackCities =
-        (inferredCountry && FALLBACK_CITIES_BY_COUNTRY[inferredCountry]) ?? [];
-      fallbackCities.forEach((city) => {
-        if (locations.length >= 16) return;
-        const key = `${city}-${inferredCountry}`;
-        if (seen.has(key)) return;
-        seen.add(key);
-        locations.push({
-          label: `${formatSlug(city)}, ${formatSlug(
-            inferredCountry || countrySlug || "",
-          )}`,
-          href: buildHref(city, inferredCountry),
-        });
-      });
-    }
-
     return locations.slice(0, 16);
-  }, [countrySlug, citySlug, invalidParams, organicProfiles, sponsoredProfiles]);
+  }, [countrySlug, invalidParams, organicProfiles, sponsoredProfiles, stateSlug]);
 
   return (
     <section className="relative z-10 w-full bg-input-bg pb-12 pt-10 md:pb-16 md:pt-20">
@@ -174,15 +97,15 @@ export function CityPageClient({ params }: CityPageClientProps) {
         <div className="flex flex-col gap-2">
           {invalidParams ? (
             <h1 className="text-xl md:text-2xl lg:text-[36px] font-semibold text-primary-text">
-              Invalid city or country
+              Invalid state or country
             </h1>
           ) : (
             <>
               <h1 className="text-xl md:text-2xl lg:text-[36px] font-semibold text-primary-text">
-                Escorts in {cityName}, {countryName}
+                Escorts in {stateName}, {countryName}
               </h1>
               <p className="text-sm md:text-base text-text-gray-opacity">
-                Browse verified escorts in {cityName}, {countryName}.
+                Browse verified escorts in {stateName}, {countryName}.
               </p>
             </>
           )}
@@ -232,16 +155,15 @@ export function CityPageClient({ params }: CityPageClientProps) {
 
           {!isLoading && finalProfiles.length === 0 && (
             <div className="col-span-full py-10 text-center text-text-gray-opacity">
-              No escorts found in this city yet.
+              No escorts found in this state yet.
             </div>
           )}
         </div>
-
       </div>
       <FooterSection
         relatedLocations={relatedCities}
-        relatedHeading="Related cities"
-        relatedDescription="Explore other cities and find more providers nearby."
+        relatedHeading="Cities in this state"
+        relatedDescription="Explore cities in this state and find more providers nearby."
       />
     </section>
   );

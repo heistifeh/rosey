@@ -14,6 +14,7 @@ export interface LocationSuggestion {
   state?: string;
   country: string;
   city_slug: string;
+  state_slug?: string;
   country_slug: string;
   fullLabel: string;
 }
@@ -166,6 +167,7 @@ export function useLocationAutocomplete(
                           state: state ?? undefined,
                           country,
                           city_slug: slugifyLocation(city),
+                          state_slug: state ? slugifyLocation(state) : undefined,
                           country_slug: slugifyLocation(country),
                           fullLabel:
                             details.formatted_address ?? prediction.description,
