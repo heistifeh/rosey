@@ -34,6 +34,7 @@ export function ProfileSetupFormContent({
     bodyType: "",
     hairColor: "",
     friendly420: "",
+    contactEmail: "",
     phoneNumber: "",
     instagramHandle: "",
   });
@@ -397,6 +398,23 @@ export function ProfileSetupFormContent({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex flex-col gap-2">
             <Label
+              htmlFor="contactEmail"
+              className="text-[14px] font-semibold text-primary-text"
+            >
+              Contact Email
+            </Label>
+            <Input
+              id="contactEmail"
+              type="email"
+              value={formData.contactEmail}
+              onChange={(e) => handleChange("contactEmail", e.target.value)}
+            />
+            <p className="text-[12px] font-normal text-text-gray-opacity">
+              Provide an email where clients can reach you for bookings.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label
               htmlFor="phoneNumber"
               className="text-[14px] font-semibold text-primary-text"
             >
@@ -412,6 +430,9 @@ export function ProfileSetupFormContent({
               Provide a number where clients can reach you for bookings.
             </p>
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex flex-col gap-2">
             <Label
               htmlFor="instagramHandle"

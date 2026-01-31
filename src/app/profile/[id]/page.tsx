@@ -346,6 +346,9 @@ type SupabaseProfile = {
   eye_color?: string | null;
   languages?: string[];
   caters_to?: string[];
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  socials?: string[];
 
   available_days?: AvailabilityEntry[];
 };
@@ -465,6 +468,19 @@ const mergeProfileData = (
     availability[normalizedDay] = hasAllDay ? "All Day" : details.join(", ");
   });
 
+  // Parse socials to extract Instagram handle (first element in array)
+  const getInstagramHandle = (socials: string[] | undefined): string | undefined => {
+    if (!socials || !Array.isArray(socials) || socials.length === 0) {
+      return undefined;
+    }
+    const handle = socials[0]?.trim();
+    // Filter out invalid values
+    if (!handle || handle === "" || handle === "undefined" || handle === "null") {
+      return undefined;
+    }
+    return handle;
+  };
+
   const mergedDetails = {
     basedIn: normalizedLocation,
     colorsTo: catersTo || "N/A", // keeping key for compatibility if needed
@@ -475,12 +491,15 @@ const mergeProfileData = (
     hairColor: supabaseProfile.hair_color || "N/A",
     eyeColor: supabaseProfile.eye_color || "N/A",
     languages: languages || "N/A",
+    contactEmail: supabaseProfile.contact_email || undefined,
+    contactPhone: supabaseProfile.contact_phone || undefined,
+    instagram: getInstagramHandle(supabaseProfile.socials),
   };
 
   const contact = {
-    email: "N/A",
-    phone: "N/A",
-    instagram: "N/A",
+    email: supabaseProfile.contact_email || "N/A",
+    phone: supabaseProfile.contact_phone || "N/A",
+    instagram: getInstagramHandle(supabaseProfile.socials) || "N/A",
     location: normalizedLocation,
   };
 

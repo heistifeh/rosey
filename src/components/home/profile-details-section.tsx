@@ -9,12 +9,14 @@ interface ProfileDetailsSectionProps {
     hairColor: string;
     eyeColor: string;
     languages: string;
+    contactEmail?: string;
+    contactPhone?: string;
+    instagram?: string;
   };
 }
 
-export function ProfileDetailsSection({
-  details,
-}: ProfileDetailsSectionProps) {
+export function ProfileDetailsSection({ details }: ProfileDetailsSectionProps) {
+
   return (
     <section>
       <h2 className="text-xl font-semibold text-primary-text mb-4">Details</h2>
@@ -59,4 +61,3 @@ export function ProfileDetailsSection({
     </section>
   );
 }
-

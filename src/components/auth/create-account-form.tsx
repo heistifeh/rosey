@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EmailConfirmationModal } from "@/components/modals/email-confirmation-modal";
+import { RoleSelectionModal } from "@/components/modals/role-selection-modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiBuilder } from "@/api/builder";
@@ -42,6 +43,7 @@ export function CreateAccountForm() {
 
   const [showModal, setShowModal] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
+  const [showRoleModal, setShowRoleModal] = useState(false);
 
   const { mutate, isPending: isLoading } = useMutation({
     mutationFn: (values: CreateAccountValues & { role?: string }) =>
@@ -88,6 +90,16 @@ export function CreateAccountForm() {
     mutate({ ...values, role: "client" });
   };
 
+  const handleRoleSelect = (role: 'escort' | 'client') => {
+    // Store the selected role in localStorage
+    localStorage.setItem('oauth_intended_role', role);
+    setShowRoleModal(false);
+
+    // Initiate Google OAuth
+    const redirectUrl = `${window.location.origin}/auth/callback`;
+    apiBuilder.auth.signInWithGoogle(redirectUrl);
+  };
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -100,6 +112,11 @@ export function CreateAccountForm() {
           setShowModal(false);
           router.push(`/enter-otp?email=${encodeURIComponent(submittedEmail)}`);
         }}
+      />
+      <RoleSelectionModal
+        isOpen={showRoleModal}
+        onClose={() => setShowRoleModal(false)}
+        onSelectRole={handleRoleSelect}
       />
       <div className="w-full min-h-screen bg-primary-bg flex flex-col lg:flex-row">
         {/* Left Side - Form */}
@@ -144,9 +161,11 @@ export function CreateAccountForm() {
               </div>
 
               <Button
+                type="button"
                 variant="outline"
                 size="default"
                 className="w-full justify-center rounded-[200px] bg-input-bg text-sm font-normal h-10"
+                onClick={() => setShowRoleModal(true)}
               >
                 <Image
                   src="/svg/google.svg"

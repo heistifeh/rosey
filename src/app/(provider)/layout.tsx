@@ -54,7 +54,7 @@ export default function ProviderLayout({
   const isEscort = profileType.toLowerCase() === "escort";
 
   useEffect(() => {
-    // If loading or (fetching and we don't have a profile yet), wait.
+
     if (profileLoading || (isFetching && !profile)) return;
 
     if (!profile) {

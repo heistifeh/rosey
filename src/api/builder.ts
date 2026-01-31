@@ -29,7 +29,7 @@ const SUPABASE_URL =
 const STORAGE_BASE = `${SUPABASE_URL}/storage/v1`;
 
 const PROFILE_SELECT =
-  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images(public_url,is_primary), about,pronouns,languages,caters_to,age,height_cm,hair_color,eye_color,gender,gender_presentation,profile_type,trans_status,appear_on_other_profiles,trans_only,temporary_hide_days,onboarding_completed";
+  "id,user_id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images(public_url,is_primary), about,pronouns,languages,caters_to,age,height_cm,hair_color,eye_color,gender,gender_presentation,profile_type,trans_status,appear_on_other_profiles,trans_only,temporary_hide_days,onboarding_completed,contact_email,contact_phone,socials";
 const SEARCH_PROFILE_SELECT =
   "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,country,city_slug,country_slug,images!inner(public_url,is_primary)";
 
@@ -87,6 +87,55 @@ export const apiBuilder = {
           return response.data;
         }
       );
+    },
+    // resetPassword: (email: string, redirectTo?: string) => {
+    //   return LOGINAPI.post("/recover", {
+    //     email,
+    //     ...(redirectTo && {
+    //       options: {
+    //         redirectTo
+    //       }
+    //     }),
+    //   }).then((response) => response.data);
+    // },
+    resetPassword: (email: string, redirectTo?: string) => {
+      return LOGINAPI.post("/recover", {
+        email,
+        ...(redirectTo && {
+          options: {
+            redirectTo
+          }
+        }),
+      }).then((response) => response.data);
+    },
+
+    updatePassword: (password: string) => {
+      return LOGINAPI.put("/user", {
+        password
+      }).then((response) => {
+        if (response.data?.access_token) {
+          setAuthCookie(response.data);
+        }
+        return response.data;
+      });
+    },
+
+    signInWithGoogle: (redirectTo?: string) => {
+      // Construct the OAuth URL
+      const baseUrl = LOGINAPI.defaults.baseURL;
+      const params = new URLSearchParams({
+        provider: 'google',
+        ...(redirectTo && { redirect_to: redirectTo })
+      });
+
+      // Redirect to Supabase OAuth endpoint
+      window.location.href = `${baseUrl}/authorize?${params.toString()}`;
+    },
+
+    updateUserMetadata: (data: Record<string, any>) => {
+      return LOGINAPI.put("/user", {
+        data
+      }).then((response) => response.data);
     },
   },
   locations: {
