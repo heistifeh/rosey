@@ -4,7 +4,7 @@ import { Menu, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HeroSection } from "@/components/home/hero-section";
 import { Header } from "@/components/layout/header";
 import { useAuthStore } from "@/stores/auth-store";
@@ -36,11 +36,20 @@ export default function Home() {
     gender: "All",
     priceRange: "",
   });
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useCurrentUser();
   const user = useAuthStore((state) => state.user);
   const clearUser = useAuthStore((state) => state.clearUser);
   const router = useRouter();
+
+  // Check if we're being redirected from a password reset link
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes("type=recovery")) {
+      setIsRedirecting(true);
+    }
+  }, []);
 
   //  useEffect(() => {
   //   const load = async () => {
@@ -71,6 +80,18 @@ export default function Home() {
     { label: "Home", href: "/" },
     { label: "Blog", href: "/blog" },
   ];
+
+  // Show loading state if we're redirecting from password reset
+  if (isRedirecting) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-primary-bg">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-text-gray">Redirecting...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <section className=" flex flex-col ">

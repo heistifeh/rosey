@@ -63,6 +63,9 @@ type ProfileFormData = {
   eyeColor?: string;
   hairColor?: string;
   friendly420?: string;
+  contactEmail?: string;
+  phoneNumber?: string;
+  instagramHandle?: string;
 };
 
 const MAX_IMAGES = 9;
@@ -439,10 +442,18 @@ export function UploadPicturesForm({
               ? [allData.languages]
               : [],
 
+
           height_cm: feetToCm(allData.height),
           eye_color: allData.eyeColor,
           hair_color: allData.hairColor,
           is_420_friendly: allData.friendly420 === "Yes",
+          contact_email: allData.contactEmail || null,
+          contact_phone: allData.phoneNumber || null,
+          socials: allData.instagramHandle &&
+            allData.instagramHandle.trim() !== "" &&
+            allData.instagramHandle !== "undefined"
+            ? [allData.instagramHandle.trim()]
+            : [],
         };
 
         mutate({ profile: profilePayload, images: uploadedImagesData });

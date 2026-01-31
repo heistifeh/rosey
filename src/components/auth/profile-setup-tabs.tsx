@@ -106,6 +106,14 @@ export function ProfileSetupTabs() {
               : null,
         };
 
+
+        const getInstagramHandle = (socials: any): string => {
+          if (!socials || !Array.isArray(socials) || socials.length === 0) {
+            return "";
+          }
+          return socials[0] || "";
+        };
+
         const profileSetupData = {
           about: profile.about || "",
           tagline: profile.tagline || "",
@@ -118,8 +126,9 @@ export function ProfileSetupTabs() {
           bodyType: toTitleCase(profile.body_type),
           hairColor: toTitleCase(profile.hair_color),
           friendly420: "",
-          phoneNumber: "",
-          instagramHandle: "",
+          contactEmail: profile.contact_email || "",
+          phoneNumber: profile.contact_phone || "",
+          instagramHandle: getInstagramHandle(profile.socials),
         };
 
         const ratesData = {

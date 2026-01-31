@@ -113,32 +113,8 @@ export function LoginForm() {
           </p>
         </div>
 
-        <div className="flex flex-col gap-10">
-          <Button
-            variant="outline"
-            size="default"
-            className="w-full justify-center rounded-[200px] bg-input-bg text-base font-normal"
-          >
-            <Image
-              src="/svg/google.svg"
-              alt="Google"
-              width={20}
-              height={20}
-              className="h-6 w-6"
-            />
-            Continue with Google
-          </Button>
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border-gray"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-primary-bg text-text-gray text-base font-normal">
-                or sign in with
-              </span>
-            </div>
-          </div>
+        <div className="flex flex-col gap-10">
 
           <form className="flex flex-col gap-10" onSubmit={handleSubmit(onSubmit)}>
             <section className=" flex flex-col gap-4">
@@ -208,7 +184,7 @@ export function LoginForm() {
               </div>
 
               <div className="text-right text-sm">
-                <Link href="/auth/forgot-password" className="text-primary">
+                <Link href="/forgot-password" className="text-primary">
                   Forgot password?
                 </Link>
               </div>

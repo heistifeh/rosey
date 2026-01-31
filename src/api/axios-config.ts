@@ -102,3 +102,22 @@ API.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+// Add interceptor to LOGINAPI as well for authenticated auth requests
+LOGINAPI.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = getAccessToken();
+    if (token) {
+      console.log("Attaching auth token to LOGINAPI request", token.substring(0, 10) + "...");
+      // Ensure we don't send duplicate headers by removing any defaults
+      delete config.headers.Authorization;
+      delete config.headers.authorization;
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    toast.error("Something went wrong");
+    return Promise.reject(error);
+  }
+);
