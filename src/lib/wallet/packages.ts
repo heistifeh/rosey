@@ -1,5 +1,3 @@
-"use server";
-
 export type CreditPackageId = "starter" | "popular" | "pro";
 
 export const CREDIT_PACKAGES = {
