@@ -2,14 +2,16 @@
 
 import { EyeOff, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useWallet } from "@/hooks/use-wallet";
 import {
   WalletBalanceSkeleton,
   WalletTransactionsListSkeleton,
 } from "@/components/skeletons/wallet-skeletons";
 import { BuyCreditsModal } from "@/components/wallet/BuyCreditsModal";
+import { toast } from "react-hot-toast";
 
 const typeLabelMap: Record<string, string> = {
   topup: "Top up",
@@ -44,7 +46,55 @@ const formatRelativeTime = (value: string) => {
 export default function WalletPage() {
   const [showBalance, setShowBalance] = useState(true);
   const [isBuyOpen, setIsBuyOpen] = useState(false);
-  const { wallet, transactions, isLoading, error } = useWallet();
+  const { wallet, transactions, isLoading, error, refetchWallet, refetchTransactions } = useWallet();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [hasRechecked, setHasRechecked] = useState(false);
+
+  useEffect(() => {
+    if (hasRechecked) return;
+    const topupFlag = searchParams.get("topup");
+    const invoiceId = searchParams.get("invoiceId");
+    if (topupFlag !== "return" || !invoiceId) return;
+
+    const runRecheck = async () => {
+      try {
+        const response = await fetch(
+          `/api/wallet/topup/recheck?invoiceId=${encodeURIComponent(invoiceId)}`
+        );
+        const data = (await response.json()) as {
+          ok?: boolean;
+          settled?: boolean;
+          status?: string;
+          error?: string;
+        };
+
+        if (!response.ok || data.error) {
+          toast.error(data.error || "Unable to verify payment.");
+        } else if (data.settled) {
+          toast.success("Payment confirmed, credits added.");
+          refetchWallet();
+          refetchTransactions();
+        } else {
+          toast("Payment still processing.");
+        }
+      } catch (err) {
+        console.error("Topup recheck failed", err);
+        toast.error("Unable to verify payment.");
+      } finally {
+        setHasRechecked(true);
+        router.replace("/dashboard/wallet");
+      }
+    };
+
+    runRecheck();
+  }, [
+    hasRechecked,
+    refetchTransactions,
+    refetchWallet,
+    router,
+    searchParams,
+  ]);
 
   return (
     <div className="w-full flex justify-center items-center md:-mx-8 lg:-mx-12 px-4 md:px-[180px] pt-8 bg-primary-bg">

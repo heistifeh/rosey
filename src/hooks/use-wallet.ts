@@ -69,5 +69,7 @@ export function useWallet() {
     transactions: transactionsQuery.data ?? [],
     isLoading: walletQuery.isLoading || transactionsQuery.isLoading,
     error: walletQuery.error || transactionsQuery.error,
+    refetchWallet: walletQuery.refetch,
+    refetchTransactions: transactionsQuery.refetch,
   };
 }

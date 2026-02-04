@@ -154,6 +154,27 @@ export async function POST(req: Request) {
     }
 
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+    const returnUrl = `${siteUrl}/dashboard/wallet?topup=return&invoiceId=${invoiceId}`;
+
+    try {
+      await fetch(
+        `${baseUrl}/api/v1/stores/${storeId}/invoices/${invoiceId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `token ${apiKey}`,
+          },
+          body: JSON.stringify({
+            checkout: {
+              redirectURL: returnUrl,
+            },
+          }),
+        }
+      );
+    } catch {
+      // Best effort update, ignore to avoid blocking checkout
+    }
 
     const topupPayload = {
       user_id: userId,
