@@ -6,6 +6,7 @@ import {
 } from "@/server/supabase-client";
 
 const SIGNATURE_HEADERS = [
+  "btcpay-sig",
   "BTCPay-Sig",
   "Btcpay-Sig",
   "BTCPay-Signature",
@@ -23,9 +24,19 @@ const getHeaderSignature = (headers: Headers) => {
 
 const normalizeSignature = (value: string) => {
   const trimmed = value.trim();
-  if (trimmed.includes("=")) {
-    const [, sig] = trimmed.split("=");
-    return sig || "";
+  if (!trimmed) return "";
+  const parts = trimmed.split(",");
+  for (const part of parts) {
+    const candidate = part.trim();
+    if (!candidate) continue;
+    if (candidate.includes("=")) {
+      const [key, sig] = candidate.split("=");
+      if (key.trim().toLowerCase().endsWith("sha256") && sig) {
+        return sig.trim();
+      }
+    } else {
+      return candidate;
+    }
   }
   return trimmed;
 };
@@ -53,6 +64,19 @@ const extractId = (payload: WebhookPayload, keys: string[]) => {
 
   return null;
 };
+
+const getNestedId = (payload: WebhookPayload, path: string[]) => {
+  let current: unknown = payload;
+  for (const key of path) {
+    if (!current || typeof current !== "object") return null;
+    current = (current as WebhookPayload)[key];
+  }
+  return typeof current === "string" && current ? current : null;
+};
+
+const shouldDebug =
+  process.env.BTCPAY_WEBHOOK_DEBUG === "true" ||
+  process.env.NODE_ENV !== "production";
 
 export async function POST(req: Request) {
   if (!SERVICE_ROLE_KEY) {
@@ -83,10 +107,27 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
-  const storeId =
-    extractId(payload, ["storeId", "store_id", "storeID"]) ?? "";
   const invoiceId =
-    extractId(payload, ["invoiceId", "invoice_id", "id"]) ?? "";
+    extractId(payload, ["invoiceId", "invoice_id", "id"]) ||
+    getNestedId(payload, ["invoice", "id"]) ||
+    "";
+  const storeId =
+    extractId(payload, ["storeId", "store_id", "storeID"]) ||
+    getNestedId(payload, ["store", "id"]) ||
+    getNestedId(payload, ["invoice", "storeId"]) ||
+    "";
+  const eventType =
+    extractId(payload, ["type", "eventType"]) ||
+    getNestedId(payload, ["event", "type"]) ||
+    "";
+
+  if (shouldDebug) {
+    console.log("[btcpay-webhook] payload ids", {
+      invoiceId,
+      storeId,
+      eventType,
+    });
+  }
 
   if (!storeId || !invoiceId) {
     return NextResponse.json({ ok: true });
@@ -116,14 +157,48 @@ export async function POST(req: Request) {
   }
 
   const invoice = (await invoiceResponse.json()) as Record<string, unknown>;
-  const statusRaw =
-    (typeof invoice.status === "string" && invoice.status) ||
-    (typeof invoice.state === "string" && invoice.state) ||
-    (typeof invoice.additionalStatus === "string" && invoice.additionalStatus) ||
+  const invoiceStatus =
+    (typeof invoice.status === "string" && invoice.status) || "";
+  const invoiceAdditionalStatus =
+    (typeof invoice.additionalStatus === "string" &&
+      invoice.additionalStatus) ||
     "";
-  const status = statusRaw.toLowerCase();
+  const statusRaw =
+    invoiceAdditionalStatus ||
+    invoiceStatus ||
+    (typeof invoice.state === "string" && invoice.state) ||
+    eventType ||
+    "";
+  const normalized = statusRaw.toLowerCase();
 
-  if (!["confirmed", "complete"].includes(status)) {
+  if (shouldDebug) {
+    console.log("[btcpay-webhook] invoice status", {
+      invoiceStatus,
+      invoiceAdditionalStatus,
+      normalized,
+    });
+  }
+
+  const settleStatuses = [
+    "settled",
+    "confirmed",
+    "complete",
+    "completed",
+    "paidinfull",
+    "paid",
+  ];
+  const settleEvents = [
+    "invoice_paymentsettled",
+    "invoice_confirmed",
+    "invoice_completed",
+    "invoice_paidinfull",
+  ];
+
+  const shouldSettle =
+    settleStatuses.some((status) => normalized.includes(status)) ||
+    settleEvents.includes(eventType.toLowerCase());
+
+  if (!shouldSettle) {
     return NextResponse.json({ ok: true });
   }
 
@@ -133,16 +208,22 @@ export async function POST(req: Request) {
     {
       p_store_id: storeId,
       p_invoice_id: invoiceId,
-      p_invoice_status: status,
+      p_invoice_status: invoiceStatus || invoiceAdditionalStatus || normalized,
       p_invoice: invoice,
     }
   );
 
   if (settleError) {
+    if (shouldDebug) {
+      console.error("[btcpay-webhook] rpc error", settleError);
+    }
     return NextResponse.json({ error: "Settlement failed" }, { status: 500 });
   }
 
   const result = settleData as { ok?: boolean; reason?: string } | null;
+  if (shouldDebug) {
+    console.log("[btcpay-webhook] rpc result", result);
+  }
   if (result?.reason === "topup_not_found") {
     return NextResponse.json({ ok: true });
   }
