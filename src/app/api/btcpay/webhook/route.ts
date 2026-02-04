@@ -163,8 +163,11 @@ export async function POST(req: Request) {
     (typeof invoice.additionalStatus === "string" &&
       invoice.additionalStatus) ||
     "";
+  const additionalNormalized = invoiceAdditionalStatus.toLowerCase();
+  const hasMeaningfulAdditional =
+    additionalNormalized !== "" && additionalNormalized !== "none";
   const statusRaw =
-    invoiceAdditionalStatus ||
+    (hasMeaningfulAdditional ? invoiceAdditionalStatus : "") ||
     invoiceStatus ||
     (typeof invoice.state === "string" && invoice.state) ||
     eventType ||
@@ -192,11 +195,13 @@ export async function POST(req: Request) {
     "invoice_confirmed",
     "invoice_completed",
     "invoice_paidinfull",
+    "invoicesettled",
   ];
 
+  const normalizedEventType = eventType.toLowerCase();
   const shouldSettle =
     settleStatuses.some((status) => normalized.includes(status)) ||
-    settleEvents.includes(eventType.toLowerCase());
+    settleEvents.includes(normalizedEventType);
 
   if (!shouldSettle) {
     return NextResponse.json({ ok: true });
