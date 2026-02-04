@@ -149,8 +149,9 @@ export function CityPageClient({ params }: CityPageClientProps) {
           sponsoredProfiles[0]?.country_slug,
         );
 
-      const fallbackCities =
-        (inferredCountry && FALLBACK_CITIES_BY_COUNTRY[inferredCountry]) ?? [];
+      const fallbackCities = inferredCountry
+        ? FALLBACK_CITIES_BY_COUNTRY[inferredCountry] ?? []
+        : [];
       fallbackCities.forEach((city) => {
         if (locations.length >= 16) return;
         const key = `${city}-${inferredCountry}`;
