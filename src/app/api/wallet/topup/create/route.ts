@@ -76,14 +76,30 @@ export async function POST(req: Request) {
       walletId = newWallet.id;
     }
 
-    const baseUrl = process.env.BTCPAY_BASE_URL;
-    const storeId = process.env.BTCPAY_STORE_ID;
-    const apiKey = process.env.BTCPAY_API_KEY;
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-
-    if (!baseUrl || !storeId || !apiKey || !siteUrl) {
-      return NextResponse.json({ error: "BTCPay configuration missing" }, { status: 500 });
+    const required = [
+      "BTCPAY_BASE_URL",
+      "BTCPAY_STORE_ID",
+      "BTCPAY_API_KEY",
+    ] as const;
+    const missing = required.filter(
+      (key) => !process.env[key]?.trim()
+    );
+    if (missing.length > 0) {
+      console.error("BTCPay config missing:", missing);
+      return NextResponse.json(
+        { error: "BTCPay configuration missing", missing },
+        { status: 500 }
+      );
     }
+
+    const rawBaseUrl = process.env.BTCPAY_BASE_URL ?? "";
+    const baseUrl = rawBaseUrl.replace(/\/$/, "");
+    const storeId = process.env.BTCPAY_STORE_ID ?? "";
+    const apiKey = process.env.BTCPAY_API_KEY ?? "";
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      new URL(req.url).origin;
 
     const orderId = crypto.randomUUID();
     const invoicePayload = {
