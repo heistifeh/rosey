@@ -9,6 +9,7 @@ import {
   WalletBalanceSkeleton,
   WalletTransactionsListSkeleton,
 } from "@/components/skeletons/wallet-skeletons";
+import { BuyCreditsModal } from "@/components/wallet/BuyCreditsModal";
 
 const typeLabelMap: Record<string, string> = {
   topup: "Top up",
@@ -42,6 +43,7 @@ const formatRelativeTime = (value: string) => {
 
 export default function WalletPage() {
   const [showBalance, setShowBalance] = useState(true);
+  const [isBuyOpen, setIsBuyOpen] = useState(false);
   const { wallet, transactions, isLoading, error } = useWallet();
 
   return (
@@ -83,7 +85,10 @@ export default function WalletPage() {
                   </p>
                 </>
               )}
-              <Button className="bg-primary hover:bg-primary/90 text-primary-text w-full md:w-auto px-[50px] py-[13px]">
+              <Button
+                className="bg-primary hover:bg-primary/90 text-primary-text w-full md:w-auto px-[50px] py-[13px]"
+                onClick={() => setIsBuyOpen(true)}
+              >
                 Buy Credits
               </Button>
             </div>
@@ -156,6 +161,7 @@ export default function WalletPage() {
           </div>
         </div>
       </div>
+      <BuyCreditsModal open={isBuyOpen} onClose={() => setIsBuyOpen(false)} />
     </div>
   );
 }
