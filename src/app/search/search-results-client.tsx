@@ -301,9 +301,10 @@ export function SearchResultsClient({
     const normalizedCountry = normalizeCountryKey(params.countrySlug);
 
     if (locations.length === 0 && normalizedCountry) {
+      const countrySlug = params.countrySlug ?? normalizedCountry;
       locations.push({
-        label: `All escorts in ${formatSlug(params.countrySlug)}`,
-        href: buildHref(undefined, params.countrySlug),
+        label: `All escorts in ${formatSlug(countrySlug)}`,
+        href: buildHref(undefined, countrySlug),
       });
     }
 
@@ -315,8 +316,9 @@ export function SearchResultsClient({
           sponsoredProfiles[0]?.country_slug,
         );
 
-      const fallbackCities =
-        (inferredCountry && FALLBACK_CITIES_BY_COUNTRY[inferredCountry]) ?? [];
+      const fallbackCities = inferredCountry
+        ? FALLBACK_CITIES_BY_COUNTRY[inferredCountry] ?? []
+        : [];
       fallbackCities.forEach((citySlug) => {
         if (locations.length >= 16) return;
         const key = `${citySlug}-${inferredCountry}`;
