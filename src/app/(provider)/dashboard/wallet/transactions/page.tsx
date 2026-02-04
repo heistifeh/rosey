@@ -43,7 +43,8 @@ const formatRelativeTime = (value: string) => {
 
 export default function TransactionsPage() {
   const [currentMonth] = useState("December 2025");
-  const { transactions, isLoading, error } = useWallet();
+  const { activity, isLoading, error } = useWallet();
+  const transactions = activity.filter((item) => item.source === "transaction");
 
   return (
     <div className="w-full flex justify-center items-center md:-mx-8 lg:-mx-12 px-4 md:px-[180px] pt-8 bg-primary-bg">
@@ -86,11 +87,13 @@ export default function TransactionsPage() {
                 </p>
               )
               : transactions.map((transaction) => {
+                  const isPending = transaction.status === "pending";
                   const isCredit = transaction.direction === "credit";
-                  const label =
-                    typeLabelMap[transaction.type] ||
-                    transaction.type?.replace(/_/g, " ") ||
-                    "Transaction";
+                  const label = isPending
+                    ? "Top up (pending)"
+                    : typeLabelMap[transaction.type] ||
+                      transaction.type?.replace(/_/g, " ") ||
+                      "Transaction";
                   const amountNumber = Number(transaction.amount);
                   const formattedAmount = Number.isNaN(amountNumber)
                     ? String(transaction.amount)
@@ -118,10 +121,22 @@ export default function TransactionsPage() {
                         <p className="text-base md:text-lg font-medium text-[#FCFCFD]">
                           {amountText} {label}
                         </p>
+                        {isPending && (
+                          <p className="text-xs text-text-gray-opacity">
+                            Waiting for confirmation
+                          </p>
+                        )}
                       </div>
-                      <p className="text-text-gray-opacity text-sm md:text-base">
-                        {formatRelativeTime(transaction.created_at)}
-                      </p>
+                      <div className="flex flex-col items-end gap-1">
+                        {isPending && (
+                          <span className="text-[10px] uppercase tracking-wide text-amber-300 bg-amber-300/10 border border-amber-300/30 px-2 py-1 rounded-full">
+                            Pending
+                          </span>
+                        )}
+                        <p className="text-text-gray-opacity text-sm md:text-base">
+                          {formatRelativeTime(transaction.created_at)}
+                        </p>
+                      </div>
                     </div>
                   );
                 })}
