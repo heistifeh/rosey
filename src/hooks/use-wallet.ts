@@ -19,6 +19,22 @@ type WalletTransaction = {
   created_at: string;
 };
 
+type ActivityItem = {
+  id: string;
+  source: "transaction" | "topup";
+  type: "topup" | "ad_spend" | "refund" | "adjustment";
+  direction: "credit" | "debit";
+  amount: number;
+  status?: "pending" | "settled";
+  reference?: string;
+  created_at: string;
+};
+
+type WalletActivityResponse = {
+  wallet: Wallet | null;
+  activity: ActivityItem[];
+};
+
 const DEFAULT_WALLET = {
   id: null,
   balance_credits: 0,
@@ -28,45 +44,27 @@ export function useWallet() {
   const userId = getUserId();
   const [reloadKey, setReloadKey] = useState(0);
 
-  const walletQuery = useQuery<Wallet | null>({
-    queryKey: ["wallet", userId, reloadKey],
+  const activityQuery = useQuery<WalletActivityResponse>({
+    queryKey: ["walletActivity", userId, reloadKey],
     queryFn: () =>
-      API.get<Wallet[]>("/wallets", {
-        params: {
-          select: "id,balance_credits",
-          user_id: `eq.${userId}`,
-          limit: 1,
-        },
-      }).then((response) => response.data?.[0] ?? null),
+      fetch("/api/wallet/activity")
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to fetch wallet activity");
+          }
+          return response.json();
+        })
+        .then((data) => data as WalletActivityResponse),
     enabled: Boolean(userId),
-  });
-
-  const walletId = walletQuery.data?.id ?? null;
-
-  const transactionsQuery = useQuery<WalletTransaction[]>({
-    queryKey: ["walletTransactions", walletId, reloadKey],
-    queryFn: () =>
-      API.get<WalletTransaction[]>("/wallet_transactions", {
-        params: {
-          select: "id,type,direction,amount,reference,metadata,created_at",
-          wallet_id: `eq.${walletId}`,
-          order: "created_at.desc",
-          limit: 50,
-        },
-      }).then((response) => response.data ?? []),
-    enabled: Boolean(walletId),
   });
 
   if (!userId) {
     return {
       wallet: DEFAULT_WALLET,
-      transactions: [],
+      activity: [],
       isLoading: false,
       error: null,
-      refetchWallet: () => {
-        setReloadKey((value) => value + 1);
-      },
-      refetchTransactions: () => {
+      refetch: () => {
         setReloadKey((value) => value + 1);
       },
     };
@@ -77,11 +75,10 @@ export function useWallet() {
   };
 
   return {
-    wallet: walletQuery.data ?? DEFAULT_WALLET,
-    transactions: transactionsQuery.data ?? [],
-    isLoading: walletQuery.isLoading || transactionsQuery.isLoading,
-    error: walletQuery.error || transactionsQuery.error,
-    refetchWallet: triggerRefetch,
-    refetchTransactions: triggerRefetch,
+    wallet: activityQuery.data?.wallet ?? DEFAULT_WALLET,
+    activity: activityQuery.data?.activity ?? [],
+    isLoading: activityQuery.isLoading,
+    error: activityQuery.error,
+    refetch: triggerRefetch,
   };
 }

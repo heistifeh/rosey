@@ -46,7 +46,7 @@ const formatRelativeTime = (value: string) => {
 export default function WalletPage() {
   const [showBalance, setShowBalance] = useState(true);
   const [isBuyOpen, setIsBuyOpen] = useState(false);
-  const { wallet, transactions, isLoading, error, refetchWallet, refetchTransactions } = useWallet();
+  const { wallet, activity, isLoading, error, refetch } = useWallet();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [hasRechecked, setHasRechecked] = useState(false);
@@ -73,8 +73,7 @@ export default function WalletPage() {
           toast.error(data.error || "Unable to verify payment.");
         } else if (data.settled) {
           toast.success("Payment confirmed, credits added.");
-          refetchWallet();
-          refetchTransactions();
+          refetch();
         } else {
           toast("Payment still processing.");
         }
@@ -90,11 +89,24 @@ export default function WalletPage() {
     runRecheck();
   }, [
     hasRechecked,
-    refetchTransactions,
-    refetchWallet,
+    refetch,
     router,
     searchParams,
   ]);
+
+  useEffect(() => {
+    if (!activity?.length) return;
+    const hasPending = activity.some((item) => item.status === "pending");
+    if (!hasPending) return;
+
+    const interval = window.setInterval(() => {
+      refetch();
+    }, 15000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [activity, refetch]);
 
   return (
     <div className="w-full flex justify-center items-center md:-mx-8 lg:-mx-12 px-4 md:px-[180px] pt-8 bg-primary-bg">
@@ -156,22 +168,24 @@ export default function WalletPage() {
             <div className="flex flex-col gap-3 md:gap-4 bg-input-bg p-2 rounded-3xl">
               {isLoading ? (
                 <WalletTransactionsListSkeleton />
-              ) : transactions.length === 0 ? (
+              ) : activity.length === 0 ? (
                 <p className="text-sm text-text-gray-opacity text-center py-6">
                   No activity yet.
                 </p>
               ) : (
-                transactions.map((transaction) => {
-                  const isCredit = transaction.direction === "credit";
-                  const label =
-                    typeLabelMap[transaction.type] ||
-                    transaction.type?.replace(/_/g, " ") ||
-                    "Transaction";
-                  const formattedAmount = transaction.amount.toLocaleString();
+                activity.map((item) => {
+                  const isPending = item.status === "pending";
+                  const isCredit = item.direction === "credit";
+                  const label = isPending
+                    ? "Top up (pending)"
+                    : typeLabelMap[item.type] ||
+                      item.type?.replace(/_/g, " ") ||
+                      "Transaction";
+                  const formattedAmount = item.amount.toLocaleString();
                   const amountText = `${isCredit ? "+" : "-"}${formattedAmount}`;
                   return (
                     <div
-                      key={transaction.id}
+                      key={`${item.source}-${item.id}`}
                       className="bg-primary-bg rounded-2xl px-4 py-2 flex items-center gap-3"
                     >
                       <div
@@ -191,10 +205,22 @@ export default function WalletPage() {
                         <p className="text-base md:text-lg font-medium text-[#FCFCFD]">
                           {amountText} {label}
                         </p>
+                        {isPending && (
+                          <p className="text-xs text-text-gray-opacity">
+                            Waiting for confirmation
+                          </p>
+                        )}
                       </div>
-                      <p className="text-text-gray-opacity text-sm md:text-base">
-                        {formatRelativeTime(transaction.created_at)}
-                      </p>
+                      <div className="flex flex-col items-end gap-1">
+                        {isPending && (
+                          <span className="text-[10px] uppercase tracking-wide text-amber-300 bg-amber-300/10 border border-amber-300/30 px-2 py-1 rounded-full">
+                            Pending
+                          </span>
+                        )}
+                        <p className="text-text-gray-opacity text-sm md:text-base">
+                          {formatRelativeTime(item.created_at)}
+                        </p>
+                      </div>
                     </div>
                   );
                 })
