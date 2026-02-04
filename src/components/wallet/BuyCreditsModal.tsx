@@ -12,6 +12,7 @@ type CreditPackage = {
 };
 
 const PACKAGES: CreditPackage[] = [
+  // priceLabel is display-only, server is the source of truth.
   { id: "starter", label: "Starter", credits: 500, priceLabel: "€10" },
   { id: "popular", label: "Popular", credits: 1200, priceLabel: "€20" },
   { id: "pro", label: "Pro", credits: 3500, priceLabel: "€50" },
