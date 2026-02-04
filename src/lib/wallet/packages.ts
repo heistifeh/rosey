@@ -3,19 +3,19 @@ export type CreditPackageId = "starter" | "popular" | "pro";
 export const CREDIT_PACKAGES = {
   starter: {
     credits: 500,
-    amount: 10,
+    amount: 1,
     currency: "EUR",
     description: "500 credits",
   },
   popular: {
     credits: 1200,
-    amount: 20,
+    amount: 2,
     currency: "EUR",
     description: "1200 credits",
   },
   pro: {
     credits: 3500,
-    amount: 50,
+    amount: 3,
     currency: "EUR",
     description: "3500 credits",
   },

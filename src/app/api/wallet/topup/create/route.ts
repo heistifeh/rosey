@@ -137,6 +137,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid invoice response" }, { status: 500 });
     }
 
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
     const topupPayload = {
       user_id: userId,
       wallet_id: walletId,
@@ -160,12 +162,22 @@ export async function POST(req: Request) {
 
     if (insertError) {
       if (insertError.code === "23505") {
-        return NextResponse.json({ checkoutUrl });
+        return NextResponse.json({
+          checkoutUrl,
+          expiresAt,
+          invoiceId,
+          storeId,
+        });
       }
       return NextResponse.json({ error: "Topup creation failed" }, { status: 500 });
     }
 
-    return NextResponse.json({ checkoutUrl });
+    return NextResponse.json({
+      checkoutUrl,
+      expiresAt,
+      invoiceId,
+      storeId,
+    });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
