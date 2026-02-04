@@ -5,6 +5,9 @@ import {
   SERVICE_ROLE_KEY,
 } from "@/server/supabase-client";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 type ActivityItem = {
   id: string;
   source: "transaction" | "topup";
