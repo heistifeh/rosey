@@ -1,3 +1,7 @@
+create unique index if not exists wallet_tx_unique_topup_ref
+  on public.wallet_transactions (wallet_id, reference, type)
+  where type = 'topup';
+
 create or replace function public.settle_wallet_topup(
   p_store_id text,
   p_invoice_id text,
@@ -9,7 +13,8 @@ language plpgsql
 as $$
 declare
   v_topup record;
-  v_status text;
+  v_existing_tx_id uuid;
+  v_inserted_tx_id uuid;
 begin
   select *
   into v_topup
@@ -22,16 +27,40 @@ begin
     return jsonb_build_object('ok', false, 'reason', 'topup_not_found');
   end if;
 
-  if v_topup.status = 'settled' then
-    return jsonb_build_object('ok', true, 'alreadySettled', true);
+  select id
+  into v_existing_tx_id
+  from public.wallet_transactions
+  where wallet_id = v_topup.wallet_id
+    and reference = p_invoice_id
+    and type = 'topup'
+  limit 1;
+
+  if v_existing_tx_id is not null then
+    update wallet_topups
+    set status = 'settled',
+        updated_at = now(),
+        metadata = coalesce(metadata, '{}'::jsonb) ||
+          jsonb_build_object(
+            'btcpay',
+            p_invoice,
+            'status',
+            p_invoice_status,
+            'settled_at',
+            now()
+          )
+    where id = v_topup.id;
+
+    return jsonb_build_object(
+      'ok',
+      true,
+      'alreadySettled',
+      true,
+      'transactionId',
+      v_existing_tx_id
+    );
   end if;
 
-  v_status := lower(coalesce(p_invoice_status, ''));
-  if v_status not in ('confirmed', 'complete') then
-    return jsonb_build_object('ok', false, 'reason', 'status_not_settled');
-  end if;
-
-  insert into wallet_transactions (
+  insert into public.wallet_transactions (
     wallet_id,
     type,
     direction,
@@ -45,14 +74,52 @@ begin
     v_topup.credits,
     p_invoice_id,
     jsonb_build_object('btcpay', p_invoice, 'status', p_invoice_status)
-  );
+  )
+  on conflict do nothing
+  returning id
+  into v_inserted_tx_id;
+
+  if v_inserted_tx_id is null then
+    select id
+    into v_existing_tx_id
+    from public.wallet_transactions
+    where wallet_id = v_topup.wallet_id
+      and reference = p_invoice_id
+      and type = 'topup'
+    limit 1;
+
+    update wallet_topups
+    set status = 'settled',
+        updated_at = now(),
+        metadata = coalesce(metadata, '{}'::jsonb) ||
+          jsonb_build_object(
+            'btcpay',
+            p_invoice,
+            'status',
+            p_invoice_status,
+            'settled_at',
+            now()
+          )
+    where id = v_topup.id;
+
+    return jsonb_build_object(
+      'ok',
+      true,
+      'alreadySettled',
+      true,
+      'transactionId',
+      v_existing_tx_id
+    );
+  end if;
 
   update wallets
-  set balance_credits = balance_credits + v_topup.credits
+  set balance_credits = balance_credits + v_topup.credits,
+      updated_at = now()
   where id = v_topup.wallet_id;
 
   update wallet_topups
   set status = 'settled',
+      updated_at = now(),
       metadata = coalesce(metadata, '{}'::jsonb) ||
         jsonb_build_object(
           'btcpay',
@@ -61,17 +128,20 @@ begin
           p_invoice_status,
           'settled_at',
           now()
-        ),
-      updated_at = now()
+        )
   where id = v_topup.id;
 
   return jsonb_build_object(
     'ok',
     true,
+    'settled',
+    true,
     'credited',
     v_topup.credits,
     'walletId',
-    v_topup.wallet_id
+    v_topup.wallet_id,
+    'transactionId',
+    v_inserted_tx_id
   );
 end;
 $$;
