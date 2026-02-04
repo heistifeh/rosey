@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { API, getUserId } from "@/api/axios-config";
 
 type Wallet = {
@@ -25,9 +26,10 @@ const DEFAULT_WALLET = {
 
 export function useWallet() {
   const userId = getUserId();
+  const [reloadKey, setReloadKey] = useState(0);
 
   const walletQuery = useQuery<Wallet | null>({
-    queryKey: ["wallet", userId],
+    queryKey: ["wallet", userId, reloadKey],
     queryFn: () =>
       API.get<Wallet[]>("/wallets", {
         params: {
@@ -42,7 +44,7 @@ export function useWallet() {
   const walletId = walletQuery.data?.id ?? null;
 
   const transactionsQuery = useQuery<WalletTransaction[]>({
-    queryKey: ["walletTransactions", walletId],
+    queryKey: ["walletTransactions", walletId, reloadKey],
     queryFn: () =>
       API.get<WalletTransaction[]>("/wallet_transactions", {
         params: {
@@ -61,15 +63,25 @@ export function useWallet() {
       transactions: [],
       isLoading: false,
       error: null,
+      refetchWallet: () => {
+        setReloadKey((value) => value + 1);
+      },
+      refetchTransactions: () => {
+        setReloadKey((value) => value + 1);
+      },
     };
   }
+
+  const triggerRefetch = () => {
+    setReloadKey((value) => value + 1);
+  };
 
   return {
     wallet: walletQuery.data ?? DEFAULT_WALLET,
     transactions: transactionsQuery.data ?? [],
     isLoading: walletQuery.isLoading || transactionsQuery.isLoading,
     error: walletQuery.error || transactionsQuery.error,
-    refetchWallet: walletQuery.refetch,
-    refetchTransactions: transactionsQuery.refetch,
+    refetchWallet: triggerRefetch,
+    refetchTransactions: triggerRefetch,
   };
 }
