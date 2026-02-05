@@ -69,7 +69,7 @@ export function RecentlyActiveSection() {
                 href={`/profile/${profile.username || profile.id}`}
                 className={`flex h-full flex-col overflow-hidden p-3 md:p-4 rounded-[24px]  bg-input-bg shadow-sm min-w-[280px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity`}
               >
-                <div className="relative aspect-3/4 w-full overflow-hidden rounded-[16px]">
+                <div className="relative aspect-3/3 w-full overflow-hidden rounded-[16px]">
                   <SafeImage
                     src={profile.image}
                     alt={profile.name}
@@ -80,14 +80,14 @@ export function RecentlyActiveSection() {
                   />
                 </div>
 
-                <div className="flex flex-1 flex-col justify-between gap-3 md:gap-[20px] pt-3 md:pt-[22px]">
+                <div className="flex flex-1 flex-col justify-between gap-1 md:gap-[4px] pt-3 ">
                   <div className="flex  justify-between gap-2 items-center">
                     <p className="text-base md:text-lg lg:text-[24px] font-normal text-primary-text">
                       {profile.name}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-1.5 md:gap-2 rounded-[200px] px-2 py-1 md:px-3 md:py-2">
+                  <div className="flex items-center gap-1.5 md:gap-2 rounded-[200px]">
                     <Circle className="h-1.5 w-1.5 md:h-2 md:w-2 fill-current text-emerald-400" />
                     <span className="text-xs md:text-sm lg:text-[16px] font-normal text-primary-text">
                       {profile.status}

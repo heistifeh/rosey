@@ -586,15 +586,15 @@ export function SearchResultsClient({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {loading
             ? Array.from({ length: 8 }).map((_, index) => (
-                <BaseCardSkeleton key={index} />
-              ))
+              <BaseCardSkeleton key={index} />
+            ))
             : finalProfiles.map((profile) => (
-                <ProfileCard
-                  key={profile.id}
-                  profile={profile}
-                  isSponsored={sponsoredIds.has(profile.id)}
-                />
-              ))}
+              <ProfileCard
+                key={profile.id}
+                profile={profile}
+                isSponsored={sponsoredIds.has(profile.id)}
+              />
+            ))}
 
           {showEmptyState && (
             <div className="col-span-full py-10 text-center text-text-gray-opacity">

@@ -82,12 +82,12 @@ export function AvailableNowSection({
     <section className="relative z-10 w-full bg-input-bg  pb-12 pt-10 md:pb-16 md:pt-20">
       <div className="mx-auto flex w-full px-0 md:px-[60px] flex-col gap-4 md:gap-10">
         {/* Header row */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 md:pb-10 scrollbar-hide md:justify-center">
+        <div className="flex items-center gap-2 overflow-x-auto pb-4 md:pb-10 scrollbar-hide md:justify-center px-4 md:px-0">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setFilters((prev) => ({ ...prev, gender: tab }))}
-              className={`flex-1 min-w-[80px] md:flex-none md:min-w-0 px-3 py-1.5 md:px-6 md:py-2.5 text-xs md:text-sm font-medium rounded-full transition whitespace-nowrap cursor-pointer ${filters.gender === tab
+              className={`flex-shrink-0 min-w-[100px] md:flex-none md:min-w-0 px-4 py-2 md:px-6 md:py-2.5 text-sm md:text-sm font-medium rounded-full transition whitespace-nowrap cursor-pointer ${filters.gender === tab
                 ? "bg-primary text-primary-text"
                 : "bg-primary-bg text-primary-text hover:bg-[#2a2a2d]"
                 }`}
