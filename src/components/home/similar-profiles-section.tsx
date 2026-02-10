@@ -84,11 +84,7 @@ export function SimilarProfilesSection({
           })}
         </div>
       )}
-      <div className="flex justify-center mt-6">
-        <Button className="bg-primary text-primary-text px-6 py-3 rounded-full hover:bg-primary/90 text-sm">
-          Load More Similar Profiles
-        </Button>
-      </div>
+
     </section>
   );
 }

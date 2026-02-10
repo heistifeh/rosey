@@ -99,30 +99,22 @@ export function Header() {
                     </div>
                 )}
             </div>
-            <section className="hidden w-full justify-between rounded-[200px] bg-primary-text p-4 md:flex items-center">
-                <Link href="/" className="inline-flex items-center">
-                    <span className="text-primary text-3xl md:text-[32px] font-normal petemoss">
+            <section className="hidden w-full justify-between rounded-[200px] bg-primary-text p-3 md:p-4 md:flex items-center gap-2 lg:gap-4">
+                <Link href="/" className="inline-flex items-center flex-shrink-0">
+                    <span className="text-primary text-2xl lg:text-3xl xl:text-[32px] font-normal petemoss">
                         Rosey
                     </span>
-                    {/* <Image
-            src="/images/logo.svg"
-            alt="Rosey"
-            width={121}
-            height={35}
-            className="h-auto"
-            priority
-          /> */}
                 </Link>
 
-                <div className=" flex items-center gap-10">
+                <div className="flex items-center gap-4 lg:gap-10">
                     {navLinks.map((link) => (
                         <Link
                             key={link.label}
                             href={link.href}
                             onClick={() => setActiveNav(link.label)}
-                            className={`text-base font-medium transition-colors ${activeNav === link.label
-                                    ? "bg-primary rounded-[200px] py-2 px-[33px] text-primary-text"
-                                    : "text-[#8E8E93]"
+                            className={`text-sm lg:text-base font-medium transition-colors whitespace-nowrap ${activeNav === link.label
+                                ? "bg-primary rounded-[200px] py-2 px-4 lg:px-[33px] text-primary-text"
+                                : "text-[#8E8E93] hover:text-primary-text"
                                 }`}
                         >
                             {link.label}
@@ -130,20 +122,20 @@ export function Header() {
                     ))}
                 </div>
 
-                <section className="flex items-center gap-2">
-                    <div className="flex items-center gap-2 rounded-[200px] px-3 py-3  border border-[#E5E5EA] w-[290px]">
-                        <Search size={16} color={"#8E8E93"} />
+                <section className="flex items-center gap-2 flex-shrink-0">
+                    <div className="hidden lg:flex items-center gap-2 rounded-[200px] px-3 py-3 border border-[#E5E5EA] min-w-[180px] xl:min-w-[240px]">
+                        <Search size={16} color={"#8E8E93"} className="flex-shrink-0" />
                         <input
                             type="text"
                             placeholder="Search"
-                            className="w-32 bg-transparent text-sm text-gray-700 placeholder:text-[#8E8E93] focus:outline-none"
+                            className="w-full bg-transparent text-sm text-gray-700 placeholder:text-[#8E8E93] focus:outline-none"
                         />
                     </div>
                     <div className="flex items-center gap-2">
                         {isEscort && (
                             <Link
                                 href="/dashboard"
-                                className="cursor-pointer rounded-[200px] border border-primary px-[24px] py-[12px] text-primary text-base font-semibold whitespace-nowrap hover:bg-primary/10 transition-colors"
+                                className="cursor-pointer rounded-[200px] border border-primary px-4 lg:px-6 py-2 lg:py-3 text-primary text-sm lg:text-base font-semibold whitespace-nowrap hover:bg-primary/10 transition-colors"
                             >
                                 Dashboard
                             </Link>
@@ -151,7 +143,7 @@ export function Header() {
                         <button
                             type="button"
                             onClick={handleAuthAction}
-                            className="cursor-pointer rounded-[200px] bg-primary px-[31px] py-[13px] text-primary-text text-base font-semibold whitespace-nowrap"
+                            className="cursor-pointer rounded-[200px] bg-primary px-4 lg:px-6 xl:px-[31px] py-2 lg:py-3 text-primary-text text-sm lg:text-base font-semibold whitespace-nowrap"
                         >
                             {user ? "Sign out" : "Login / Signup"}
                         </button>

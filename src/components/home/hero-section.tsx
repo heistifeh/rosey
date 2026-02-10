@@ -101,19 +101,97 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
     <section className="flex flex-1 items-center justify-center px-4 pb-10 pt-6">
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-10 text-center ">
         <section className=" flex flex-col gap-4 items-center">
-          <h1 className="text-2xl font-semibold leading-tight sm:text-4xl lg:text-[72px] text-primary-text">
+          <h1 className="text-2xl font-semibold leading-tight sm:text-4xl lg:text-[72px] text-primary-text animate-fadeInUp">
             Where Adult Companions
             <br />
             Grow and Connect
           </h1>
-          <p className="max-w-[500px] text-base sm:text-lg font-normal text-primary-text text-center">
+          <p className="max-w-[500px] text-base sm:text-lg font-normal text-primary-text text-center animate-fadeInUp animation-delay-200">
             Created for providers of adult companionship and intimate services
             to showcase their offerings and reach paying clients.
           </p>
         </section>
 
-        <div className="flex w-full flex-col items-stretch gap-3 rounded-[32px] bg-input-bg px-4 py-4 backdrop-blur-md md:inline-flex md:w-auto md:flex-row md:items-center md:justify-center md:gap-3 md:rounded-full md:px-4 md:py-3 z-20">
-          <div className="w-full md:w-auto min-w-[180px]">
+        {/* Mobile Search Area - Trendy & Cute Design */}
+        <div className="flex md:hidden w-full flex-col gap-3 rounded-3xl bg-[#2C2C2E] backdrop-blur-xl p-5 shadow-2xl shadow-black/20 z-20">
+          {/* Location Input - Clean & Modern */}
+          <div className="relative">
+            <LocationFilter
+              value={filters.location}
+              onChange={handleLocationChange}
+              className="w-full [&>button]:bg-[#1C1C1E] [&>button]:border [&>button]:border-gray-700 [&>button]:h-12 [&>button]:text-sm [&>button]:text-white [&>button]:px-4 [&>button]:rounded-2xl [&>button]:shadow-sm [&>button]:hover:shadow-md [&>button]:transition-all"
+            />
+          </div>
+
+          {/* Gender & Price in a Row - Compact & Cute */}
+          <div className="grid grid-cols-2 gap-3">
+            <Select
+              value={filters.gender}
+              onValueChange={(val) =>
+                setFilters((prev) => ({ ...prev, gender: val }))
+              }
+            >
+              <SelectTrigger className="h-12 rounded-2xl bg-[#575757] border-0 px-4 text-sm font-medium text-white hover:bg-[#6a6a6a] transition-all focus:ring-2 focus:ring-primary/20 focus:ring-offset-0">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Venus className="h-4 w-4 text-white" />
+                  <SelectValue placeholder="All" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border-gray-700 bg-[#2C2C2E]">
+                {genders.map((gen) => (
+                  <SelectItem key={gen} value={gen} className="rounded-lg text-white focus:bg-[#3C3C3E] focus:text-white">
+                    {gen}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              key={`price-select-${filters.priceRange || "empty"}`}
+              value={filters.priceRange || undefined}
+              onValueChange={(val) =>
+                setFilters((prev) => ({ ...prev, priceRange: val }))
+              }
+            >
+              <SelectTrigger className="h-12 rounded-2xl bg-[#575757] border-0 px-4 text-sm font-medium text-white hover:bg-[#6a6a6a] transition-all focus:ring-2 focus:ring-primary/20 focus:ring-offset-0">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <CircleDollarSign className="h-4 w-4 text-white" />
+                  <SelectValue placeholder="Price" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border-gray-700 bg-[#2C2C2E]">
+                {priceRanges.map((range) => (
+                  <SelectItem key={range} value={range} className="rounded-lg text-white focus:bg-[#3C3C3E] focus:text-white">
+                    {range}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Filter & Search Buttons in a Row */}
+          <div className="grid grid-cols-[auto_1fr] gap-3">
+            <button
+              onClick={handleFilter}
+              className="h-14 w-14 rounded-2xl bg-[#1C1C1E] hover:bg-[#2a2a2d] text-white transition-all flex items-center justify-center flex-shrink-0"
+              aria-label="Filter"
+            >
+              <SlidersHorizontal className="h-5 w-5" />
+            </button>
+
+            <button
+              onClick={handleSearch}
+              className="h-14 w-full rounded-2xl bg-gradient-to-r from-primary via-pink-500 to-primary bg-size-200 bg-pos-0 hover:bg-pos-100 text-white text-base font-bold transition-all duration-500 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+            >
+              <Search className="h-5 w-5" />
+              <span>Find Companions</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Desktop Search Area - Horizontal Layout */}
+        <div className="hidden md:flex w-auto flex-row items-center justify-center gap-3 rounded-full bg-input-bg px-4 py-3 backdrop-blur-md z-20">
+          <div className="w-auto min-w-[180px]">
             <LocationFilter
               value={filters.location}
               onChange={handleLocationChange}
@@ -127,8 +205,8 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
               setFilters((prev) => ({ ...prev, gender: val }))
             }
           >
-            <SelectTrigger className="h-auto w-full md:w-auto rounded-full bg-[#575757] px-4 py-2 text-base font-normal text-white border-0 hover:bg-[#6a6a6a] focus:ring-0 focus:ring-offset-0 min-w-[140px] justify-center gap-1 md:justify-between md:gap-0">
-              <div className="flex items-center gap-1 pr-1 text-sm md:text-base font-normal whitespace-nowrap">
+            <SelectTrigger className="h-auto w-auto rounded-full bg-[#575757] px-5 py-2 text-base font-normal text-white border-0 hover:bg-[#6a6a6a] focus:ring-0 focus:ring-offset-0 min-w-[140px] justify-between gap-1">
+              <div className="flex items-center gap-1 pr-1 text-base font-normal whitespace-nowrap">
                 <Venus className="h-4 w-4 text-white" />
                 <SelectValue placeholder="Select Gender" />
               </div>
@@ -149,12 +227,12 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
               setFilters((prev) => ({ ...prev, priceRange: val }))
             }
           >
-            <SelectTrigger className="h-auto w-full md:w-auto rounded-full bg-[#575757] px-4 text-white border-0 hover:bg-[#6a6a6a] focus:ring-0 focus:ring-offset-0 min-w-[160px] justify-center gap-1 md:justify-between md:gap-0">
-              <div className="flex items-center gap-1 text-sm md:text-base font-normal pr-1 whitespace-nowrap">
+            <SelectTrigger className="h-auto w-auto rounded-full bg-[#575757] px-5 py-2 text-white border-0 hover:bg-[#6a6a6a] focus:ring-0 focus:ring-offset-0 min-w-[160px] justify-between gap-1">
+              <div className="flex items-center gap-1 text-base font-normal pr-1 whitespace-nowrap">
                 <CircleDollarSign className="h-4 w-4 text-white" />
                 <SelectValue
                   placeholder="Select price range"
-                  className="text-base font-normal "
+                  className="text-base font-normal"
                 />
               </div>
             </SelectTrigger>
@@ -167,7 +245,7 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
             </SelectContent>
           </Select>
 
-          <div className="flex items-center gap-3 md:gap-3">
+          <div className="flex items-center gap-3">
             <button
               onClick={handleFilter}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1f1f21] text-white transition hover:bg-[#2a2a2d]"
@@ -178,11 +256,10 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
 
             <button
               onClick={handleSearch}
-              className="flex h-12 flex-1 md:h-10 md:w-10 md:flex-none items-center justify-center gap-2 md:gap-0 rounded-full bg-primary text-white text-base font-semibold transition hover:bg-primary/90"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white text-base font-semibold transition hover:bg-primary/90 shadow-lg"
               aria-label="Search"
             >
               <Search className="h-5 w-5" />
-              <span className="md:hidden">Search</span>
             </button>
           </div>
         </div>

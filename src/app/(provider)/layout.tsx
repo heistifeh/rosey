@@ -151,7 +151,6 @@ export default function ProviderLayout({
 
             <nav className="hidden md:flex items-center gap-10 h-full">
               {navItems.map((item) => {
-                const Icon = item.icon;
                 const isActive =
                   item.href === "/dashboard"
                     ? pathname === "/dashboard"
@@ -163,13 +162,12 @@ export default function ProviderLayout({
                   >
                     <Link
                       href={item.href}
-                      className={`flex items-center gap-2 text-sm font-medium transition-colors ${isActive
+                      className={`text-sm font-medium transition-colors ${isActive
                         ? "text-primary"
                         : "text-[#8E8E93] hover:text-primary-text"
                         }`}
                     >
-                      <Icon className="h-4 w-4" />
-                      <span>{item.label}</span>
+                      {item.label}
                     </Link>
                     {isActive && (
                       <span className="absolute bottom-[-40px] left-0 right-0 h-0.5 bg-primary"></span>
@@ -186,7 +184,8 @@ export default function ProviderLayout({
 
               <div className="flex items-center gap-2">
                 <NotificationBell />
-                <div className="hidden md:flex items-center gap-2 px-4 py-3 bg-primary-bg rounded-full">
+                {/* Profile with name - only show on xl screens and up */}
+                <div className="hidden xl:flex items-center gap-2 px-4 py-3 bg-primary-bg rounded-full">
                   <div className="relative h-10 w-10 rounded-full overflow-hidden">
                     <SafeImage
                       src={
@@ -205,7 +204,8 @@ export default function ProviderLayout({
                     {profile ? `${profile.working_name}` : "Loading..."}
                   </p>
                 </div>
-                <div className="md:hidden relative h-10 w-10 rounded-full overflow-hidden">
+                {/* Profile image only - show on smaller screens to prevent name cutoff */}
+                <div className="xl:hidden relative h-10 w-10 rounded-full overflow-hidden">
                   <SafeImage
                     src={
                       profileImages.find((img) => img.is_primary)?.public_url ||
