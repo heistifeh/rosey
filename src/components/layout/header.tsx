@@ -3,13 +3,23 @@
 import { Menu, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "@/stores/auth-store";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
 export function Header() {
+    const pathname = usePathname();
     const [activeNav, setActiveNav] = useState("Home");
+
+    useEffect(() => {
+        if (pathname.startsWith("/blog")) {
+            setActiveNav("Blog");
+        } else if (pathname === "/") {
+            setActiveNav("Home");
+        }
+    }, [pathname]);
+
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useCurrentUser();

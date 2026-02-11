@@ -654,6 +654,7 @@ const hotArticles = [
   {
     id: 1,
     title: "Interview with Miami Escort Jade Alisson",
+    slug: "interview-miami-escort-jade-alisson",
     description:
       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
     image: "/images/blog1.png",
@@ -662,20 +663,22 @@ const hotArticles = [
   },
   {
     id: 2,
-    title: "Interview with Miami Escort Jade Alisson",
+    title: "Understanding Modern Companionship",
+    slug: "understanding-modern-companionship",
     description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
+      "A deep dive into the changing landscape of professional companionship and its societal impact.",
     image: "/images/blog2.png",
-    readTime: "12 min read",
+    readTime: "15 min read",
     featured: false,
   },
   {
     id: 3,
-    title: "Interview with Miami Escort Jade Alisson",
+    title: "The Art of Boundary Setting",
+    slug: "art-of-boundary-setting",
     description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
+      "Practical advice on establishing and maintaining healthy boundaries for both providers and clients.",
     image: "/images/blog3.png",
-    readTime: "12 min read",
+    readTime: "10 min read",
     featured: false,
   },
 ];
@@ -683,158 +686,55 @@ const hotArticles = [
 const featuredArticles = [
   {
     id: 4,
-    title: "Interview with Miami Escort Jade Alisson",
+    title: "How to Choose a Reputable Provider",
+    slug: "how-to-choose-reputable-provider",
     description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
+      "A step-by-step guide to verifying credentials and ensuring a safe, high-quality experience.",
     image: "/images/blog1.png",
     readTime: "12 min read",
   },
   {
     id: 5,
-    title: "Interview with Miami Escort Jade Alisson",
+    title: "The Importance of Clear Communication",
+    slug: "importance-of-clear-communication",
     description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
+      "Why effective communication is the foundation of every successful companion engagement.",
     image: "/images/blog2.png",
-    readTime: "12 min read",
+    readTime: "8 min read",
   },
   {
     id: 6,
-    title: "Interview with Miami Escort Jade Alisson",
+    title: "Navigating Legal Realities",
+    slug: "navigating-legal-realities",
     description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
+      "An overview of the legal considerations involved in professional companion services.",
     image: "/images/blog3.png",
-    readTime: "12 min read",
+    readTime: "20 min read",
   },
   {
     id: 7,
-    title: "Interview with Miami Escort Jade Alisson",
+    title: "Building Lasting Professional Connections",
+    slug: "building-lasting-professional-connections",
     description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
+      "Tips on fostering respectful and enduring relationships in the companionship industry.",
     image: "/images/blog1.png",
     readTime: "12 min read",
   },
 ];
 
 export default function BlogPage() {
-  const [activeNav, setActiveNav] = useState("Blog");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Blog", href: "/blog" },
-  ];
-  const mobileNavLinks = navLinks.filter((link) => link.label !== "Blog");
-
   return (
     <section className="flex flex-col min-h-screen bg-input-bg overflow-x-hidden">
       {/* Header */}
-      <header className="flex px-4 pt-4 pb-20 md:px-[60px] md:pt-[60px]">
-        <div className="w-full md:hidden">
-          <section className="flex w-full items-center justify-between rounded-[200px] bg-primary-text px-4 py-3">
-            <Link href="/" className="inline-flex items-center">
-              <span className="text-primary text-3xl font-normal petemoss">
-                Rosey
-              </span>
-            </Link>
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/70 text-[#1a1a1a]"
-              aria-label="Toggle menu"
-              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-          </section>
-          {isMobileMenuOpen && (
-            <div className="mt-3 rounded-[24px] bg-primary-text p-4 shadow-lg">
-              <div className="flex flex-col gap-3">
-                {mobileNavLinks.map((link) => (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    onClick={() => {
-                      setActiveNav(link.label);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`rounded-[200px] px-4 py-2 text-sm font-medium ${activeNav === link.label
-                        ? "bg-primary text-primary-text"
-                        : "bg-tag-bg text-primary-text"
-                      }`}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-                <div className="flex items-center gap-2 rounded-[200px] border border-[#E5E5EA] px-3 py-3">
-                  <Search size={16} color={"#8E8E93"} />
-                  <input
-                    type="text"
-                    placeholder="Search"
-                    className="w-full bg-transparent text-sm text-gray-700 placeholder:text-[#8E8E93] focus:outline-none"
-                  />
-                </div>
-                <div className="flex items-center justify-center rounded-[200px] bg-primary px-6 py-3">
-                  <p className="text-primary-text text-sm font-semibold">
-                    Login
-                  </p>
-                  <p className="text-primary-text text-sm font-semibold">/</p>
-                  <p className="text-primary-text text-sm font-semibold">
-                    Signup
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        <section className="hidden w-full justify-between rounded-[200px] bg-primary-text px-4 py-5 md:flex">
-          <Link href="/" className="inline-flex items-center">
-            <span className="text-primary text-3xl md:text-[32px] font-normal petemoss">
-              Rosey
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-10">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                onClick={() => setActiveNav(link.label)}
-                className={`text-base font-medium transition-colors ${activeNav === link.label
-                    ? "bg-primary rounded-[200px] py-2 px-[33px] text-primary-text"
-                    : "text-[#8E8E93]"
-                  }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-
-          <section className="flex items-center gap-2">
-            <div className="flex items-center gap-2 rounded-[200px] px-3 py-3 border border-[#E5E5EA] w-[290px]">
-              <Search size={16} color={"#8E8E93"} />
-              <input
-                type="text"
-                placeholder="Search"
-                className="w-32 bg-transparent text-sm text-gray-700 placeholder:text-[#8E8E93] focus:outline-none"
-              />
-            </div>
-            <div className="flex items-center bg-primary rounded-[200px] px-[31px] py-[13px]">
-              <p className="text-primary-text text-base font-semibold">Login</p>
-              <p className="text-primary-text text-base font-semibold">/</p>
-              <p className="text-primary-text text-base font-semibold">
-                Signup
-              </p>
-            </div>
-          </section>
-        </section>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <div className="flex flex-col items-center px-4 md:px-[60px]">
         <div className="flex flex-col gap-4 md:gap-[24px]">
-          <p className="text-text-gray-opacity font-semibold text-base md:text-[24px] text-center">
+          <p className="text-text-gray-opacity font-semibold text-base md:text-[24px] text-center animate-fadeInUp">
             Blog
           </p>
-          <div className="flex items-center gap-3 md:gap-8">
+          <div className="flex items-center gap-3 md:gap-8 animate-fadeInUp animation-delay-200">
             <Image
               src="/svg/flower.svg"
               alt=""
@@ -909,7 +809,7 @@ export default function BlogPage() {
               </div>
               <div className="flex items-center justify-between">
                 <Link
-                  href="#"
+                  href={`/blog/${hotArticles[0].slug}`}
                   className="text-primary text-sm md:text-base font-medium underline"
                 >
                   Read Article
@@ -947,7 +847,7 @@ export default function BlogPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <Link
-                      href="#"
+                      href={`/blog/${article.slug}`}
                       className="text-primary text-sm font-medium underline"
                     >
                       Read Article
@@ -993,7 +893,7 @@ export default function BlogPage() {
                 </div>
                 <div className="flex items-center justify-between mt-auto">
                   <Link
-                    href="#"
+                    href={`/blog/${article.slug}`}
                     className="text-primary text-sm md:text-base font-medium underline"
                   >
                     Read Article
