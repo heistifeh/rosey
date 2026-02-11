@@ -9,6 +9,7 @@ const blogPosts = [
   {
     id: 1,
     title: "Interview with Miami Escort Jade Alisson",
+    slug: "interview-miami-escort-jade-alisson",
     description:
       "We're joined by New York Dominatrix Zoey Belladonna to talk femdom, boundaries, and feeling powerful.",
     image: "/images/blog1.png",
@@ -16,19 +17,21 @@ const blogPosts = [
   },
   {
     id: 2,
-    title: "Interview with Miami Escort Jade Alisson",
+    title: "Modern Companionship: A Guide",
+    slug: "modern-companionship-guide",
     description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk femdom, boundaries, and feeling powerful.",
+      "Exploring the evolution of companion services and what to expect in the modern era.",
     image: "/images/blog2.png",
-    readTime: "12 min read",
+    readTime: "8 min read",
   },
   {
     id: 3,
-    title: "Interview with Miami Escort Jade Alisson",
+    title: "Safety First: Booking Tips",
+    slug: "safety-first-booking-tips",
     description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk femdom, boundaries, and feeling powerful.",
+      "Essential tips for a safe and respectful experience when booking companion services.",
     image: "/images/blog3.png",
-    readTime: "12 min read",
+    readTime: "10 min read",
   },
 ];
 
@@ -50,18 +53,15 @@ export function BlogSection() {
             key={post.id}
             className="flex flex-col bg-input-bg rounded-3xl overflow-hidden"
           >
-            <div className="">
+            <div className="relative w-full aspect-[424/311]">
               <Image
                 src={post.image}
                 alt={post.title}
-                height={311}
-                width={424}
-                // fill
-                className="object-cover rounded-3xl"
-                // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 400px"
+                fill
+                className="object-cover"
               />
             </div>
-            <div className="flex flex-col gap-[42px] p-4 md:p-6">
+            <div className="flex flex-col gap-5 p-4 md:p-6">
               <div className="flex flex-col gap-2">
                 <h3 className="text-lg md:text-xl font-semibold text-primary-text">
                   {post.title}
@@ -72,7 +72,7 @@ export function BlogSection() {
               </div>
               <div className="flex items-center justify-between mt-auto">
                 <Link
-                  href="#"
+                  href={`/blog/${post.slug}`}
                   className="text-primary text-sm md:text-base font-medium underline"
                 >
                   Read Article
