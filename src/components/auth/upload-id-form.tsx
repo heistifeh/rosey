@@ -6,10 +6,16 @@ import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  getUserId,
+  uploadIdentityAsset,
+} from "@/lib/identity-verification";
 
 export function UploadIdForm() {
     const router = useRouter();
     const [idImage, setIdImage] = useState<string | null>(null);
+    const [idFile, setIdFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -34,19 +40,26 @@ export function UploadIdForm() {
                 setIdImage(reader.result as string);
             };
             reader.readAsDataURL(file);
+            setIdFile(file);
         }
     };
 
     const handleNext = async () => {
-        if (!idImage) {
+        if (!idImage || !idFile) {
             toast.error('Please upload your ID card first');
             return;
         }
 
         setIsUploading(true);
         try {
-            // TODO: Upload ID image to storage
-            // await apiBuilder.verification.uploadIdCard(idImage);
+            const supabase = getSupabaseBrowserClient();
+            const userId = await getUserId(supabase);
+            await uploadIdentityAsset({
+                supabase,
+                userId,
+                file: idFile,
+                kind: "id-card",
+            });
 
             toast.success('ID card uploaded successfully!');
             router.push('/take-photo');
@@ -60,6 +73,7 @@ export function UploadIdForm() {
 
     const handleRetake = () => {
         setIdImage(null);
+        setIdFile(null);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }

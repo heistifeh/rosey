@@ -5,6 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Camera } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Webcam from "react-webcam";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  dataUrlToFile,
+  getUserId,
+  uploadIdentityAsset,
+} from "@/lib/identity-verification";
 
 export function TakePhotoForm() {
   const router = useRouter();
@@ -12,6 +18,7 @@ export function TakePhotoForm() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(true);
   const [isWebcamReady, setIsWebcamReady] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     setIsCameraActive(true);
@@ -65,9 +72,27 @@ export function TakePhotoForm() {
     setIsWebcamReady(false);
   };
 
-  const handleProceed = () => {
-    if (capturedImage) {
+  const handleProceed = async () => {
+    if (!capturedImage || isUploading) {
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const userId = await getUserId(supabase);
+      const file = dataUrlToFile(capturedImage, "selfie.jpg");
+      await uploadIdentityAsset({
+        supabase,
+        userId,
+        file,
+        kind: "selfie",
+      });
       router.push("/setup-profile");
+    } catch (error) {
+      console.error("Failed to upload selfie:", error);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -162,8 +187,9 @@ export function TakePhotoForm() {
             onClick={handleProceed}
             className="flex-1 rounded-[200px] text-white font-semibold text-base cursor-pointer"
             size="default"
+            disabled={!capturedImage || isUploading}
           >
-            Proceed
+            {isUploading ? "Uploading..." : "Proceed"}
           </Button>
         </div>
       </div>
