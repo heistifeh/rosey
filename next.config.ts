@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "media-v2.tryst.a4cdn.org",
       },
+      {
+        protocol: "https",
+        hostname: "pub-7036c096d6f946e78a509a42a702bd0b.r2.dev",
+      },
     ],
   },
 };

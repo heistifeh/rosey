@@ -116,7 +116,7 @@ export default function Home() {
           {/* <AvailableNowSection /> */}
         </div>
       </main>
-      <AvailableNowSection filters={filters} setFilters={setFilters} />
+      <AvailableNowSection />
       <RecentlyActiveSection />
       <TestimonialsSection />
       <BookingGuideSection />

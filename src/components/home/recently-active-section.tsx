@@ -1,37 +1,41 @@
-"use client";
-
 import Link from "next/link";
-import { useMemo } from "react";
 import { ArrowRight, Circle } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { apiBuilder } from "@/api/builder";
-import type { Profile } from "@/types/types";
 import { SafeImage } from "@/components/ui/safe-image";
+import { createServiceRoleClient, SERVICE_ROLE_KEY } from "@/server/supabase-client";
 
-export function RecentlyActiveSection() {
-  const { data: profiles = [], isLoading } = useQuery<Profile[]>({
-    queryKey: ["recently-active-profiles"],
-    queryFn: () =>
-      apiBuilder.profiles.getProfiles({
-        applyDefaults: false,
-      }),
+export const revalidate = 30;
+
+type RecentlyActiveProfile = {
+  id: string;
+  username: string | null;
+  working_name: string | null;
+  images: { public_url: string; is_primary: boolean }[] | null;
+};
+
+export async function RecentlyActiveSection() {
+  if (!SERVICE_ROLE_KEY) {
+    return null;
+  }
+
+  const supabase = createServiceRoleClient();
+  const { data: profiles = [] } = await supabase
+    .from("profiles")
+    .select("id,username,working_name,images(public_url,is_primary)")
+    .order("created_at", { ascending: false })
+    .limit(8);
+
+  const normalizedProfiles = (profiles as RecentlyActiveProfile[]).map((profile) => {
+    const images = profile.images ?? [];
+    const primaryImage = images.find((img) => img.is_primary) ?? images[0];
+    const imageUrl = primaryImage?.public_url || "/images/girl1.png";
+    return {
+      id: profile.id,
+      name: profile.working_name ?? "Provider",
+      status: "Available",
+      image: imageUrl,
+      username: profile.username,
+    };
   });
-
-  const normalizedProfiles = useMemo(() => {
-    return profiles.map((profile) => {
-      const images = profile.images ?? [];
-      const primaryImage =
-        images.find((img) => img.is_primary) ?? images[0];
-      const imageUrl = primaryImage?.public_url || "/images/girl1.png";
-      return {
-        id: profile.id,
-        name: profile.working_name ?? "Provider",
-        status: "Available",
-        image: imageUrl,
-        username: profile.username,
-      };
-    });
-  }, [profiles]);
 
   const itemsToRender = normalizedProfiles;
 
@@ -50,20 +54,7 @@ export function RecentlyActiveSection() {
         </div>
 
         <div className="flex gap-6 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
-          {isLoading
-            ? Array.from({ length: 8 }).map((_, index) => (
-              <div
-                key={`recent-skel-${index}`}
-                className="flex h-full min-w-[280px] sm:min-w-0 flex-col overflow-hidden rounded-[24px] bg-input-bg shadow-sm animate-pulse"
-              >
-                <div className="aspect-3/4 w-full bg-primary-bg/40" />
-                <div className="p-3 space-y-3">
-                  <div className="h-4 w-1/2 bg-primary-bg/40 rounded" />
-                  <div className="h-3 w-1/3 bg-primary-bg/40 rounded" />
-                </div>
-              </div>
-            ))
-            : itemsToRender.map((profile, index) => (
+          {itemsToRender.map((profile, index) => (
               <Link
                 key={profile.id}
                 href={`/profile/${profile.username || profile.id}`}
