@@ -1,110 +1,112 @@
-import Image from "next/image";
-import Link from "next/link";
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { ArrowLeft, Clock, User, Calendar } from "lucide-react";
+"use client";
+
 import { Header } from "@/components/layout/header";
 import { FooterSection } from "@/components/home/footer-section";
-import { client } from "@/sanity/lib/client";
-import { postBySlugQuery, postsQuery } from "@/sanity/lib/queries";
-import type { Post } from "@/sanity/lib/types";
-import { urlFor } from "@/sanity/lib/image";
-import { buildExcerpt } from "@/sanity/lib/serializers";
-import { PortableText } from "@portabletext/react";
-import { portableTextComponents } from "@/sanity/lib/portableText";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { ArrowLeft, Clock, User, Calendar, Share2, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
 
-export const dynamic = "force-dynamic";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://rosey.link";
+const articles = [
+    {
+        id: 1,
+        title: "Interview with Miami Escort Jade Alisson",
+        slug: "interview-miami-escort-jade-alisson",
+        description: "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
+        image: "/images/blog1.png",
+        readTime: "12 min read",
+        author: "Rosey Team",
+        date: "Feb 10, 2026",
+        content: `
+      <p>In our latest installment of the Digital Companion Series, we sit down with one of Miami's most sought-after professionals, Jade Alisson. This interview delves into the intricacies of professional companionship, the importance of boundaries, and the evolving landscape of the industry.</p>
+      
+      <h2 class="text-2xl font-semibold text-primary-text mt-8 mb-4">Establishing Boundaries</h2>
+      <p>One of the key themes of our conversation was the critical role that boundaries play in professional relationships. Jade emphasizes that clear communication from the start is what makes an engagement successful and safe for both parties.</p>
+      
+      <blockquote class="border-l-4 border-primary pl-6 py-2 my-8 italic text-lg text-text-gray">
+        "Boundaries aren't just for me; they're for the client too. They create a safe container where we both know what to expect, allowing us to focus on the connection."
+      </blockquote>
 
-type PageProps = {
-  params: Promise<{ slug: string }>;
-};
+      <h2 class="text-2xl font-semibold text-primary-text mt-8 mb-4">The Digital Transformation</h2>
+      <p>The industry has seen a significant shift toward digital platforms. Jade discusses how technology has improved safety and transparency, allowing providers to better screen their clients and manage their schedules.</p>
+      
+      <p>We're also joined by New York Dominatrix Zoey Belladonna, who shares her perspective on empowerment and the psychological aspects of power dynamics in companionship.</p>
 
-const imageUrl = (image?: Post["mainImage"]) =>
-  image ? urlFor(image).width(1600).height(900).url() : "/images/blog1.png";
+      <h2 class="text-2xl font-semibold text-primary-text mt-8 mb-4">Final Thoughts</h2>
+      <p>As the industry continues to professionalize, voices like Jade's are essential in shaping a narrative of respect, safety, and genuine human connection. Stay tuned for more insights from our companion community.</p>
+    `
+    },
+    {
+        id: 2,
+        title: "Modern Companionship: A Guide",
+        slug: "modern-companionship-guide",
+        description: "Exploring the evolution of companion services and what to expect in the modern era.",
+        image: "/images/blog2.png",
+        readTime: "8 min read",
+        author: "Rosey Team",
+        date: "Feb 08, 2026",
+        content: `
+      <p>Modern companionship has moved far beyond outdated stereotypes. In today's fast-paced world, the need for genuine connection, companionship, and emotional support is more prevalent than ever.</p>
+      
+      <h2 class="text-2xl font-semibold text-primary-text mt-8 mb-4">What is Modern Companionship?</h2>
+      <p>Today, a professional companion is someone who provides not just physical presence, but also conversation, social accompaniment, and emotional rapport. Whether it's a gala event or a quiet evening in, the modern companion is versatile and professional.</p>
+      
+      <h2 class="text-2xl font-semibold text-primary-text mt-8 mb-4">The Role of Platforms</h2>
+      <p>Platforms like Rosey have revolutionized how individuals find and connect with providers. By prioritizing safety, verification, and user experience, we're building a community based on trust and transparency.</p>
+    `
+    },
+    {
+        id: 3,
+        title: "Safety First: Booking Tips",
+        slug: "safety-first-booking-tips",
+        description: "Essential tips for a safe and respectful experience when booking companion services.",
+        image: "/images/blog3.png",
+        readTime: "10 min read",
+        author: "Safety Dept",
+        date: "Feb 05, 2026",
+        content: `<p>Safety is our top priority at Rosey. This guide outlines the best practices for clients when engaging with professional companions.</p>`
+    }
+];
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const article = await client.fetch<Post>(postBySlugQuery, {
-    slug,
-  });
+export default function ArticlePage() {
+    const { slug } = useParams();
+    const article = articles.find((a) => a.slug === slug);
 
-  if (!article) {
-    return {
-      title: "Article not found | Rosey",
-      description: "The requested article could not be found.",
+    const handleCopy = () => {
+        navigator.clipboard.writeText(window.location.href);
+        toast.success("Link copied to clipboard!");
     };
-  }
 
-  const title = article.seoTitle || article.title;
-  const description =
-    article.seoDescription || article.excerpt || buildExcerpt(article.body);
-  const ogImage = article.seoImage || article.mainImage;
-  const canonical = `${SITE_URL}/blog/${article.slug}`;
-  const image = ogImage ? urlFor(ogImage).width(1200).height(630).url() : undefined;
+    const handleShare = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: article?.title,
+                    text: article?.description,
+                    url: window.location.href,
+                });
+            } catch (err) {
+                console.error("Error sharing:", err);
+            }
+        } else {
+            handleCopy();
+        }
+    };
 
-  return {
-    title: `${title} | Rosey`,
-    description,
-    alternates: {
-      canonical,
-    },
-    openGraph: {
-      title,
-      description,
-      type: "article",
-      url: canonical,
-      images: image ? [image] : [],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: image ? [image] : [],
-    },
-  };
-}
-
-export default async function ArticlePage({ params }: PageProps) {
-  const { slug } = await params;
-  const article = await client.fetch<Post>(postBySlugQuery, {
-    slug,
-  });
-
-  if (!article) {
-    notFound();
-  }
-
-  const recommended = (await client.fetch<Post[]>(postsQuery))
-    .filter((item) => item.slug !== article.slug)
-    .slice(0, 2);
-  const canonical = `${SITE_URL}/blog/${article.slug}`;
-  const published = article.publishedAt || article._createdAt;
-  const modified = article._updatedAt || published;
-  const coverImage = article.seoImage || article.mainImage;
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: article.title,
-    description: article.excerpt || buildExcerpt(article.body),
-    author: {
-      "@type": "Person",
-      name: article.authorName || "Rosey",
-    },
-    datePublished: published,
-    dateModified: modified,
-    image: coverImage ? urlFor(coverImage).width(1200).height(630).url() : undefined,
-    mainEntityOfPage: canonical,
-    url: canonical,
-    publisher: {
-      "@type": "Organization",
-      name: "Rosey",
-      logo: {
-        "@type": "ImageObject",
-        url: `${SITE_URL}/images/logo.svg`,
-      },
-    },
-  };
+    if (!article) {
+        return (
+            <div className="min-h-screen bg-input-bg flex items-center justify-center">
+                <div className="text-center">
+                    <h1 className="text-4xl text-primary-text font-bold mb-4">Article Not Found</h1>
+                    <Link href="/blog">
+                        <Button className="bg-primary hover:bg-primary/90">Back to Blog</Button>
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <section className="flex flex-col min-h-screen bg-input-bg overflow-x-hidden">
@@ -122,15 +124,15 @@ export default async function ArticlePage({ params }: PageProps) {
                     <div className="flex flex-wrap gap-4 text-sm text-text-gray-opacity">
                         <div className="flex items-center gap-2">
                             <User size={16} className="text-primary" />
-                            <span>{article.authorName || "Rosey"}</span>
+                            <span>{article.author}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Calendar size={16} className="text-primary" />
-                            <span>{article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : ""}</span>
+                            <span>{article.date}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Clock size={16} className="text-primary" />
-                            <span>{article.readTime || ""}</span>
+                            <span>{article.readTime}</span>
                         </div>
                     </div>
 
@@ -139,14 +141,14 @@ export default async function ArticlePage({ params }: PageProps) {
                     </h1>
 
                     <p className="text-xl text-text-gray leading-relaxed max-w-4xl">
-                        {article.excerpt || buildExcerpt(article.body)}
+                        {article.description}
                     </p>
                 </div>
 
 
                 <div className="relative w-full aspect-video rounded-3xl overflow-hidden mb-12 shadow-2xl border border-white/10">
                     <Image
-                        src={imageUrl(article.mainImage)}
+                        src={article.image}
                         alt={article.title}
                         fill
                         className="object-cover"
@@ -156,12 +158,10 @@ export default async function ArticlePage({ params }: PageProps) {
 
 
                 <article className="prose prose-invert prose-primary max-w-none">
-                    <div className="text-text-gray text-base leading-relaxed space-y-6">
-                        <PortableText
-                          value={article.body || []}
-                          components={portableTextComponents}
-                        />
-                    </div>
+                    <div
+                        className="text-text-gray text-base leading-relaxed space-y-6"
+                        dangerouslySetInnerHTML={{ __html: article.content }}
+                    />
                 </article>
 
 
@@ -169,6 +169,23 @@ export default async function ArticlePage({ params }: PageProps) {
                     <div className="flex flex-col gap-2 text-center md:text-left">
                         <h3 className="text-xl font-semibold text-primary-text">Did you find this helpful?</h3>
                         <p className="text-text-gray-opacity text-sm">Share this article with your connection.</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                        <Button
+                            variant="outline"
+                            className="rounded-full border-white/20 text-text-gray hover:bg-white/10 px-8 flex items-center gap-2 w-full sm:w-auto"
+                            onClick={handleCopy}
+                        >
+                            <Copy size={16} />
+                            Copy Link
+                        </Button>
+                        <Button
+                            className="rounded-full bg-primary hover:bg-primary/90 px-8 flex items-center gap-2 w-full sm:w-auto"
+                            onClick={handleShare}
+                        >
+                            <Share2 size={16} />
+                            Share Article
+                        </Button>
                     </div>
                 </div>
 
@@ -180,12 +197,12 @@ export default async function ArticlePage({ params }: PageProps) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {recommended.map((a) => (
-                            <Link key={a._id} href={`/blog/${a.slug}`} className="group group-hover:no-underline">
+                        {articles.filter(a => a.id !== article.id).slice(0, 2).map((a) => (
+                            <Link key={a.id} href={`/blog/${a.slug}`} className="group group-hover:no-underline">
                                 <article className="flex flex-col bg-primary-bg rounded-3xl overflow-hidden border border-white/5 h-full transition-transform hover:-translate-y-2 duration-300">
                                     <div className="relative w-full aspect-video">
                                         <Image
-                                            src={imageUrl(a.mainImage)}
+                                            src={a.image}
                                             alt={a.title}
                                             fill
                                             className="object-cover"
@@ -196,7 +213,7 @@ export default async function ArticlePage({ params }: PageProps) {
                                             {a.title}
                                         </h3>
                                         <p className="text-sm text-text-gray-opacity line-clamp-2">
-                                            {a.excerpt || buildExcerpt(a.body)}
+                                            {a.description}
                                         </p>
                                         <div className="flex items-center justify-between mt-auto pt-4">
                                             <span className="text-primary text-sm font-medium underline">Read Article</span>
@@ -211,10 +228,6 @@ export default async function ArticlePage({ params }: PageProps) {
             </main>
 
             <FooterSection />
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-            />
         </section>
     );
 }
