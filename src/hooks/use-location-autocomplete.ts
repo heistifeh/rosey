@@ -289,8 +289,11 @@ export function useLocationAutocomplete(
                 }
 
                 const predictionFallback = limited
-                  .map(normalizePredictionFallback)
-                  .filter((item): item is LocationSuggestion => Boolean(item));
+                  .map((prediction: any) => normalizePredictionFallback(prediction))
+                  .filter(
+                    (item: LocationSuggestion | null): item is LocationSuggestion =>
+                      Boolean(item)
+                  );
                 setResults(predictionFallback);
               })
               .finally(() => {
