@@ -1,1021 +1,195 @@
-// "use client";
-
-// import { Search } from "lucide-react";
-// import Image from "next/image";
-// import Link from "next/link";
-// import { useState } from "react";
-// import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-// import { FooterSection } from "@/components/home/footer-section";
-
-// const categories = ["Interview", "Adult", "Sex Talk", "Lifestyle"];
-
-// const hotArticles = [
-//   {
-//     id: 1,
-//     title: "Interview with Miami Escort Jade Alisson",
-//     description:
-//       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-//     image: "/images/blog1.png",
-//     readTime: "12 min read",
-//     featured: true,
-//   },
-//   {
-//     id: 2,
-//     title: "Interview with Miami Escort Jade Alisson",
-//     description:
-//       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-//     image: "/images/blog2.png",
-//     readTime: "12 min read",
-//     featured: false,
-//   },
-//   {
-//     id: 3,
-//     title: "Interview with Miami Escort Jade Alisson",
-//     description:
-//       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-//     image: "/images/blog3.png",
-//     readTime: "12 min read",
-//     featured: false,
-//   },
-// ];
-
-// const featuredArticles = [
-//   {
-//     id: 4,
-//     title: "Interview with Miami Escort Jade Alisson",
-//     description:
-//       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-//     image: "/images/blog1.png",
-//     readTime: "12 min read",
-//   },
-//   {
-//     id: 5,
-//     title: "Interview with Miami Escort Jade Alisson",
-//     description:
-//       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-//     image: "/images/blog2.png",
-//     readTime: "12 min read",
-//   },
-//   {
-//     id: 6,
-//     title: "Interview with Miami Escort Jade Alisson",
-//     description:
-//       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-//     image: "/images/blog3.png",
-//     readTime: "12 min read",
-//   },
-//   {
-//     id: 7,
-//     title: "Interview with Miami Escort Jade Alisson",
-//     description:
-//       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-//     image: "/images/blog1.png",
-//     readTime: "12 min read",
-//   },
-// ];
-
-// export default function BlogPage() {
-//   const [activeNav, setActiveNav] = useState("Blog");
-
-//   const navLinks = [
-//     { label: "Home", href: "/" },
-//     { label: "Blog", href: "/blog" },
-//   ];
-
-//   return (
-//     <section className="flex flex-col min-h-screen bg-input-bg">
-//       {/* Header */}
-//       <header className="flex px-4 md:px-[60px] pt-4 md:pt-[60px] pb-20">
-//         <section className="flex justify-between bg-primary-text rounded-[200px] px-4 py-5 w-full">
-//           <Link href="/" className="inline-flex items-center">
-//             <span className="text-primary text-3xl md:text-[32px] font-normal petemoss">
-//               Rosey
-//             </span>
-//           </Link>
-
-//           <div className="flex items-center gap-10">
-//             {navLinks.map((link) => (
-//               <Link
-//                 key={link.label}
-//                 href={link.href}
-//                 onClick={() => setActiveNav(link.label)}
-//                 className={`text-base font-medium transition-colors ${
-//                   activeNav === link.label
-//                     ? "bg-primary rounded-[200px] py-2 px-[33px] text-primary-text"
-//                     : "text-[#8E8E93]"
-//                 }`}
-//               >
-//                 {link.label}
-//               </Link>
-//             ))}
-//           </div>
-
-//           <section className="flex items-center gap-2">
-//             <div className="flex items-center gap-2 rounded-[200px] px-3 py-3 border border-[#E5E5EA] w-[290px]">
-//               <Search size={16} color={"#8E8E93"} />
-//               <input
-//                 type="text"
-//                 placeholder="Search"
-//                 className="w-32 bg-transparent text-sm text-gray-700 placeholder:text-[#8E8E93] focus:outline-none"
-//               />
-//             </div>
-//             <div className="flex items-center bg-primary rounded-[200px] px-[31px] py-[13px]">
-//               <p className="text-primary-text text-base font-semibold">Login</p>
-//               <p className="text-primary-text text-base font-semibold">/</p>
-//               <p className="text-primary-text text-base font-semibold">
-//                 Signup
-//               </p>
-//             </div>
-//           </section>
-//         </section>
-//       </header>
-
-//       {/* Hero Section */}
-//       <div className="flex flex-col items-center  px-4 md:px-[60px] ">
-//         <div className=" flex flex-col gap-[24px]">
-//           <p className=" text-text-gray-opacity font-semibold text-[24px] text-center">
-//             Blog
-//           </p>
-//           <div className="flex items-center gap-4 md:gap-8">
-//             <span className="text-primary text-2xl md:text-4xl">✨</span>
-//             <h1 className="text-3xl md:text-5xl lg:text-[72px] font-semibold text-primary-text text-center">
-//               Insights, Stories & Guidance for Modern Companionship
-//             </h1>
-//             <span className="text-primary text-2xl md:text-4xl">✨</span>
-//           </div>
-//         </div>
-
-//         {/* Search Bar */}
-//         <div className="w-full max-w-2xl pt-8 md:pt-16">
-//           <div className="relative flex items-center">
-//             <Search
-//               className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-text-gray-opacity z-10"
-//               size={20}
-//             />
-//             <Input
-//               type="text"
-//               placeholder="Search blog title"
-//               className="pl-12 pr-16 bg-primary-bg text-white placeholder:text-text-gray-opacity rounded-[200px] w-full"
-//             />
-//             <button className="absolute right-2 rounded-full p-3 bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors">
-//               <Search className="h-5 w-5 text-white" size={16} />
-//             </button>
-//           </div>
-//         </div>
-
-//         {/* Categories */}
-//         {/* <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-//           {categories.map((category) => (
-//             <Link
-//               key={category}
-//               href="#"
-//               className="text-text-gray text-sm md:text-base hover:text-primary transition-colors"
-//             >
-//               {category}
-//             </Link>
-//           ))}
-//         </div> */}
-//         <div className=" flex text-primary pt-4 ">
-//           <p className=" text-base font-normal ">
-//             <span className="text-primary-text">Categories: </span>
-//             Interviews, Articles, Sex Talk, LifeStyle
-//           </p>
-//         </div>
-//       </div>
-
-//       {/* Hot Section */}
-//       <div className="px-4 md:px-[60px] py-20 ">
-//         <h2 className="text-2xl md:text-3xl font-semibold text-primary-text mb-6 md:mb-8 flex items-center gap-2">
-//           Hot 🔥
-//         </h2>
-//         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-//           {/* Large Featured Article - Left Side */}
-//           <article className="md:col-span-2 flex flex-col bg-primary-bg rounded-3xl overflow-hidden">
-//             <div className="relative w-full aspect-4/3">
-//               <Image
-//                 src={hotArticles[0].image}
-//                 alt={hotArticles[0].title}
-//                 fill
-//                 className="object-cover rounded-t-3xl"
-//               />
-//             </div>
-//             <div className="flex flex-col gap-4 p-4 md:p-6">
-//               <div className="flex flex-col gap-2">
-//                 <h3 className="text-lg md:text-xl font-semibold text-primary-text">
-//                   {hotArticles[0].title}
-//                 </h3>
-//                 <p className="text-sm md:text-base font-normal text-text-gray-opacity">
-//                   {hotArticles[0].description}
-//                 </p>
-//               </div>
-//               <div className="flex items-center justify-between mt-auto">
-//                 <Link
-//                   href="#"
-//                   className="text-primary text-sm md:text-base font-medium underline"
-//                 >
-//                   Read Article
-//                 </Link>
-//                 <span className="text-sm md:text-base text-text-gray-opacity">
-//                   {hotArticles[0].readTime}
-//                 </span>
-//               </div>
-//             </div>
-//           </article>
-
-//           {/* Two Smaller Articles - Right Side */}
-//           <div className="flex flex-col gap-4 md:gap-6">
-//             {hotArticles.slice(1).map((article) => (
-//               <article
-//                 key={article.id}
-//                 className="flex flex-col bg-primary-bg rounded-3xl overflow-hidden"
-//               >
-//                 <div className="relative w-full aspect-square">
-//                   <Image
-//                     src={article.image}
-//                     alt={article.title}
-//                     fill
-//                     className="object-cover rounded-t-3xl"
-//                   />
-//                 </div>
-//                 <div className="flex flex-col gap-4 p-4 md:p-6">
-//                   <div className="flex flex-col gap-2">
-//                     <h3 className="text-lg md:text-xl font-semibold text-primary-text">
-//                       {article.title}
-//                     </h3>
-//                     <p className="text-sm md:text-base font-normal text-text-gray-opacity">
-//                       {article.description}
-//                     </p>
-//                   </div>
-//                   <div className="flex items-center justify-between mt-auto">
-//                     <Link
-//                       href="#"
-//                       className="text-primary text-sm md:text-base font-medium underline"
-//                     >
-//                       Read Article
-//                     </Link>
-//                     <span className="text-sm md:text-base text-text-gray-opacity">
-//                       {article.readTime}
-//                     </span>
-//                   </div>
-//                 </div>
-//               </article>
-//             ))}
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Featured Articles Section */}
-//       <div className="px-4 md:px-[60px] ">
-//         <h2 className="text-2xl md:text-3xl font-semibold text-primary-text mb-6 md:mb-8 flex items-center gap-2">
-//           🔥 Featured Articles
-//         </h2>
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-//           {featuredArticles.map((article) => (
-//             <article
-//               key={article.id}
-//               className="flex flex-col bg-primary-bg rounded-3xl overflow-hidden"
-//             >
-//               <div className="relative w-full aspect-3/4">
-//                 <Image
-//                   src={article.image}
-//                   alt={article.title}
-//                   fill
-//                   className="object-cover rounded-t-3xl"
-//                 />
-//               </div>
-//               <div className="flex flex-col gap-4 p-4 md:p-6">
-//                 <div className="flex flex-col gap-2">
-//                   <h3 className="text-lg md:text-xl font-semibold text-primary-text">
-//                     {article.title}
-//                   </h3>
-//                   <p className="text-sm md:text-base font-normal text-text-gray-opacity">
-//                     {article.description}
-//                   </p>
-//                 </div>
-//                 <div className="flex items-center justify-between mt-auto">
-//                   <Link
-//                     href="#"
-//                     className="text-primary text-sm md:text-base font-medium underline"
-//                   >
-//                     Read Article
-//                   </Link>
-//                   <span className="text-sm md:text-base text-text-gray-opacity">
-//                     {article.readTime}
-//                   </span>
-//                 </div>
-//               </div>
-//             </article>
-//           ))}
-//         </div>
-//       </div>
-
-//       {/* Load More Button */}
-//       <div className="flex justify-center px-4 md:px-[60px] py-8 md:py-12">
-//         <Button variant="default" size="lg" className="px-8 py-6">
-//           Load More Posts
-//         </Button>
-//       </div>
-
-//       {/* Footer */}
-//       <FooterSection />
-//     </section>
-//   );
-// }
-
-// "use client";
-
-// import { Search } from "lucide-react";
-// import Image from "next/image";
-// import Link from "next/link";
-// import { useState } from "react";
-// import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-// import { FooterSection } from "@/components/home/footer-section";
-
-// const categories = ["Interview", "Adult", "Sex Talk", "Lifestyle"];
-
-// const hotArticles = [
-//   {
-//     id: 1,
-//     title: "Interview with Miami Escort Jade Alisson",
-//     description:
-//       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-//     image: "/images/blog1.png",
-//     readTime: "12 min read",
-//     featured: true,
-//   },
-//   {
-//     id: 2,
-//     title: "Interview with Miami Escort Jade Alisson",
-//     description:
-//       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-//     image: "/images/blog2.png",
-//     readTime: "12 min read",
-//     featured: false,
-//   },
-//   {
-//     id: 3,
-//     title: "Interview with Miami Escort Jade Alisson",
-//     description:
-//       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-//     image: "/images/blog3.png",
-//     readTime: "12 min read",
-//     featured: false,
-//   },
-// ];
-
-// const featuredArticles = [
-//   {
-//     id: 4,
-//     title: "Interview with Miami Escort Jade Alisson",
-//     description:
-//       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-//     image: "/images/blog1.png",
-//     readTime: "12 min read",
-//   },
-//   {
-//     id: 5,
-//     title: "Interview with Miami Escort Jade Alisson",
-//     description:
-//       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-//     image: "/images/blog2.png",
-//     readTime: "12 min read",
-//   },
-//   {
-//     id: 6,
-//     title: "Interview with Miami Escort Jade Alisson",
-//     description:
-//       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-//     image: "/images/blog3.png",
-//     readTime: "12 min read",
-//   },
-//   {
-//     id: 7,
-//     title: "Interview with Miami Escort Jade Alisson",
-//     description:
-//       "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-//     image: "/images/blog1.png",
-//     readTime: "12 min read",
-//   },
-// ];
-
-// export default function BlogPage() {
-//   const [activeNav, setActiveNav] = useState("Blog");
-
-//   const navLinks = [
-//     { label: "Home", href: "/" },
-//     { label: "Blog", href: "/blog" },
-//   ];
-
-//   return (
-//     <section className="flex flex-col min-h-screen bg-input-bg">
-//       {/* Header */}
-//       <header className="flex px-4 md:px-[60px] pt-4 md:pt-[60px] pb-20">
-//         <section className="flex justify-between bg-primary-text rounded-[200px] px-4 py-5 w-full">
-//           <Link href="/" className="inline-flex items-center">
-//             <span className="text-primary text-3xl md:text-[32px] font-normal petemoss">
-//               Rosey
-//             </span>
-//           </Link>
-
-//           <div className="flex items-center gap-10">
-//             {navLinks.map((link) => (
-//               <Link
-//                 key={link.label}
-//                 href={link.href}
-//                 onClick={() => setActiveNav(link.label)}
-//                 className={`text-base font-medium transition-colors ${
-//                   activeNav === link.label
-//                     ? "bg-primary rounded-[200px] py-2 px-[33px] text-primary-text"
-//                     : "text-[#8E8E93]"
-//                 }`}
-//               >
-//                 {link.label}
-//               </Link>
-//             ))}
-//           </div>
-
-//           <section className="flex items-center gap-2">
-//             <div className="flex items-center gap-2 rounded-[200px] px-3 py-3 border border-[#E5E5EA] w-[290px]">
-//               <Search size={16} color={"#8E8E93"} />
-//               <input
-//                 type="text"
-//                 placeholder="Search"
-//                 className="w-32 bg-transparent text-sm text-gray-700 placeholder:text-[#8E8E93] focus:outline-none"
-//               />
-//             </div>
-//             <div className="flex items-center bg-primary rounded-[200px] px-[31px] py-[13px]">
-//               <p className="text-primary-text text-base font-semibold">Login</p>
-//               <p className="text-primary-text text-base font-semibold">/</p>
-//               <p className="text-primary-text text-base font-semibold">
-//                 Signup
-//               </p>
-//             </div>
-//           </section>
-//         </section>
-//       </header>
-
-//       {/* Hero Section */}
-//       <div className="flex flex-col items-center  px-4 md:px-[60px] ">
-//         <div className=" flex flex-col gap-[24px]">
-//           <p className=" text-text-gray-opacity font-semibold text-[24px] text-center">
-//             Blog
-//           </p>
-//           <div className="flex items-center gap-4 md:gap-8">
-//             <span className="text-primary text-2xl md:text-4xl">✨</span>
-//             <h1 className="text-3xl md:text-5xl lg:text-[72px] font-semibold text-primary-text text-center">
-//               Insights, Stories & Guidance for Modern Companionship
-//             </h1>
-//             <span className="text-primary text-2xl md:text-4xl">✨</span>
-//           </div>
-//         </div>
-
-//         {/* Search Bar */}
-//         <div className="w-full max-w-2xl pt-8 md:pt-16">
-//           <div className="relative flex items-center">
-//             <Search
-//               className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-text-gray-opacity z-10"
-//               size={20}
-//             />
-//             <Input
-//               type="text"
-//               placeholder="Search blog title"
-//               className="pl-12 pr-16 bg-primary-bg text-white placeholder:text-text-gray-opacity rounded-[200px] w-full"
-//             />
-//             <button className="absolute right-2 rounded-full p-3 bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors">
-//               <Search className="h-5 w-5 text-white" size={16} />
-//             </button>
-//           </div>
-//         </div>
-
-//         {/* Categories */}
-//         <div className=" flex text-primary pt-4 ">
-//           <p className=" text-base font-normal ">
-//             <span className="text-primary-text">Categories: </span>
-//             Interviews, Articles, Sex Talk, LifeStyle
-//           </p>
-//         </div>
-//       </div>
-
-//       {/* Hot Section */}
-//       <div className="px-4 md:px-[60px] py-20 ">
-//         <h2 className="text-2xl md:text-3xl font-semibold text-primary-text mb-6 md:mb-8 flex items-center gap-2">
-//           Hot 🔥
-//         </h2>
-//         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-//           {/* Large Featured Article - Left Side */}
-//           <article className="md:col-span-2 flex flex-col bg-primary-bg rounded-3xl overflow-hidden h-full">
-//             <div className="relative w-full h-[400px] md:h-[500px]">
-//               <Image
-//                 src={hotArticles[0].image}
-//                 alt={hotArticles[0].title}
-//                 fill
-//                 className="object-cover"
-//               />
-//             </div>
-//             <div className="flex flex-col gap-4 p-4 md:p-6 flex-grow">
-//               <div className="flex flex-col gap-2">
-//                 <h3 className="text-lg md:text-xl font-semibold text-primary-text">
-//                   {hotArticles[0].title}
-//                 </h3>
-//                 <p className="text-sm md:text-base font-normal text-text-gray-opacity">
-//                   {hotArticles[0].description}
-//                 </p>
-//               </div>
-//               <div className="flex items-center justify-between mt-auto">
-//                 <Link
-//                   href="#"
-//                   className="text-primary text-sm md:text-base font-medium underline"
-//                 >
-//                   Read Article
-//                 </Link>
-//                 <span className="text-sm md:text-base text-text-gray-opacity">
-//                   {hotArticles[0].readTime}
-//                 </span>
-//               </div>
-//             </div>
-//           </article>
-
-//           {/* Two Smaller Articles - Right Side */}
-//           <div className="flex flex-col gap-4 md:gap-6">
-//             {hotArticles.slice(1).map((article) => (
-//               <article
-//                 key={article.id}
-//                 className="flex flex-col bg-primary-bg rounded-3xl overflow-hidden"
-//               >
-//                 <div className="relative w-full h-[180px] md:h-[200px]">
-//                   <Image
-//                     src={article.image}
-//                     alt={article.title}
-//                     fill
-//                     className="object-cover"
-//                   />
-//                 </div>
-//                 <div className="flex flex-col gap-4 p-4 md:p-6">
-//                   <div className="flex flex-col gap-2">
-//                     <h3 className="text-base md:text-lg font-semibold text-primary-text">
-//                       {article.title}
-//                     </h3>
-//                     <p className="text-xs md:text-sm font-normal text-text-gray-opacity line-clamp-2">
-//                       {article.description}
-//                     </p>
-//                   </div>
-//                   <div className="flex items-center justify-between mt-auto">
-//                     <Link
-//                       href="#"
-//                       className="text-primary text-xs md:text-sm font-medium underline"
-//                     >
-//                       Read Article
-//                     </Link>
-//                     <span className="text-xs md:text-sm text-text-gray-opacity">
-//                       {article.readTime}
-//                     </span>
-//                   </div>
-//                 </div>
-//               </article>
-//             ))}
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Featured Articles Section */}
-//       <div className="px-4 md:px-[60px] ">
-//         <h2 className="text-2xl md:text-3xl font-semibold text-primary-text mb-6 md:mb-8 flex items-center gap-2">
-//           🔥 Featured Articles
-//         </h2>
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-//           {featuredArticles.map((article) => (
-//             <article
-//               key={article.id}
-//               className="flex flex-col bg-primary-bg rounded-3xl overflow-hidden"
-//             >
-//               <div className="relative w-full h-[300px] md:h-[400px]">
-//                 <Image
-//                   src={article.image}
-//                   alt={article.title}
-//                   fill
-//                   className="object-cover"
-//                 />
-//               </div>
-//               <div className="flex flex-col gap-4 p-4 md:p-6">
-//                 <div className="flex flex-col gap-2">
-//                   <h3 className="text-lg md:text-xl font-semibold text-primary-text">
-//                     {article.title}
-//                   </h3>
-//                   <p className="text-sm md:text-base font-normal text-text-gray-opacity">
-//                     {article.description}
-//                   </p>
-//                 </div>
-//                 <div className="flex items-center justify-between mt-auto">
-//                   <Link
-//                     href="#"
-//                     className="text-primary text-sm md:text-base font-medium underline"
-//                   >
-//                     Read Article
-//                   </Link>
-//                   <span className="text-sm md:text-base text-text-gray-opacity">
-//                     {article.readTime}
-//                   </span>
-//                 </div>
-//               </div>
-//             </article>
-//           ))}
-//         </div>
-//       </div>
-
-//       {/* Load More Button */}
-//       <div className="flex justify-center px-4 md:px-[60px] py-8 md:py-12">
-//         <Button variant="default" size="lg" className="px-8 py-6">
-//           Load More Posts
-//         </Button>
-//       </div>
-
-//       {/* Footer */}
-//       <FooterSection />
-//     </section>
-//   );
-// }
-
-"use client";
-
-import { Menu, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import type { Metadata } from "next";
+import { Clock } from "lucide-react";
 import { Header } from "@/components/layout/header";
 import { FooterSection } from "@/components/home/footer-section";
+import { client } from "@/sanity/lib/client";
+import { featuredPostsQuery, hotPostsQuery, postsQuery } from "@/sanity/lib/queries";
+import type { Post } from "@/sanity/lib/types";
+import { buildExcerpt } from "@/sanity/lib/serializers";
+import { urlFor } from "@/sanity/lib/image";
 
-// const categories = ["Interview", "Adult", "Sex Talk", "Lifestyle"];
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://rosey.link";
 
-const hotArticles = [
-  {
-    id: 1,
-    title: "Interview with Miami Escort Jade Alisson",
-    description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-    image: "/images/blog1.png",
-    readTime: "12 min read",
-    featured: true,
-  },
-  {
-    id: 2,
-    title: "Interview with Miami Escort Jade Alisson",
-    description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-    image: "/images/blog2.png",
-    readTime: "12 min read",
-    featured: false,
-  },
-  {
-    id: 3,
-    title: "Interview with Miami Escort Jade Alisson",
-    description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-    image: "/images/blog3.png",
-    readTime: "12 min read",
-    featured: false,
-  },
-];
+export const revalidate = 60;
 
-const featuredArticles = [
-  {
-    id: 4,
-    title: "Interview with Miami Escort Jade Alisson",
-    description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-    image: "/images/blog1.png",
-    readTime: "12 min read",
+export const metadata: Metadata = {
+  title: "Blog | Rosey",
+  description:
+    "Insights, stories, and practical guidance for modern companionship, safety, booking, and provider growth.",
+  alternates: {
+    canonical: `${SITE_URL}/blog`,
   },
-  {
-    id: 5,
-    title: "Interview with Miami Escort Jade Alisson",
+  openGraph: {
+    title: "Rosey Blog",
     description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-    image: "/images/blog2.png",
-    readTime: "12 min read",
+      "Insights, stories, and practical guidance for modern companionship, safety, booking, and provider growth.",
+    url: `${SITE_URL}/blog`,
+    type: "website",
   },
-  {
-    id: 6,
-    title: "Interview with Miami Escort Jade Alisson",
+  twitter: {
+    card: "summary_large_image",
+    title: "Rosey Blog",
     description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-    image: "/images/blog3.png",
-    readTime: "12 min read",
+      "Insights, stories, and practical guidance for modern companionship, safety, booking, and provider growth.",
   },
-  {
-    id: 7,
-    title: "Interview with Miami Escort Jade Alisson",
-    description:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk freedom, boundaries, and feeling powerful.",
-    image: "/images/blog1.png",
-    readTime: "12 min read",
-  },
-];
+};
 
-export default function BlogPage() {
-  const [activeNav, setActiveNav] = useState("Blog");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+const imageUrl = (image?: Post["mainImage"]) =>
+  image ? urlFor(image).width(1200).height(700).url() : "/images/blog1.png";
 
-  const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Blog", href: "/blog" },
-  ];
-  const mobileNavLinks = navLinks.filter((link) => link.label !== "Blog");
+const publishedLabel = (post: Post) => {
+  const dateRaw = post.publishedAt || post._createdAt;
+  if (!dateRaw) return "";
+  return new Date(dateRaw).toLocaleDateString();
+};
+
+function BlogCard({ post }: { post: Post }) {
+  const excerpt = post.excerpt || buildExcerpt(post.body);
 
   return (
-    <section className="flex flex-col min-h-screen bg-input-bg overflow-x-hidden">
-      {/* Header */}
-      <header className="flex px-4 pt-4 pb-20 md:px-[60px] md:pt-[60px]">
-        <div className="w-full md:hidden">
-          <section className="flex w-full items-center justify-between rounded-[200px] bg-primary-text px-4 py-3">
-            <Link href="/" className="inline-flex items-center">
-              <span className="text-primary text-3xl font-normal petemoss">
-                Rosey
-              </span>
-            </Link>
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/70 text-[#1a1a1a]"
-              aria-label="Toggle menu"
-              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-          </section>
-          {isMobileMenuOpen && (
-            <div className="mt-3 rounded-[24px] bg-primary-text p-4 shadow-lg">
-              <div className="flex flex-col gap-3">
-                {mobileNavLinks.map((link) => (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    onClick={() => {
-                      setActiveNav(link.label);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`rounded-[200px] px-4 py-2 text-sm font-medium ${activeNav === link.label
-                        ? "bg-primary text-primary-text"
-                        : "bg-tag-bg text-primary-text"
-                      }`}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-                <div className="flex items-center gap-2 rounded-[200px] border border-[#E5E5EA] px-3 py-3">
-                  <Search size={16} color={"#8E8E93"} />
-                  <input
-                    type="text"
-                    placeholder="Search"
-                    className="w-full bg-transparent text-sm text-gray-700 placeholder:text-[#8E8E93] focus:outline-none"
-                  />
-                </div>
-                <div className="flex items-center justify-center rounded-[200px] bg-primary px-6 py-3">
-                  <p className="text-primary-text text-sm font-semibold">
-                    Login
-                  </p>
-                  <p className="text-primary-text text-sm font-semibold">/</p>
-                  <p className="text-primary-text text-sm font-semibold">
-                    Signup
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        <section className="hidden w-full justify-between rounded-[200px] bg-primary-text px-4 py-5 md:flex">
-          <Link href="/" className="inline-flex items-center">
-            <span className="text-primary text-3xl md:text-[32px] font-normal petemoss">
-              Rosey
-            </span>
+    <article className="flex h-full flex-col overflow-hidden rounded-3xl bg-primary-bg">
+      <Link href={`/blog/${post.slug}`} className="relative block aspect-[16/10] w-full">
+        <Image src={imageUrl(post.mainImage)} alt={post.title} fill className="object-cover" />
+      </Link>
+      <div className="flex flex-1 flex-col gap-4 p-5 md:p-6">
+        <h3 className="line-clamp-2 text-xl font-semibold text-primary-text">{post.title}</h3>
+        <p className="line-clamp-3 text-sm text-text-gray-opacity">{excerpt}</p>
+        <div className="mt-auto flex items-center justify-between pt-2">
+          <Link href={`/blog/${post.slug}`} className="text-sm font-medium text-primary underline">
+            Read Article
           </Link>
-
-          <div className="flex items-center gap-10">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                onClick={() => setActiveNav(link.label)}
-                className={`text-base font-medium transition-colors ${activeNav === link.label
-                    ? "bg-primary rounded-[200px] py-2 px-[33px] text-primary-text"
-                    : "text-[#8E8E93]"
-                  }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="flex items-center gap-2 text-xs text-text-gray-opacity">
+            <Clock className="h-3.5 w-3.5" />
+            <span>{post.readTime || "5 min read"}</span>
           </div>
-
-          <section className="flex items-center gap-2">
-            <div className="flex items-center gap-2 rounded-[200px] px-3 py-3 border border-[#E5E5EA] w-[290px]">
-              <Search size={16} color={"#8E8E93"} />
-              <input
-                type="text"
-                placeholder="Search"
-                className="w-32 bg-transparent text-sm text-gray-700 placeholder:text-[#8E8E93] focus:outline-none"
-              />
-            </div>
-            <div className="flex items-center bg-primary rounded-[200px] px-[31px] py-[13px]">
-              <p className="text-primary-text text-base font-semibold">Login</p>
-              <p className="text-primary-text text-base font-semibold">/</p>
-              <p className="text-primary-text text-base font-semibold">
-                Signup
-              </p>
-            </div>
-          </section>
-        </section>
-      </header>
-
-      {/* Hero Section */}
-      <div className="flex flex-col items-center px-4 md:px-[60px]">
-        <div className="flex flex-col gap-4 md:gap-[24px]">
-          <p className="text-text-gray-opacity font-semibold text-base md:text-[24px] text-center">
-            Blog
-          </p>
-          <div className="flex items-center gap-3 md:gap-8">
-            <Image
-              src="/svg/flower.svg"
-              alt=""
-              width={32}
-              height={32}
-              className="h-5 w-5 md:h-8 md:w-8"
-            />
-            <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-[72px] font-semibold text-primary-text text-center leading-tight">
-              Insights, Stories & Guidance for Modern Companionship
-            </h1>
-            <Image
-              src="/svg/flower.svg"
-              alt=""
-              width={32}
-              height={32}
-              className="h-5 w-5 md:h-8 md:w-8"
-            />
-          </div>
-        </div>
-
-        {/* Search Bar */}
-        <div className="w-full max-w-2xl pt-6 md:pt-16">
-          <div className="relative flex items-center">
-            <Search
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-text-gray-opacity z-10"
-              size={20}
-            />
-            <Input
-              type="text"
-              placeholder="Search blog title"
-              className="pl-12 pr-16 bg-primary-bg text-white placeholder:text-text-gray-opacity rounded-[200px] w-full"
-            />
-            <button className="absolute right-2 rounded-full p-3 bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors">
-              <Search className="h-5 w-5 text-white" size={16} />
-            </button>
-          </div>
-        </div>
-
-        {/* Categories */}
-        <div className="flex text-primary pt-4">
-          <p className="text-sm md:text-base font-normal text-center">
-            <span className="text-primary-text">Categories: </span>
-            Interviews, Articles, Sex Talk, LifeStyle
-          </p>
         </div>
       </div>
+    </article>
+  );
+}
 
-      {/* Hot Section */}
-      <div className="px-4 md:px-[60px] py-12 md:py-20">
-        <h2 className="text-xl md:text-3xl font-semibold text-primary-text mb-4 md:mb-8 flex items-center gap-2">
-          Hot 🔥
-        </h2>
-        <div className="flex flex-col md:flex-row gap-4 md:gap-6">
-          {/* Large Featured Article - Left Side */}
-          <article className="flex-1 flex flex-col bg-primary-bg rounded-3xl overflow-hidden">
-            <div className="relative w-full aspect-[4/3] md:aspect-video">
-              <Image
-                src={hotArticles[0].image}
-                alt={hotArticles[0].title}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="flex flex-col gap-3 p-5 md:gap-4 md:p-6">
-              <div className="flex flex-col gap-2">
-                <h3 className="text-lg md:text-2xl font-semibold text-primary-text">
-                  {hotArticles[0].title}
-                </h3>
-                <p className="text-sm md:text-base font-normal text-text-gray-opacity">
-                  {hotArticles[0].description}
-                </p>
-              </div>
-              <div className="flex items-center justify-between">
-                <Link
-                  href="#"
-                  className="text-primary text-sm md:text-base font-medium underline"
-                >
-                  Read Article
+export default async function BlogPage() {
+  const [posts, hotPostsRaw, featuredPostsRaw] = await Promise.all([
+    client.fetch<Post[]>(postsQuery),
+    client.fetch<Post[]>(hotPostsQuery),
+    client.fetch<Post[]>(featuredPostsQuery),
+  ]);
+
+  const hotPosts = hotPostsRaw.length > 0 ? hotPostsRaw : posts.slice(0, 3);
+  const featuredPosts = featuredPostsRaw.length > 0 ? featuredPostsRaw : posts.slice(3, 9);
+  const latestPosts = posts;
+  const heroPost = hotPosts[0] || posts[0];
+  const sideHotPosts = hotPosts.slice(1, 3);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    name: "Rosey Blog",
+    url: `${SITE_URL}/blog`,
+    blogPost: latestPosts.slice(0, 10).map((post) => ({
+      "@type": "BlogPosting",
+      headline: post.title,
+      url: `${SITE_URL}/blog/${post.slug}`,
+      datePublished: post.publishedAt || post._createdAt,
+      dateModified: post._updatedAt || post.publishedAt || post._createdAt,
+      image: imageUrl(post.mainImage),
+      description: post.excerpt || buildExcerpt(post.body),
+    })),
+  };
+
+  return (
+    <section className="flex min-h-screen flex-col bg-input-bg">
+      <Header />
+
+      <main className="mx-auto w-full max-w-[1440px] px-4 pb-16 pt-10 md:px-[60px] md:pb-24 md:pt-16">
+        <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 text-center">
+          <p className="text-base font-semibold text-text-gray-opacity md:text-[24px]">Blog</p>
+          <h1 className="text-3xl font-semibold leading-tight text-primary-text sm:text-4xl md:text-6xl lg:text-[72px]">
+            Insights, Stories and Guidance for Modern Companionship
+          </h1>
+          <p className="text-sm text-text-gray md:text-base">{posts.length} published articles</p>
+        </div>
+
+        {heroPost ? (
+          <section className="mt-12 md:mt-16">
+            <h2 className="mb-4 text-xl font-semibold text-primary-text md:mb-8 md:text-3xl">Hot</h2>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+              <article className="md:col-span-2 flex h-full flex-col overflow-hidden rounded-3xl bg-primary-bg">
+                <Link href={`/blog/${heroPost.slug}`} className="relative block aspect-[16/10] w-full">
+                  <Image src={imageUrl(heroPost.mainImage)} alt={heroPost.title} fill className="object-cover" priority />
                 </Link>
-                <span className="text-sm md:text-base text-text-gray-opacity">
-                  {hotArticles[0].readTime}
-                </span>
-              </div>
-            </div>
-          </article>
-
-          {/* Two Smaller Articles - Right Side */}
-          <div className="flex-1 flex flex-col gap-4 md:gap-6">
-            {hotArticles.slice(1).map((article) => (
-              <article
-                key={article.id}
-                className="flex flex-col md:flex-row bg-primary-bg rounded-3xl overflow-hidden md:h-[calc(50%-12px)]"
-              >
-                <div className="relative w-full md:w-[40%] shrink-0 aspect-[4/3] md:aspect-auto">
-                  <Image
-                    src={article.image}
-                    alt={article.title}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="flex flex-col gap-2 p-5 md:p-6 grow justify-between">
-                  <div className="flex flex-col gap-2">
-                    <h3 className="text-base md:text-lg font-semibold text-primary-text">
-                      {article.title}
-                    </h3>
-                    <p className="text-sm font-normal text-text-gray-opacity line-clamp-2">
-                      {article.description}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Link
-                      href="#"
-                      className="text-primary text-sm font-medium underline"
-                    >
+                <div className="flex flex-1 flex-col gap-4 p-5 md:p-6">
+                  <h3 className="text-xl font-semibold text-primary-text md:text-2xl">{heroPost.title}</h3>
+                  <p className="line-clamp-3 text-sm text-text-gray-opacity md:text-base">
+                    {heroPost.excerpt || buildExcerpt(heroPost.body)}
+                  </p>
+                  <div className="mt-auto flex items-center justify-between">
+                    <Link href={`/blog/${heroPost.slug}`} className="text-sm font-medium text-primary underline md:text-base">
                       Read Article
                     </Link>
-                    <span className="text-sm text-text-gray-opacity">
-                      {article.readTime}
-                    </span>
+                    <span className="text-xs text-text-gray-opacity md:text-sm">{heroPost.readTime || "5 min read"}</span>
                   </div>
                 </div>
               </article>
-            ))}
-          </div>
-        </div>
-      </div>
 
-      {/* Featured Articles Section */}
-      <div className="px-4 md:px-[60px] ">
-        <h2 className="text-2xl md:text-3xl font-semibold text-primary-text mb-6 md:mb-8 flex items-center gap-2">
-          🔥 Featured Articles
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          {featuredArticles.map((article) => (
-            <article
-              key={article.id}
-              className="flex flex-col bg-primary-bg rounded-3xl overflow-hidden"
-            >
-              <div className="relative w-full h-[300px] md:h-[400px]">
-                <Image
-                  src={article.image}
-                  alt={article.title}
-                  fill
-                  className="object-cover"
-                />
+              <div className="flex flex-col gap-4 md:gap-6">
+                {sideHotPosts.map((post) => (
+                  <BlogCard key={post._id} post={post} />
+                ))}
               </div>
-              <div className="flex flex-col gap-4 p-4 md:p-6">
-                <div className="flex flex-col gap-2">
-                  <h3 className="text-lg md:text-xl font-semibold text-primary-text">
-                    {article.title}
-                  </h3>
-                  <p className="text-sm md:text-base font-normal text-text-gray-opacity">
-                    {article.description}
-                  </p>
-                </div>
-                <div className="flex items-center justify-between mt-auto">
-                  <Link
-                    href="#"
-                    className="text-primary text-sm md:text-base font-medium underline"
-                  >
-                    Read Article
+            </div>
+          </section>
+        ) : null}
+
+        {featuredPosts.length > 0 ? (
+          <section className="mt-14 md:mt-20">
+            <h2 className="mb-4 text-xl font-semibold text-primary-text md:mb-8 md:text-3xl">Featured Articles</h2>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+              {featuredPosts.map((post) => (
+                <BlogCard key={post._id} post={post} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section className="mt-14 md:mt-20">
+          <h2 className="mb-4 text-xl font-semibold text-primary-text md:mb-8 md:text-3xl">Latest Posts</h2>
+          {latestPosts.length === 0 ? (
+            <div className="rounded-3xl border border-white/10 bg-primary-bg p-8 text-center text-text-gray-opacity">
+              No articles published yet.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+              {latestPosts.map((post) => (
+                <article key={post._id} className="flex h-full flex-col overflow-hidden rounded-3xl bg-primary-bg">
+                  <Link href={`/blog/${post.slug}`} className="relative block aspect-[16/10] w-full">
+                    <Image src={imageUrl(post.mainImage)} alt={post.title} fill className="object-cover" />
                   </Link>
-                  <span className="text-sm md:text-base text-text-gray-opacity">
-                    {article.readTime}
-                  </span>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
+                  <div className="flex flex-1 flex-col gap-3 p-5">
+                    <p className="text-xs text-text-gray-opacity">{publishedLabel(post)}</p>
+                    <h3 className="line-clamp-2 text-lg font-semibold text-primary-text">{post.title}</h3>
+                    <p className="line-clamp-2 text-sm text-text-gray-opacity">{post.excerpt || buildExcerpt(post.body)}</p>
+                    <div className="mt-auto flex items-center justify-between pt-2">
+                      <Link href={`/blog/${post.slug}`} className="text-sm font-medium text-primary underline">
+                        Read Article
+                      </Link>
+                      <span className="text-xs text-text-gray-opacity">{post.readTime || "5 min read"}</span>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </main>
 
-      {/* Load More Button */}
-      <div className="flex justify-center px-4 md:px-[60px] py-8 md:py-12">
-        <Button variant="default" size="lg" className="px-8 py-6">
-          Load More Posts
-        </Button>
-      </div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-      {/* Footer */}
       <FooterSection />
     </section>
   );

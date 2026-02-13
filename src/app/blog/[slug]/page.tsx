@@ -14,6 +14,7 @@ import { PortableText } from "@portabletext/react";
 import { portableTextComponents } from "@/sanity/lib/portableText";
 
 export const dynamic = "force-dynamic";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://rosey.link";
 
 type PageProps = {
   params: { slug: string };
@@ -38,15 +39,27 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description =
     article.seoDescription || article.excerpt || buildExcerpt(article.body);
   const ogImage = article.seoImage || article.mainImage;
+  const canonical = `${SITE_URL}/blog/${article.slug}`;
+  const image = ogImage ? urlFor(ogImage).width(1200).height(630).url() : undefined;
 
   return {
     title: `${title} | Rosey`,
     description,
+    alternates: {
+      canonical,
+    },
     openGraph: {
       title,
       description,
       type: "article",
-      images: ogImage ? [urlFor(ogImage).width(1200).height(630).url()] : [],
+      url: canonical,
+      images: image ? [image] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: image ? [image] : [],
     },
   };
 }
@@ -63,6 +76,33 @@ export default async function ArticlePage({ params }: PageProps) {
   const recommended = (await client.fetch<Post[]>(postsQuery))
     .filter((item) => item.slug !== article.slug)
     .slice(0, 2);
+  const canonical = `${SITE_URL}/blog/${article.slug}`;
+  const published = article.publishedAt || article._createdAt;
+  const modified = article._updatedAt || published;
+  const coverImage = article.seoImage || article.mainImage;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: article.title,
+    description: article.excerpt || buildExcerpt(article.body),
+    author: {
+      "@type": "Person",
+      name: article.authorName || "Rosey",
+    },
+    datePublished: published,
+    dateModified: modified,
+    image: coverImage ? urlFor(coverImage).width(1200).height(630).url() : undefined,
+    mainEntityOfPage: canonical,
+    url: canonical,
+    publisher: {
+      "@type": "Organization",
+      name: "Rosey",
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/images/logo.svg`,
+      },
+    },
+  };
 
     return (
         <section className="flex flex-col min-h-screen bg-input-bg overflow-x-hidden">
@@ -169,6 +209,10 @@ export default async function ArticlePage({ params }: PageProps) {
             </main>
 
             <FooterSection />
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
         </section>
     );
 }

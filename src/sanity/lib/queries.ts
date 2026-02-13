@@ -2,6 +2,8 @@ import { groq } from "next-sanity";
 
 export const postFields = groq`
   _id,
+  _createdAt,
+  _updatedAt,
   title,
   "slug": slug.current,
   excerpt,
@@ -18,7 +20,7 @@ export const postFields = groq`
 `;
 
 export const postsQuery = groq`
-  *[_type == "post"] | order(publishedAt desc) {
+  *[_type == "post" && defined(slug.current) && (!defined(publishedAt) || publishedAt <= now())] | order(coalesce(publishedAt, _createdAt) desc) {
     ${postFields}
   }
 `;
@@ -30,13 +32,19 @@ export const postBySlugQuery = groq`
 `;
 
 export const featuredPostsQuery = groq`
-  *[_type == "post" && featured == true] | order(publishedAt desc) {
+  *[_type == "post" && featured == true && defined(slug.current) && (!defined(publishedAt) || publishedAt <= now())] | order(coalesce(publishedAt, _createdAt) desc) {
     ${postFields}
   }
 `;
 
 export const hotPostsQuery = groq`
-  *[_type == "post" && hot == true] | order(publishedAt desc) {
+  *[_type == "post" && hot == true && defined(slug.current) && (!defined(publishedAt) || publishedAt <= now())] | order(coalesce(publishedAt, _createdAt) desc) {
+    ${postFields}
+  }
+`;
+
+export const recentPostsQuery = groq`
+  *[_type == "post" && defined(slug.current) && (!defined(publishedAt) || publishedAt <= now())] | order(coalesce(publishedAt, _createdAt) desc)[0...$limit] {
     ${postFields}
   }
 `;

@@ -51,7 +51,8 @@ export async function AvailableNowSection() {
     }
   );
 
-  const adProfile = ads?.[0]?.profile ?? null;
+  const adProfileRaw = ads?.[0]?.profile ?? null;
+  const adProfile = Array.isArray(adProfileRaw) ? adProfileRaw[0] : adProfileRaw;
   const adItem: NormalizedAvailableNowItem | null = adProfile
     ? {
         type: "ad",
