@@ -40,8 +40,18 @@ const supportLinks = [
 ];
 
 const locationLinks = [
-  { label: "Escorts in Lagos", href: "/escorts/nigeria/lagos" },
-  { label: "Escorts in Miami", href: "/escorts/us/miami" },
+  { label: "Escorts in Los Angeles", href: "/escorts/us/los-angeles" },
+  { label: "Escorts in San Diego", href: "/escorts/us/san-diego" },
+  { label: "Escorts in San Jose", href: "/escorts/us/san-jose" },
+  { label: "Escorts in San Francisco", href: "/escorts/us/san-francisco" },
+  { label: "Escorts in Sacramento", href: "/escorts/us/sacramento" },
+  { label: "Escorts in Fresno", href: "/escorts/us/fresno" },
+  { label: "Escorts in Oakland", href: "/escorts/us/oakland" },
+  { label: "Escorts in Long Beach", href: "/escorts/us/long-beach" },
+  { label: "Escorts in Anaheim", href: "/escorts/us/anaheim" },
+  { label: "Escorts in Santa Ana", href: "/escorts/us/santa-ana" },
+  { label: "Escorts in Riverside", href: "/escorts/us/riverside" },
+  { label: "Escorts in Irvine", href: "/escorts/us/irvine" },
 ];
 
 type FooterSectionProps = {

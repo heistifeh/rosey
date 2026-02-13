@@ -12,6 +12,7 @@ export function SafeImage({
   src,
   alt,
   onError,
+  unoptimized = false,
   ...props
 }: SafeImageProps) {
   const [currentSrc, setCurrentSrc] = useState<ImageProps["src"]>(src);
@@ -25,6 +26,7 @@ export function SafeImage({
       {...props}
       alt={alt}
       src={currentSrc}
+      unoptimized={unoptimized}
       onError={(event) => {
         if (currentSrc !== fallbackSrc) {
           setCurrentSrc(fallbackSrc);

@@ -145,7 +145,7 @@ export const apiBuilder = {
         limit: 10,
       };
       if (query) {
-        params.city = `ilike.${query}*`;
+        params.city = `ilike.*${query}*`;
       }
       return API.get("/city_locations", { params }).then(
         (response) => response.data,

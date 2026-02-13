@@ -89,7 +89,6 @@ API.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = getAccessToken();
     if (token) {
-      console.log("Attaching auth token to request", token.substring(0, 10) + "...");
       // Ensure we don't send duplicate headers by removing any defaults
       delete config.headers.Authorization;
       delete config.headers.authorization;
@@ -108,7 +107,6 @@ LOGINAPI.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = getAccessToken();
     if (token) {
-      console.log("Attaching auth token to LOGINAPI request", token.substring(0, 10) + "...");
       // Ensure we don't send duplicate headers by removing any defaults
       delete config.headers.Authorization;
       delete config.headers.authorization;

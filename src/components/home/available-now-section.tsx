@@ -1,108 +1,86 @@
-"use client";
-
 import Link from "next/link";
-import { useMemo } from "react";
 import { ArrowRight, Circle } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { apiBuilder } from "@/api/builder";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
-import { AvailableNowItem } from "@/types/types";
 import { SafeImage } from "@/components/ui/safe-image";
+import { createServiceRoleClient, SERVICE_ROLE_KEY } from "@/server/supabase-client";
 
-const tabs = ["All", "Female", "Male", "Trans", "Non-Binary"];
-
-interface AvailableNowSectionProps {
-  filters: {
-    gender: string;
-    priceRange: string;
-    location?: {
-      city: string;
-      country: string;
-      city_slug: string;
-      country_slug: string;
-    };
-  };
-  setFilters: React.Dispatch<
-    React.SetStateAction<{
-      gender: string;
-      priceRange: string;
-      location?: {
-        city: string;
-        country: string;
-        city_slug: string;
-        country_slug: string;
-      };
-    }>
-  >;
-}
+export const revalidate = 30;
 
 type NormalizedAvailableNowItem = {
-  adId: string;
+  type: "profile" | "ad";
   profileId: string;
   username: string | null;
   workingName: string;
   imageUrl: string;
 };
 
-export function AvailableNowSection({
-  filters,
-  setFilters,
-}: AvailableNowSectionProps) {
-  const { data: ads, isLoading } = useQuery<AvailableNowItem[]>({
-    queryKey: ["available-now", filters.gender],
-    queryFn: async () =>
-      (await apiBuilder.ads.getAvailableNow(filters.gender)) ?? [],
-  });
+export async function AvailableNowSection() {
+  if (!SERVICE_ROLE_KEY) {
+    return null;
+  }
 
-  const normalized = useMemo(
-    () =>
-      (ads ?? [])
-        .map((ad): NormalizedAvailableNowItem | null => {
-          const profile = ad.profile;
-          if (!profile?.id) {
-            return null;
-          }
+  const supabase = createServiceRoleClient();
+  const { data: profiles = [] } = await supabase
+    .from("profiles")
+    .select("id,working_name,username,created_at,images(public_url,is_primary)")
+    .order("created_at", { ascending: false })
+    .limit(10);
 
-          const images = profile.images ?? [];
-          const primary = images.find((img) => img.is_primary) ?? images[0];
-          const imageUrl = primary?.public_url || "/images/girl1.png";
-          return {
-            adId: ad.id,
-            profileId: profile.id,
-            username: profile.username,
-            workingName: profile.working_name ?? "Provider",
-            imageUrl,
-          };
-        })
-        .filter((item): item is NormalizedAvailableNowItem => item !== null),
-    [ads],
+  const { data: ads = [] } = await supabase
+    .from("ads")
+    .select(
+      "id,created_at,profile:profiles(id,working_name,username,images(public_url,is_primary))"
+    )
+    .eq("status", "active")
+    .eq("placement_available_now", true)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  const normalizedProfiles: NormalizedAvailableNowItem[] = (profiles ?? []).map(
+    (profile) => {
+      const images = profile.images ?? [];
+      const primary = images.find((img) => img.is_primary) ?? images[0];
+      const imageUrl = primary?.public_url || "/images/girl1.png";
+      return {
+        type: "profile",
+        profileId: profile.id,
+        username: profile.username ?? null,
+        workingName: profile.working_name ?? "Provider",
+        imageUrl,
+      };
+    }
   );
+
+  const adProfileRaw = ads?.[0]?.profile ?? null;
+  const adProfile = Array.isArray(adProfileRaw) ? adProfileRaw[0] : adProfileRaw;
+  const adItem: NormalizedAvailableNowItem | null = adProfile
+    ? {
+        type: "ad",
+        profileId: adProfile.id,
+        username: adProfile.username ?? null,
+        workingName: adProfile.working_name ?? "Provider",
+        imageUrl:
+          adProfile.images?.find((img) => img.is_primary)?.public_url ||
+          adProfile.images?.[0]?.public_url ||
+          "/images/girl1.png",
+      }
+    : null;
+
+  const AD_INDEX = 4;
+  const finalItems = [...normalizedProfiles];
+  if (adItem) {
+    finalItems.splice(AD_INDEX, 0, adItem);
+  }
 
   return (
     <section className="relative z-10 w-full bg-input-bg  pb-12 pt-10 md:pb-16 md:pt-20">
       <div className="mx-auto flex w-full px-0 md:px-[60px] flex-col gap-4 md:gap-10">
-        {/* Header row */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 md:pb-10 scrollbar-hide md:justify-center px-4 md:px-0">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setFilters((prev) => ({ ...prev, gender: tab }))}
-              className={`flex-shrink-0 min-w-[100px] md:flex-none md:min-w-0 px-4 py-2 md:px-6 md:py-2.5 text-sm md:text-sm font-medium rounded-full transition whitespace-nowrap cursor-pointer ${filters.gender === tab
-                ? "bg-primary text-primary-text"
-                : "bg-primary-bg text-primary-text hover:bg-[#2a2a2d]"
-                }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
         <div className=" flex justify-between items-center px-4">
           <h2 className="text-xl md:text-2xl font-semibold text-primary-text lg:text-[36px]">
             Available Now
           </h2>
 
-          {normalized.length >= 12 ? (
+          {normalizedProfiles.length >= 12 ? (
             <Link
               href="/search?availableNow=true"
               className="ml-auto inline-flex items-center gap-1 md:gap-2 rounded-full bg-primary px-3 py-1.5 md:px-[42px] md:py-[13px] text-xs font-semibold text-primary-text cursor-pointer hover:bg-primary/90 transition-colors"
@@ -122,13 +100,14 @@ export function AvailableNowSection({
         </div>
 
         <div className="flex gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
-          {isLoading
-            ? Array.from({ length: 6 }).map((_, i) => (
+          {finalItems.length === 0 ? (
+            Array.from({ length: 6 }).map((_, i) => (
               <BaseCardSkeleton key={i} />
             ))
-            : normalized.map((item, index) => (
+          ) : (
+            finalItems.map((item, index) => (
               <Link
-                key={item.adId}
+                key={`${item.type}-${item.profileId}`}
                 href={`/profile/${item.username || item.profileId}`}
                 className={`flex h-full flex-col overflow-hidden p-3 md:p-4 rounded-[24px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[280px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity`}
               >
@@ -158,13 +137,11 @@ export function AvailableNowSection({
                   </div>
                 </div>
               </Link>
-            ))}
-          {!isLoading && normalized.length === 0 && (
+            ))
+          )}
+          {finalItems.length === 0 && (
             <div className="col-span-full py-10 text-center text-text-gray-opacity">
               No providers are currently marked as Available Now
-              {filters.gender && filters.gender !== "All"
-                ? ` for ${filters.gender}`
-                : ""}
               .
             </div>
           )}
