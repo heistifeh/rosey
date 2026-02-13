@@ -1,7 +1,11 @@
 const GOOGLE_MAPS_SCRIPT_ID = "google-places-script";
+const GOOGLE_MAPS_LOAD_TIMEOUT_MS = 10000;
+
+const hasGooglePlaces = () =>
+  Boolean((window as typeof window & { google?: any }).google?.maps?.places);
 
 export const loadGooglePlacesScript = (apiKey: string) => {
-  return new Promise<void>((resolve) => {
+  return new Promise<void>((resolve, reject) => {
     if (typeof document === "undefined") {
       resolve();
       return;
@@ -11,15 +15,33 @@ export const loadGooglePlacesScript = (apiKey: string) => {
       GOOGLE_MAPS_SCRIPT_ID
     ) as HTMLScriptElement | null;
 
-    const onLoad = () => resolve();
+    const timeoutId = window.setTimeout(() => {
+      reject(new Error("Timed out loading Google Maps script"));
+    }, GOOGLE_MAPS_LOAD_TIMEOUT_MS);
+    const clear = () => {
+      window.clearTimeout(timeoutId);
+    };
 
+    const onLoad = () => {
+      if (hasGooglePlaces()) {
+        clear();
+        resolve();
+        return;
+      }
+      clear();
+      reject(new Error("Google Places library failed to initialize"));
+    };
+    const onError = () => {
+      clear();
+      reject(new Error("Failed to load Google Maps script"));
+    };
     if (existingScript) {
-      if (
-        (window as typeof window & { google?: any }).google?.maps?.places
-      ) {
+      if (hasGooglePlaces()) {
+        clear();
         resolve();
       } else {
         existingScript.addEventListener("load", onLoad, { once: true });
+        existingScript.addEventListener("error", onError, { once: true });
       }
       return;
     }
@@ -30,6 +52,7 @@ export const loadGooglePlacesScript = (apiKey: string) => {
     script.async = true;
     script.defer = true;
     script.addEventListener("load", onLoad, { once: true });
+    script.addEventListener("error", onError, { once: true });
     document.head.appendChild(script);
   });
 };
