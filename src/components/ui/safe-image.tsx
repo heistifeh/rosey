@@ -12,13 +12,10 @@ export function SafeImage({
   src,
   alt,
   onError,
-  unoptimized,
+  unoptimized = false,
   ...props
 }: SafeImageProps) {
   const [currentSrc, setCurrentSrc] = useState<ImageProps["src"]>(src);
-  const isRemote =
-    typeof currentSrc === "string" && currentSrc.startsWith("http");
-  const shouldUnoptimize = unoptimized ?? isRemote;
 
   useEffect(() => {
     setCurrentSrc(src);
@@ -29,7 +26,7 @@ export function SafeImage({
       {...props}
       alt={alt}
       src={currentSrc}
-      unoptimized={shouldUnoptimize}
+      unoptimized={unoptimized}
       onError={(event) => {
         if (currentSrc !== fallbackSrc) {
           setCurrentSrc(fallbackSrc);

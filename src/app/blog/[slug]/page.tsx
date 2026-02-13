@@ -17,15 +17,16 @@ export const dynamic = "force-dynamic";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://rosey.link";
 
 type PageProps = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 const imageUrl = (image?: Post["mainImage"]) =>
   image ? urlFor(image).width(1600).height(900).url() : "/images/blog1.png";
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
   const article = await client.fetch<Post>(postBySlugQuery, {
-    slug: params.slug,
+    slug,
   });
 
   if (!article) {
@@ -65,8 +66,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function ArticlePage({ params }: PageProps) {
+  const { slug } = await params;
   const article = await client.fetch<Post>(postBySlugQuery, {
-    slug: params.slug,
+    slug,
   });
 
   if (!article) {

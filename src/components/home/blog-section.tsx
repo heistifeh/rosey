@@ -24,9 +24,7 @@ export function BlogSection() {
 
     const load = async () => {
       try {
-        const response = await fetch("/api/blog/preview", {
-          cache: "no-store",
-        });
+        const response = await fetch("/api/blog/preview");
 
         if (!response.ok) {
           throw new Error("BLOG_PREVIEW_FETCH_FAILED");
