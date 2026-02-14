@@ -16,21 +16,21 @@ export function ProfileCard({ profile, isSponsored = false }: ProfileCardProps) 
   return (
     <Link
       href={`/profile/${profile.username || profile.id}`}
-      className="relative flex h-full flex-col overflow-hidden rounded-[24px] border border-[#26262a] bg-primary-bg p-3 shadow-sm transition-opacity hover:opacity-90 md:p-4"
+      className="relative flex h-full flex-col overflow-hidden rounded-[24px] border border-[#26262a] bg-primary-bg p-2 shadow-sm transition-opacity hover:opacity-90 md:p-3"
     >
-      <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
+      <div className="relative aspect-square w-full overflow-hidden rounded-[14px] md:aspect-[4/5] md:rounded-[16px]">
         <SafeImage
           src={imageUrl}
           alt={profile.working_name ?? "Profile"}
           fill
-          className="object-cover object-center"
+          className="object-cover object-top"
           sizes="(max-width: 768px) 100vw, 25vw"
         />
       </div>
 
-      <div className="flex flex-1 flex-col justify-between gap-3 pt-3 md:gap-[22px] md:pt-[22px]">
+      <div className="flex flex-1 flex-col justify-between gap-1.5 pt-2 md:gap-3 md:pt-3">
         <div className="flex items-center gap-2">
-          <p className="text-base font-normal text-primary-text md:text-lg lg:text-[24px]">
+          <p className="text-sm font-normal text-primary-text md:text-lg">
             {profile.working_name ?? "Provider"}
           </p>
           {isSponsored && (

@@ -40,19 +40,48 @@ const supportLinks = [
 ];
 
 const locationLinks = [
-  { label: "Escorts in Los Angeles", href: "/escorts/us/los-angeles" },
-  { label: "Escorts in San Diego", href: "/escorts/us/san-diego" },
-  { label: "Escorts in San Jose", href: "/escorts/us/san-jose" },
-  { label: "Escorts in San Francisco", href: "/escorts/us/san-francisco" },
-  { label: "Escorts in Sacramento", href: "/escorts/us/sacramento" },
-  { label: "Escorts in Fresno", href: "/escorts/us/fresno" },
-  { label: "Escorts in Oakland", href: "/escorts/us/oakland" },
-  { label: "Escorts in Long Beach", href: "/escorts/us/long-beach" },
-  { label: "Escorts in Anaheim", href: "/escorts/us/anaheim" },
-  { label: "Escorts in Santa Ana", href: "/escorts/us/santa-ana" },
-  { label: "Escorts in Riverside", href: "/escorts/us/riverside" },
-  { label: "Escorts in Irvine", href: "/escorts/us/irvine" },
+  { label: "Escorts in Los Angeles", href: "/escorts/united-states/los-angeles" },
+  { label: "Escorts in San Diego", href: "/escorts/united-states/san-diego" },
+  { label: "Escorts in San Jose", href: "/escorts/united-states/san-jose" },
+  { label: "Escorts in San Francisco", href: "/escorts/united-states/san-francisco" },
+  { label: "Escorts in Sacramento", href: "/escorts/united-states/sacramento" },
+  { label: "Escorts in Fresno", href: "/escorts/united-states/fresno" },
+  { label: "Escorts in Oakland", href: "/escorts/united-states/oakland" },
+  { label: "Escorts in Long Beach", href: "/escorts/united-states/long-beach" },
+  { label: "Escorts in Anaheim", href: "/escorts/united-states/anaheim" },
+  { label: "Escorts in Santa Ana", href: "/escorts/united-states/santa-ana" },
+  { label: "Escorts in Riverside", href: "/escorts/united-states/riverside" },
+  { label: "Escorts in Irvine", href: "/escorts/united-states/irvine" },
 ];
+
+const toEscortLabel = (raw: string) => {
+  const label = raw.trim();
+  if (!label) return "Escorts";
+
+  if (/escorts$/i.test(label)) {
+    return label;
+  }
+
+  const allEscortsMatch = label.match(/^all\s+escorts\s+in\s+(.+)$/i);
+  if (allEscortsMatch?.[1]) {
+    return `${allEscortsMatch[1].trim()} escorts`;
+  }
+
+  const escortsInMatch = label.match(/^escorts\s+in\s+(.+)$/i);
+  if (escortsInMatch?.[1]) {
+    return `${escortsInMatch[1].trim()} escorts`;
+  }
+
+  if (label.includes(",")) {
+    const [firstPart] = label.split(",");
+    const city = firstPart?.trim();
+    if (city) {
+      return `${city} escorts`;
+    }
+  }
+
+  return `${label} escorts`;
+};
 
 type FooterSectionProps = {
   relatedLocations?: { label: string; href: string }[];
@@ -66,18 +95,12 @@ export function FooterSection({
   relatedDescription,
 }: FooterSectionProps) {
   const hasRelated = Boolean(relatedLocations && relatedLocations.length > 0);
-  const locationsToRender = hasRelated ? relatedLocations! : locationLinks;
-  const chunkSize =
-    locationsToRender.length > 0
-      ? Math.ceil(locationsToRender.length / 4)
-      : 0;
-  const locationColumns =
-    chunkSize > 0
-      ? Array.from({ length: Math.ceil(locationsToRender.length / chunkSize) })
-        .map((_, idx) =>
-          locationsToRender.slice(idx * chunkSize, (idx + 1) * chunkSize),
-        )
-      : [];
+  const locationsToRender = (hasRelated ? relatedLocations! : locationLinks).map(
+    (item) => ({
+      ...item,
+      label: toEscortLabel(item.label),
+    }),
+  );
 
   return (
     <footer className="w-full bg-primary-bg">
@@ -219,19 +242,15 @@ export function FooterSection({
                 : "Browse popular locations on Rosey."}
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-8">
-            {locationColumns.map((column, idx) => (
-              <div key={idx} className="flex flex-col gap-2 md:gap-3">
-                {column.map((link) => (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    className="text-text-gray text-sm md:text-base hover:text-primary-text transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-4 md:gap-x-8 md:gap-y-3">
+            {locationsToRender.map((link) => (
+              <Link
+                key={`${link.href}-${link.label}`}
+                href={link.href}
+                className="text-text-gray text-sm md:text-base hover:text-primary-text transition-colors"
+              >
+                {link.label}
+              </Link>
             ))}
           </div>
         </div>

@@ -3,11 +3,14 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { City, Country, State } from "country-state-city";
 import { apiBuilder } from "@/api/builder";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
 import { SafeImage } from "@/components/ui/safe-image";
 import { FooterSection } from "@/components/home/footer-section";
+import { Header } from "@/components/layout/header";
 import type { Profile } from "@/types/types";
+import { slugifyLocation } from "@/lib/google-places";
 
 export type CityPageClientProps = {
   params?: {
@@ -35,6 +38,19 @@ const FALLBACK_CITIES_BY_COUNTRY: Record<string, string[]> = {
   thailand: ["bangkok", "chiang-mai", "phuket"],
 };
 
+const US_CITY_STATE_PREFERENCE: Record<string, string> = {
+  miami: "Florida",
+  "new-york": "New York",
+  "los-angeles": "California",
+  chicago: "Illinois",
+  houston: "Texas",
+  "san-francisco": "California",
+  "san-diego": "California",
+  "las-vegas": "Nevada",
+  dallas: "Texas",
+  atlanta: "Georgia",
+};
+
 const normalizeCountryKey = (slug?: string) => {
   if (!slug) return undefined;
   const key = slug.toLowerCase();
@@ -50,6 +66,111 @@ const normalizeCountryKey = (slug?: string) => {
     "u.a.e.": "united-arab-emirates",
   };
   return aliases[key] ?? key;
+};
+
+const getCountryIsoCode = (countrySlug?: string) => {
+  if (!countrySlug) return null;
+  const normalized = normalizeCountryKey(countrySlug);
+  const countries = Country.getAllCountries();
+  const matched = countries.find((country) => {
+    const countryNameSlug = slugifyLocation(country.name);
+    return (
+      countryNameSlug === normalized ||
+      country.isoCode.toLowerCase() === normalized ||
+      country.isoCode.toLowerCase() === countrySlug.toLowerCase()
+    );
+  });
+  return matched?.isoCode ?? null;
+};
+
+const getCitiesForState = (countryIsoCode: string, stateName: string) => {
+  const targetStateSlug = slugifyLocation(stateName);
+  const state = State.getStatesOfCountry(countryIsoCode).find(
+    (item) =>
+      slugifyLocation(item.name) === targetStateSlug ||
+      item.isoCode.toLowerCase() === targetStateSlug
+  );
+  if (!state) return [];
+
+  const uniqueCities = new Map<string, string>();
+  City.getCitiesOfState(countryIsoCode, state.isoCode).forEach((city) => {
+    const citySlug = slugifyLocation(city.name);
+    if (!citySlug || uniqueCities.has(citySlug)) return;
+    uniqueCities.set(citySlug, city.name);
+  });
+
+  return Array.from(uniqueCities.entries()).map(([citySlug, cityName]) => ({
+    citySlug,
+    cityName,
+  }));
+};
+
+const getStateNameByCitySlug = (countryIsoCode: string, citySlug?: string) => {
+  if (!citySlug) return null;
+  const normalizedCitySlug = slugifyLocation(citySlug);
+  const states = State.getStatesOfCountry(countryIsoCode);
+  const matches: string[] = [];
+
+  for (const state of states) {
+    const cities = City.getCitiesOfState(countryIsoCode, state.isoCode);
+    const hasMatch = cities.some(
+      (city) => slugifyLocation(city.name) === normalizedCitySlug
+    );
+    if (hasMatch) {
+      matches.push(state.name);
+    }
+  }
+
+  if (matches.length === 0) return null;
+  if (matches.length === 1) return matches[0];
+
+  if (countryIsoCode === "US") {
+    const preferred = US_CITY_STATE_PREFERENCE[normalizedCitySlug];
+    if (preferred && matches.includes(preferred)) {
+      return preferred;
+    }
+  }
+
+  return matches[0];
+};
+
+const getCitiesForCountry = (countryIsoCode: string) => {
+  const uniqueCities = new Map<string, string>();
+  City.getCitiesOfCountry(countryIsoCode).forEach((city) => {
+    const citySlug = slugifyLocation(city.name);
+    if (!citySlug || uniqueCities.has(citySlug)) return;
+    uniqueCities.set(citySlug, city.name);
+  });
+
+  return Array.from(uniqueCities.entries()).map(([citySlug, cityName]) => ({
+    citySlug,
+    cityName,
+  }));
+};
+
+const hashString = (value: string) => {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+};
+
+const seededShuffle = <T,>(items: T[], seedKey: string) => {
+  const result = [...items];
+  let seed = hashString(seedKey);
+  const random = () => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
 };
 
 const formatSlug = (slug: string) =>
@@ -108,6 +229,8 @@ export function CityPageClient({ params }: CityPageClientProps) {
 
     const seen = new Set<string>();
     const locations: { label: string; href: string }[] = [];
+    const mergedProfiles = [...sponsoredProfiles, ...organicProfiles];
+    const randomSeedBase = `${countrySlug || ""}:${citySlug || ""}`;
 
     const buildHref = (city?: string, country?: string) => {
       const search = new URLSearchParams();
@@ -116,34 +239,79 @@ export function CityPageClient({ params }: CityPageClientProps) {
       return `/search${search.toString() ? `?${search.toString()}` : ""}`;
     };
 
-    [...sponsoredProfiles, ...organicProfiles].forEach((profile) => {
-      const cSlug = profile.city_slug;
-      const coSlug = profile.country_slug;
-      if (!cSlug || !coSlug) return;
-      if (cSlug === citySlug && coSlug === countrySlug) return;
+    const addLocation = (citySlugValue: string, countrySlugValue: string, cityName?: string) => {
+      if (!citySlugValue || !countrySlugValue) return;
+      if (citySlugValue === citySlug && countrySlugValue === countrySlug) return;
 
-      const key = `${cSlug}-${coSlug}`;
+      const key = `${citySlugValue}-${countrySlugValue}`;
       if (seen.has(key)) return;
       seen.add(key);
 
       locations.push({
-        label: `${formatSlug(cSlug)}, ${formatSlug(coSlug)}`,
-        href: buildHref(cSlug, coSlug),
+        label: `${cityName || formatSlug(citySlugValue)}, ${formatSlug(countrySlugValue)}`,
+        href: buildHref(citySlugValue, countrySlugValue),
       });
+    };
+
+    mergedProfiles.forEach((profile) => {
+      const cSlug = profile.city_slug;
+      const coSlug = profile.country_slug;
+      if (!cSlug || !coSlug) return;
+      addLocation(cSlug, coSlug);
     });
 
     const normalizedCountry = normalizeCountryKey(countrySlug);
+    const inferredCountrySlug =
+      countrySlug ||
+      mergedProfiles.find((profile) => profile.country_slug)?.country_slug ||
+      normalizedCountry;
 
-    if (locations.length === 0 && normalizedCountry) {
-      locations.push({
-        label: `All escorts in ${formatSlug(countrySlug)}`,
-        href: buildHref(undefined, countrySlug),
-      });
+    let targetStateName: string | null = null;
+
+    if (locations.length < 16 && inferredCountrySlug) {
+      const countryIsoCode = getCountryIsoCode(inferredCountrySlug);
+      if (countryIsoCode) {
+        const selectedStateFromProfiles =
+          mergedProfiles.find(
+            (profile) =>
+              profile.city_slug === citySlug &&
+              profile.country_slug === countrySlug &&
+              profile.state
+          )?.state ?? null;
+        const selectedStateFromCitySlug = getStateNameByCitySlug(
+          countryIsoCode,
+          citySlug
+        );
+        targetStateName =
+          selectedStateFromProfiles || selectedStateFromCitySlug;
+
+        if (targetStateName) {
+          seededShuffle(
+            getCitiesForState(countryIsoCode, targetStateName),
+            `${randomSeedBase}:state:${targetStateName}`
+          ).forEach(
+            (item) => {
+              if (locations.length >= 16) return;
+              addLocation(item.citySlug, inferredCountrySlug, item.cityName);
+            }
+          );
+        }
+
+        if (locations.length < 16 && !targetStateName) {
+          seededShuffle(
+            getCitiesForCountry(countryIsoCode),
+            `${randomSeedBase}:country:${countryIsoCode}`
+          ).forEach((item) => {
+            if (locations.length >= 16) return;
+            addLocation(item.citySlug, inferredCountrySlug, item.cityName);
+          });
+        }
+      }
     }
 
-    if (locations.length < 16) {
+    if (locations.length < 16 && !targetStateName) {
       const inferredCountry =
-        normalizedCountry ||
+        normalizeCountryKey(inferredCountrySlug) ||
         normalizeCountryKey(
           organicProfiles[0]?.country_slug ||
           sponsoredProfiles[0]?.country_slug,
@@ -154,15 +322,9 @@ export function CityPageClient({ params }: CityPageClientProps) {
         : [];
       fallbackCities.forEach((city) => {
         if (locations.length >= 16) return;
-        const key = `${city}-${inferredCountry}`;
-        if (seen.has(key)) return;
-        seen.add(key);
-        locations.push({
-          label: `${formatSlug(city)}, ${formatSlug(
-            inferredCountry || countrySlug || "",
-          )}`,
-          href: buildHref(city, inferredCountry),
-        });
+        const fallbackCountrySlug = inferredCountrySlug || inferredCountry;
+        if (!fallbackCountrySlug) return;
+        addLocation(city, fallbackCountrySlug);
       });
     }
 
@@ -170,8 +332,9 @@ export function CityPageClient({ params }: CityPageClientProps) {
   }, [countrySlug, citySlug, invalidParams, organicProfiles, sponsoredProfiles]);
 
   return (
-    <section className="relative z-10 w-full bg-input-bg pb-12 pt-10 md:pb-16 md:pt-20">
-      <div className="mx-auto flex w-full flex-col gap-4 px-4 md:px-[60px] md:gap-10">
+    <section className="relative z-10 w-full bg-input-bg pb-12 md:pb-16">
+      <Header />
+      <div className="mx-auto flex w-full flex-col gap-4 px-4 pt-8 md:px-[60px] md:gap-10 md:pt-12">
         <div className="flex flex-col gap-2">
           {invalidParams ? (
             <h1 className="text-xl md:text-2xl lg:text-[36px] font-semibold text-primary-text">
@@ -179,12 +342,31 @@ export function CityPageClient({ params }: CityPageClientProps) {
             </h1>
           ) : (
             <>
-              <h1 className="text-xl md:text-2xl lg:text-[36px] font-semibold text-primary-text">
-                Escorts in {cityName}, {countryName}
-              </h1>
-              <p className="text-sm md:text-base text-text-gray-opacity">
-                Browse verified escorts in {cityName}, {countryName}.
-              </p>
+              <div className="rounded-[20px] border border-dark-border bg-primary-bg/70 p-4 md:rounded-[24px] md:p-6">
+                <div className="mb-2 text-xs text-text-gray-opacity md:text-sm">
+                  <Link href="/" className="hover:text-primary-text transition-colors">
+                    Home
+                  </Link>{" "}
+                  /{" "}
+                  <Link
+                    href={`/search?country=${encodeURIComponent(countrySlug ?? "")}`}
+                    className="hover:text-primary-text transition-colors"
+                  >
+                    {formatSlug(countrySlug ?? "")}
+                  </Link>{" "}
+                  /{" "}
+                  <span className="text-primary-text">{formatSlug(citySlug ?? "")}</span>
+                </div>
+                <h1 className="text-xl font-semibold text-primary-text md:text-2xl lg:text-[36px]">
+                  {formatSlug(citySlug ?? "")} escorts
+                </h1>
+                <p className="mt-1 text-sm text-text-gray-opacity md:text-base">
+                  Browse verified independent escorts in {cityName}, {countryName}.
+                </p>
+                <p className="mt-3 text-xs text-text-gray-opacity md:text-sm">
+                  {finalProfiles.length} profile{finalProfiles.length !== 1 ? "s" : ""} available
+                </p>
+              </div>
             </>
           )}
         </div>
@@ -200,24 +382,24 @@ export function CityPageClient({ params }: CityPageClientProps) {
                 <Link
                   key={profile.id}
                   href={`/profile/${profile.username || profile.id}`}
-                  className="flex h-full flex-col overflow-hidden rounded-[24px] border border-[#26262a] bg-primary-bg p-3 shadow-sm transition-opacity hover:opacity-90 md:p-4"
+                  className="flex h-full flex-col overflow-hidden rounded-[24px] border border-[#26262a] bg-primary-bg p-2 shadow-sm transition-opacity hover:opacity-90 md:p-3"
                 >
-                  <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
+                  <div className="relative aspect-square w-full overflow-hidden rounded-[14px] md:aspect-[4/5] md:rounded-[16px]">
                     <SafeImage
                       src={
                         profile.images?.[0]?.public_url || "/images/girl1.png"
                       }
                       alt={profile.working_name ?? "Profile"}
                       fill
-                      className="object-cover object-center"
+                      className="object-cover object-top"
                       sizes="(max-width: 768px) 100vw, 25vw"
                       priority={index < 4}
                     />
                   </div>
 
-                  <div className="flex flex-1 flex-col justify-between gap-3 pt-3 md:gap-[22px] md:pt-[22px]">
+                  <div className="flex flex-1 flex-col justify-between gap-1.5 pt-2 md:gap-3 md:pt-3">
                     <div className="flex items-center gap-2">
-                      <p className="text-base font-normal text-primary-text md:text-lg lg:text-[24px]">
+                      <p className="text-sm font-normal text-primary-text md:text-lg">
                         {profile.working_name ?? "Provider"}
                       </p>
                       {isSponsored && (

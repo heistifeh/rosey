@@ -99,7 +99,7 @@ export async function AvailableNowSection() {
           )}
         </div>
 
-        <div className="flex gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
+        <div className="flex gap-3 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
           {finalItems.length === 0 ? (
             Array.from({ length: 6 }).map((_, i) => (
               <BaseCardSkeleton key={i} />
@@ -109,22 +109,22 @@ export async function AvailableNowSection() {
               <Link
                 key={`${item.type}-${item.profileId}`}
                 href={`/profile/${item.username || item.profileId}`}
-                className={`flex h-full flex-col overflow-hidden p-3 md:p-4 rounded-[24px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[280px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity`}
+                className={`flex h-full flex-col overflow-hidden rounded-[24px] border border-[#26262a] bg-primary-bg p-2 shadow-sm min-w-[220px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity md:p-3`}
               >
-                <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
+                <div className="relative aspect-square w-full overflow-hidden rounded-[14px] md:aspect-[4/5] md:rounded-[16px]">
                   <SafeImage
                     src={item.imageUrl}
                     alt={item.workingName}
                     fill
-                    className="object-cover object-center"
+                    className="object-cover object-top"
                     sizes="(max-width: 768px) 100vw, 25vw"
                     priority={index < 4}
                   />
                 </div>
 
-                <div className="flex flex-1 flex-col justify-between gap-3 md:gap-[22px] pt-3 md:pt-[22px]">
+                <div className="flex flex-1 flex-col justify-between gap-1.5 pt-2 md:gap-3 md:pt-3">
                   <div className="flex  justify-between gap-2 items-center">
-                    <p className="text-base md:text-lg lg:text-[24px] font-normal text-primary-text">
+                    <p className="text-sm font-normal text-primary-text md:text-lg">
                       {item.workingName}
                     </p>
                   </div>
