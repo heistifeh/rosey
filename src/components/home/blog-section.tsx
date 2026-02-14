@@ -15,36 +15,6 @@ type BlogPreviewPost = {
   readTime: string;
 };
 
-const fallbackPosts: BlogPreviewPost[] = [
-  {
-    _id: "1",
-    title: "Interview with Miami Escort Jade Alisson",
-    slug: "interview-miami-escort-jade-alisson",
-    excerpt:
-      "We're joined by New York Dominatrix Zoey Belladonna to talk femdom, boundaries, and feeling powerful.",
-    image: "/images/blog1.png",
-    readTime: "12 min read",
-  },
-  {
-    _id: "2",
-    title: "Modern Companionship: A Guide",
-    slug: "modern-companionship-guide",
-    excerpt:
-      "Exploring the evolution of companion services and what to expect in the modern era.",
-    image: "/images/blog2.png",
-    readTime: "8 min read",
-  },
-  {
-    _id: "3",
-    title: "Safety First: Booking Tips",
-    slug: "safety-first-booking-tips",
-    excerpt:
-      "Essential tips for a safe and respectful experience when booking companion services.",
-    image: "/images/blog3.png",
-    readTime: "10 min read",
-  },
-];
-
 export function BlogSection() {
   const [posts, setPosts] = useState<BlogPreviewPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,7 +52,7 @@ export function BlogSection() {
     };
   }, []);
 
-  const cards = (posts.length > 0 ? posts : fallbackPosts).slice(0, 3);
+  const cards = posts.slice(0, 3);
 
   return (
     <section className="flex flex-col gap-6 bg-primary-bg items-center pt-10 pb-10 px-4 md:gap-10 md:pt-20 md:pb-[47px] md:px-[60px]">
