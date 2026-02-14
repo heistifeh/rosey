@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { City, State } from "country-state-city";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -31,6 +32,9 @@ type CityOption = {
 type StateOption = {
   name: string;
   state_slug: string;
+  country_name: string;
+  country_code: string;
+  country_slug: string;
   cities: CityOption[];
 };
 
@@ -47,7 +51,19 @@ type PlaceAdPayload = {
 };
 
 const CREDITS_PER_CITY = 15;
-const COUNTRY_SLUG = "united-states";
+
+const AD_COUNTRIES = [
+  {
+    name: "United States",
+    isoCode: "US",
+    country_slug: "united-states",
+  },
+  {
+    name: "Canada",
+    isoCode: "CA",
+    country_slug: "canada",
+  },
+] as const;
 
 const slugify = (value: string) =>
   value
@@ -55,111 +71,49 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-const createCityOptions = (cities: string[]): CityOption[] =>
-  cities.map((name) => ({
-    name,
-    city_slug: slugify(name),
-  }));
-
-const stateOptions: StateOption[] = [
-  {
-    name: "Alabama",
-    state_slug: "alabama",
-    cities: createCityOptions([
-      "Birmingham",
-      "Montgomery",
-      "Mobile",
-      "Huntsville",
-      "Tuscaloosa",
-      "Auburn",
-    ]),
-  },
-  {
-    name: "Florida",
-    state_slug: "florida",
-    cities: createCityOptions([
-      "Jacksonville",
-      "Miami",
-      "Tampa",
-      "Orlando",
-      "St. Petersburg",
-    ]),
-  },
-  {
-    name: "Georgia",
-    state_slug: "georgia",
-    cities: createCityOptions([
-      "Atlanta",
-      "Savannah",
-      "Augusta",
-      "Columbus",
-      "Macon",
-    ]),
-  },
-  {
-    name: "Texas",
-    state_slug: "texas",
-    cities: createCityOptions([
-      "Houston",
-      "Dallas",
-      "Austin",
-      "San Antonio",
-      "Fort Worth",
-      "El Paso",
-    ]),
-  },
-  {
-    name: "California",
-    state_slug: "california",
-    cities: createCityOptions([
-      "Los Angeles",
-      "San Francisco",
-      "San Diego",
-      "Sacramento",
-      "San Jose",
-      "Fresno",
-    ]),
-  },
-  {
-    name: "New York",
-    state_slug: "new-york",
-    cities: createCityOptions([
-      "New York",
-      "Buffalo",
-      "Rochester",
-      "Albany",
-      "Syracuse",
-    ]),
-  },
-  {
-    name: "Illinois",
-    state_slug: "illinois",
-    cities: createCityOptions(["Chicago", "Springfield", "Naperville", "Peoria"]),
-  },
-  {
-    name: "Colorado",
-    state_slug: "colorado",
-    cities: createCityOptions([
-      "Denver",
-      "Aurora",
-      "Colorado Springs",
-      "Fort Collins",
-    ]),
-  },
-  {
-    name: "Nevada",
-    state_slug: "nevada",
-    cities: createCityOptions(["Las Vegas", "Reno", "Carson City", "Henderson"]),
-  },
-];
-
 const makeCityKey = (
+  country_slug: string,
   state_slug: string,
-  city_slug: string,
-  country_slug = COUNTRY_SLUG
+  city_slug: string
 ) => `${country_slug}/${state_slug}/${city_slug}`;
 
 export default function PlaceAdPage() {
+  const stateOptions = useMemo<StateOption[]>(() => {
+    return AD_COUNTRIES.flatMap((country) => {
+      const states = State.getStatesOfCountry(country.isoCode);
+      return states
+        .map((state) => {
+          const rawCities = City.getCitiesOfState(country.isoCode, state.isoCode);
+          const uniqueCities = new Map<string, CityOption>();
+
+          rawCities.forEach((city) => {
+            const city_slug = slugify(city.name);
+            if (!city_slug || uniqueCities.has(city_slug)) {
+              return;
+            }
+            uniqueCities.set(city_slug, {
+              name: city.name,
+              city_slug,
+            });
+          });
+
+          const cities = Array.from(uniqueCities.values()).sort((a, b) =>
+            a.name.localeCompare(b.name)
+          );
+
+          return {
+            name: state.name,
+            state_slug: slugify(state.name),
+            country_name: country.name,
+            country_code: country.isoCode,
+            country_slug: country.country_slug,
+            cities,
+          };
+        })
+        .filter((state) => state.cities.length > 0);
+    });
+  }, []);
+
   const [selectedCities, setSelectedCities] = useState<Record<string, SelectedCity>>({});
   const [isPlacing, setIsPlacing] = useState(false);
   const [isLowBalanceOpen, setIsLowBalanceOpen] = useState(false);
@@ -186,7 +140,11 @@ export default function PlaceAdPage() {
     () =>
       stateOptions.every((state) =>
         state.cities.every((city) =>
-          Boolean(selectedCities[makeCityKey(state.state_slug, city.city_slug)])
+          Boolean(
+            selectedCities[
+              makeCityKey(state.country_slug, state.state_slug, city.city_slug)
+            ]
+          )
         )
       ),
     [selectedCities]
@@ -194,14 +152,14 @@ export default function PlaceAdPage() {
 
   const toggleCity = useCallback(
     (state: StateOption, city: CityOption) => {
-      const key = makeCityKey(state.state_slug, city.city_slug);
+      const key = makeCityKey(state.country_slug, state.state_slug, city.city_slug);
       setSelectedCities((prev) => {
         const next = { ...prev };
         if (next[key]) {
           delete next[key];
         } else {
           next[key] = {
-            country_slug: COUNTRY_SLUG,
+            country_slug: state.country_slug,
             state_slug: state.state_slug,
             city_slug: city.city_slug,
           };
@@ -215,16 +173,18 @@ export default function PlaceAdPage() {
   const selectAllInState = useCallback((state: StateOption) => {
     setSelectedCities((prev) => {
       const allSelected = state.cities.every((city) =>
-        Boolean(prev[makeCityKey(state.state_slug, city.city_slug)])
+        Boolean(
+          prev[makeCityKey(state.country_slug, state.state_slug, city.city_slug)]
+        )
       );
       const next = { ...prev };
       state.cities.forEach((city) => {
-        const key = makeCityKey(state.state_slug, city.city_slug);
+        const key = makeCityKey(state.country_slug, state.state_slug, city.city_slug);
         if (allSelected) {
           delete next[key];
         } else {
           next[key] = {
-            country_slug: COUNTRY_SLUG,
+            country_slug: state.country_slug,
             state_slug: state.state_slug,
             city_slug: city.city_slug,
           };
@@ -243,9 +203,9 @@ export default function PlaceAdPage() {
     const next: typeof selectedCities = {};
     stateOptions.forEach((state) => {
       state.cities.forEach((city) => {
-        const key = makeCityKey(state.state_slug, city.city_slug);
+        const key = makeCityKey(state.country_slug, state.state_slug, city.city_slug);
         next[key] = {
-          country_slug: COUNTRY_SLUG,
+          country_slug: state.country_slug,
           state_slug: state.state_slug,
           city_slug: city.city_slug,
         };
@@ -384,18 +344,23 @@ export default function PlaceAdPage() {
             {stateOptions.map((state) => {
               const stateCost = state.cities.length * CREDITS_PER_CITY;
               const isStateFullySelected = state.cities.every((city) =>
-                Boolean(selectedCities[makeCityKey(state.state_slug, city.city_slug)])
+                Boolean(
+                  selectedCities[
+                    makeCityKey(state.country_slug, state.state_slug, city.city_slug)
+                  ]
+                )
               );
               return (
                 <Select key={state.state_slug}>
                   <SelectTrigger className="h-12 rounded-[12px] border border-dark-border bg-input-bg px-4 py-3 text-sm text-primary-text focus:ring-1 focus:ring-primary md:h-auto md:rounded-[10px]">
-                    <SelectValue placeholder={state.name} />
+                    <SelectValue placeholder={`${state.name}, ${state.country_name}`} />
                   </SelectTrigger>
                   <SelectContent className="border-dark-border bg-input-bg p-0">
                     <div className="px-4 py-3">
-                      <ul className="space-y-4 text-sm text-text-gray-opacity md:text-base">
+                      <ul className="max-h-72 overflow-y-auto pr-1 space-y-4 text-sm text-text-gray-opacity md:text-base">
                         {state.cities.map((city) => {
                           const key = makeCityKey(
+                            state.country_slug,
                             state.state_slug,
                             city.city_slug
                           );
