@@ -3,7 +3,8 @@
 import { Menu, Search, Loader2 } from "lucide-react";
 
 import Link from "next/link";
-import { useState, use } from "react";
+import { useState, use, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Profile } from "@/types/types";
 import { apiBuilder } from "@/api/builder";
@@ -521,6 +522,21 @@ const mergeProfileData = (
   };
 };
 
+function normalizeUsername(raw: string) {
+  let s = raw;
+  try {
+    s = decodeURIComponent(s);
+  } catch {
+    // Ignore decode errors and continue with raw input.
+  }
+  s = s.trim().toLowerCase();
+  s = s.replace(/\s+/g, "-");
+  s = s.replace(/[^a-z0-9-]/g, "");
+  s = s.replace(/-{2,}/g, "-");
+  s = s.replace(/^-+|-+$/g, "");
+  return s;
+}
+
 export default function ProfilePage({
   params,
 }: {
@@ -531,7 +547,12 @@ export default function ProfilePage({
   const [activeTab, setActiveTab] = useState("Overview");
 
   const resolvedParams = use(params);
-  const username = resolvedParams.id;
+  const rawProfileParam = resolvedParams.id;
+  const normalizedUsername = useMemo(
+    () => normalizeUsername(rawProfileParam),
+    [rawProfileParam],
+  );
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   useQuery({
@@ -563,10 +584,20 @@ export default function ProfilePage({
   });
 
   const { data: supabaseProfile, isLoading } = useQuery({
-    queryKey: ["profile-detail", username],
-    queryFn: () => apiBuilder.profiles.getProfileByUsername(username),
-    enabled: Boolean(username),
+    queryKey: ["profile-detail", normalizedUsername],
+    queryFn: () => apiBuilder.profiles.getProfileByUsername(normalizedUsername),
+    enabled: Boolean(normalizedUsername),
   });
+
+  useEffect(() => {
+    if (!supabaseProfile?.username) {
+      return;
+    }
+
+    if (rawProfileParam !== supabaseProfile.username) {
+      router.replace(`/profile/${supabaseProfile.username}`);
+    }
+  }, [rawProfileParam, router, supabaseProfile?.username]);
 
   const { data: similarProfiles = [], isLoading: similarProfilesLoading } =
     useQuery<Profile[]>({
