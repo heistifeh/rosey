@@ -128,7 +128,7 @@ const getStateNameByCitySlug = (countryIsoCode: string, citySlug?: string) => {
   const matches: string[] = [];
 
   for (const state of states) {
-    const cities = City.getCitiesOfState(countryIsoCode, state.isoCode);
+    const cities = City.getCitiesOfState(countryIsoCode, state.isoCode) ?? [];
     const hasMatch = cities.some(
       (city) => slugifyLocation(city.name) === normalizedCitySlug
     );
@@ -160,7 +160,7 @@ const getCitiesForState = (countryIsoCode: string, stateName: string) => {
   if (!state) return [];
 
   const uniqueCities = new Map<string, string>();
-  City.getCitiesOfState(countryIsoCode, state.isoCode).forEach((city) => {
+  (City.getCitiesOfState(countryIsoCode, state.isoCode) ?? []).forEach((city) => {
     const citySlug = slugifyLocation(city.name);
     if (!citySlug || uniqueCities.has(citySlug)) return;
     uniqueCities.set(citySlug, city.name);
@@ -174,7 +174,7 @@ const getCitiesForState = (countryIsoCode: string, stateName: string) => {
 
 const getCitiesForCountry = (countryIsoCode: string) => {
   const uniqueCities = new Map<string, string>();
-  City.getCitiesOfCountry(countryIsoCode).forEach((city) => {
+  (City.getCitiesOfCountry(countryIsoCode) ?? []).forEach((city) => {
     const citySlug = slugifyLocation(city.name);
     if (!citySlug || uniqueCities.has(citySlug)) return;
     uniqueCities.set(citySlug, city.name);
@@ -501,7 +501,7 @@ export function SearchResultsClient({
     if (locations.length < 16 && inferredCountrySlug) {
       const countryIsoCode = getCountryIsoCode(inferredCountrySlug);
       if (countryIsoCode) {
-        const selectedStateFromProfiles = params.citySlug
+        const selectedStateFromProfileRaw = params.citySlug
           ? mergedProfiles.find(
               (profile) =>
                 profile.city_slug === params.citySlug &&
@@ -509,6 +509,10 @@ export function SearchResultsClient({
                 profile.state
             )?.state ?? null
           : null;
+        const selectedStateFromProfiles =
+          typeof selectedStateFromProfileRaw === "string"
+            ? selectedStateFromProfileRaw
+            : null;
         const selectedStateFromSlug = params.citySlug
           ? getStateNameFromSlug(countryIsoCode, params.citySlug)
           : null;
