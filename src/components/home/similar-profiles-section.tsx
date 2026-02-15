@@ -49,18 +49,18 @@ export function SimilarProfilesSection({
               <Link
                 key={profile.id}
                 href={`/profile/${profile.username || profile.id}`}
-                className="flex min-w-0 flex-col rounded-xl border border-dark-border bg-primary-bg overflow-hidden transition-opacity hover:opacity-90"
+                className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-dark-border bg-primary-bg p-2 transition-opacity hover:opacity-90"
               >
-                <div className="relative aspect-square w-full">
+                <div className="relative aspect-square w-full overflow-hidden rounded-[10px] md:aspect-[4/5]">
                   <SafeImage
                     src={imageUrl}
                     alt={profile.working_name ?? "Profile"}
                     fill
-                    className="object-cover"
+                    className="object-cover object-top"
                     sizes="(max-width: 768px) 50vw, 33vw"
                   />
                 </div>
-                <div className="p-3">
+                <div className="px-1.5 pb-1 pt-2.5">
                   <div className="flex items-start justify-between gap-2 mb-2 min-w-0">
                     <p className="text-sm font-semibold text-primary-text leading-snug min-w-0">
                       {profile.working_name ?? "Provider"}

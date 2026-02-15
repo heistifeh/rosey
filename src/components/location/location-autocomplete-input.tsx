@@ -79,7 +79,7 @@ export function LocationAutocompleteInput({
       <div className="relative">
         <input
           type="text"
-          className="w-full rounded-full border border-dark-border bg-transparent px-4 py-2 text-sm text-primary-text placeholder:text-text-gray outline-none focus:border-primary"
+          className="w-full rounded-full border border-dark-border bg-transparent px-4 py-2 text-base md:text-sm text-primary-text placeholder:text-text-gray outline-none focus:border-primary"
           placeholder={placeholder}
           value={inputValue}
           onChange={handleInputChange}

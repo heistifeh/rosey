@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Circle } from "lucide-react";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
 import { SafeImage } from "@/components/ui/safe-image";
+import { TaglineReveal } from "@/components/home/tagline-reveal";
 import { createServiceRoleClient, SERVICE_ROLE_KEY } from "@/server/supabase-client";
 
 export const revalidate = 30;
@@ -11,6 +12,9 @@ type NormalizedAvailableNowItem = {
   profileId: string;
   username: string | null;
   workingName: string;
+  city?: string | null;
+  country?: string | null;
+  tagline?: string | null;
   imageUrl: string;
 };
 
@@ -22,14 +26,14 @@ export async function AvailableNowSection() {
   const supabase = createServiceRoleClient();
   const { data: profiles = [] } = await supabase
     .from("profiles")
-    .select("id,working_name,username,created_at,images(public_url,is_primary)")
+    .select("id,working_name,username,city,country,tagline,created_at,images(public_url,is_primary)")
     .order("created_at", { ascending: false })
     .limit(10);
 
   const { data: ads = [] } = await supabase
     .from("ads")
     .select(
-      "id,created_at,profile:profiles(id,working_name,username,images(public_url,is_primary))"
+      "id,created_at,profile:profiles(id,working_name,username,city,country,tagline,images(public_url,is_primary))"
     )
     .eq("status", "active")
     .eq("placement_available_now", true)
@@ -46,6 +50,9 @@ export async function AvailableNowSection() {
         profileId: profile.id,
         username: profile.username ?? null,
         workingName: profile.working_name ?? "Provider",
+        city: profile.city ?? null,
+        country: profile.country ?? null,
+        tagline: profile.tagline ?? null,
         imageUrl,
       };
     }
@@ -59,6 +66,9 @@ export async function AvailableNowSection() {
         profileId: adProfile.id,
         username: adProfile.username ?? null,
         workingName: adProfile.working_name ?? "Provider",
+        city: adProfile.city ?? null,
+        country: adProfile.country ?? null,
+        tagline: adProfile.tagline ?? null,
         imageUrl:
           adProfile.images?.find((img) => img.is_primary)?.public_url ||
           adProfile.images?.[0]?.public_url ||
@@ -99,7 +109,7 @@ export async function AvailableNowSection() {
           )}
         </div>
 
-        <div className="flex gap-4 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
+        <div className="flex gap-3 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
           {finalItems.length === 0 ? (
             Array.from({ length: 6 }).map((_, i) => (
               <BaseCardSkeleton key={i} />
@@ -109,25 +119,29 @@ export async function AvailableNowSection() {
               <Link
                 key={`${item.type}-${item.profileId}`}
                 href={`/profile/${item.username || item.profileId}`}
-                className={`flex h-full flex-col overflow-hidden p-3 md:p-4 rounded-[24px] border bg-primary-bg shadow-sm border-[#26262a] min-w-[280px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity`}
+                className={`group flex h-full flex-col overflow-hidden rounded-[24px] border border-[#26262a] bg-primary-bg p-2 shadow-sm min-w-[220px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity md:p-3`}
               >
-                <div className="relative h-[200px] w-full overflow-hidden rounded-[16px]">
+                <div className="relative aspect-square w-full overflow-hidden rounded-[14px] md:aspect-[4/5] md:rounded-[16px]">
                   <SafeImage
                     src={item.imageUrl}
                     alt={item.workingName}
                     fill
-                    className="object-cover object-center"
+                    className="object-cover object-top"
                     sizes="(max-width: 768px) 100vw, 25vw"
                     priority={index < 4}
                   />
                 </div>
 
-                <div className="flex flex-1 flex-col justify-between gap-3 md:gap-[22px] pt-3 md:pt-[22px]">
+                <div className="flex flex-1 flex-col justify-between gap-1.5 pt-2 md:gap-3 md:pt-3">
                   <div className="flex  justify-between gap-2 items-center">
-                    <p className="text-base md:text-lg lg:text-[24px] font-normal text-primary-text">
+                    <p className="text-sm font-normal text-primary-text md:text-lg">
                       {item.workingName}
                     </p>
                   </div>
+                  <p className="text-xs text-text-gray-opacity md:text-sm">
+                    {[item.city, item.country].filter(Boolean).join(", ") || "Location not set"}
+                  </p>
+                  <TaglineReveal tagline={item.tagline} />
 
                   <div className="flex items-center gap-1.5 md:gap-2 bg-input-bg rounded-[200px] px-2 py-1 md:px-3 md:py-2">
                     <Circle className="h-1.5 w-1.5 md:h-2 md:w-2 fill-current text-emerald-400" />

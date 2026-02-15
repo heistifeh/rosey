@@ -8,6 +8,7 @@ import { FAQSection } from "@/components/home/faq-section";
 import { FooterSection } from "@/components/home/footer-section";
 import { AvailableNowSection } from "@/components/home/available-now-section";
 import { HeroShell } from "@/components/home/hero-shell";
+import { SearchShortcutsSection } from "@/components/home/search-shortcuts-section";
 
 export default function Home() {
   return (
@@ -35,6 +36,7 @@ export default function Home() {
       <RecentlyActiveSection />
       <TestimonialsSection />
       <BookingGuideSection />
+      <SearchShortcutsSection />
       <BlogSection />
       <FAQSection />
       <FooterSection />

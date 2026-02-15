@@ -71,6 +71,14 @@ export default function ProviderLayout({
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (!showNotification) return;
+    const timer = window.setTimeout(() => {
+      setShowNotification(false);
+    }, 3000);
+    return () => window.clearTimeout(timer);
+  }, [showNotification]);
+
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: Bell },
     { label: "Profile", href: "/dashboard/profile", icon: User },

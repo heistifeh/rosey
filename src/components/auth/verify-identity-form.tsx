@@ -11,6 +11,10 @@ export function VerifyIdentityForm() {
     router.push("/upload-id");
   };
 
+  const handleSkipVerification = () => {
+    router.push("/profile-setup");
+  };
+
   const verificationSteps = [
     {
       icon: FileText,
@@ -141,6 +145,14 @@ export function VerifyIdentityForm() {
             size="default"
           >
             Get Started
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleSkipVerification}
+            className="w-full rounded-[200px] border-border-gray bg-transparent text-primary-text font-semibold text-sm sm:text-base h-11 sm:h-12 lg:h-14 hover:bg-input-bg"
+          >
+            Skip verification for now
           </Button>
           <p className="text-text-gray text-xs text-center">
             By continuing, you agree to our verification process and privacy policy

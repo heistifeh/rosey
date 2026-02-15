@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Circle } from "lucide-react";
 import { SafeImage } from "@/components/ui/safe-image";
+import { TaglineReveal } from "@/components/home/tagline-reveal";
 import { createServiceRoleClient, SERVICE_ROLE_KEY } from "@/server/supabase-client";
 
 export const revalidate = 30;
@@ -9,6 +10,9 @@ type RecentlyActiveProfile = {
   id: string;
   username: string | null;
   working_name: string | null;
+  city: string | null;
+  country: string | null;
+  tagline: string | null;
   images: { public_url: string; is_primary: boolean }[] | null;
 };
 
@@ -20,7 +24,7 @@ export async function RecentlyActiveSection() {
   const supabase = createServiceRoleClient();
   const { data: profiles = [] } = await supabase
     .from("profiles")
-    .select("id,username,working_name,images(public_url,is_primary)")
+    .select("id,username,working_name,city,country,tagline,images(public_url,is_primary)")
     .order("created_at", { ascending: false })
     .limit(8);
 
@@ -32,6 +36,9 @@ export async function RecentlyActiveSection() {
       id: profile.id,
       name: profile.working_name ?? "Provider",
       status: "Available",
+      city: profile.city ?? null,
+      country: profile.country ?? null,
+      tagline: profile.tagline ?? null,
       image: imageUrl,
       username: profile.username,
     };
@@ -53,30 +60,34 @@ export async function RecentlyActiveSection() {
           </Link>
         </div>
 
-        <div className="flex gap-6 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
+        <div className="flex gap-3 overflow-x-auto pb-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:overflow-x-visible sm:pb-0 scrollbar-hide px-[15px]">
           {itemsToRender.map((profile, index) => (
               <Link
                 key={profile.id}
                 href={`/profile/${profile.username || profile.id}`}
-                className={`flex h-full flex-col overflow-hidden p-3 md:p-4 rounded-[24px]  bg-input-bg shadow-sm min-w-[280px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity`}
+                className={`group flex h-full flex-col overflow-hidden rounded-[24px] border border-[#26262a] bg-primary-bg p-2 shadow-sm min-w-[220px] sm:min-w-0 cursor-pointer hover:opacity-90 transition-opacity md:p-3`}
               >
-                <div className="relative aspect-3/3 w-full overflow-hidden rounded-[16px]">
+                <div className="relative aspect-square w-full overflow-hidden rounded-[14px] md:aspect-[4/5] md:rounded-[16px]">
                   <SafeImage
                     src={profile.image}
                     alt={profile.name}
                     fill
-                    className="object-cover object-center"
+                    className="object-cover object-top"
                     sizes="(max-width: 768px) 100vw, 25vw"
                     priority={index < 4}
                   />
                 </div>
 
-                <div className="flex flex-1 flex-col justify-between gap-1 md:gap-[4px] pt-3 ">
+                <div className="flex flex-1 flex-col justify-between gap-1.5 pt-2">
                   <div className="flex  justify-between gap-2 items-center">
-                    <p className="text-base md:text-lg lg:text-[24px] font-normal text-primary-text">
+                    <p className="text-sm font-normal text-primary-text md:text-lg">
                       {profile.name}
                     </p>
                   </div>
+                  <p className="text-xs text-text-gray-opacity md:text-sm">
+                    {[profile.city, profile.country].filter(Boolean).join(", ") || "Location not set"}
+                  </p>
+                  <TaglineReveal tagline={profile.tagline} />
 
                   <div className="flex items-center gap-1.5 md:gap-2 rounded-[200px]">
                     <Circle className="h-1.5 w-1.5 md:h-2 md:w-2 fill-current text-emerald-400" />

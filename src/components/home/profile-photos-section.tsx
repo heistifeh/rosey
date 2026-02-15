@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useState } from "react";
 import { SafeImage } from "@/components/ui/safe-image";
+import { ProfilePhotoLightbox } from "@/components/home/profile-photo-lightbox";
 
 interface ProfilePhotosSectionProps {
   photos: string[];
@@ -14,6 +15,9 @@ export function ProfilePhotosSection({
   name,
 }: ProfilePhotosSectionProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [activePreviewIndex, setActivePreviewIndex] = useState<number | null>(
+    null
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scrollToIndex = (index: number) => {
@@ -53,9 +57,11 @@ export function ProfilePhotosSection({
           className="flex gap-3 overflow-x-auto scroll-smooth scrollbar-hide pb-2 snap-x snap-mandatory"
         >
           {photos.map((photo, index) => (
-            <div
+            <button
+              type="button"
               key={index}
               data-carousel-item
+              onClick={() => setActivePreviewIndex(index)}
               className="relative h-32 w-32 shrink-0 snap-start overflow-hidden rounded-xl"
             >
               <SafeImage
@@ -65,7 +71,7 @@ export function ProfilePhotosSection({
                 className="object-cover"
                 sizes="128px"
               />
-            </div>
+            </button>
           ))}
         </div>
         <button
@@ -81,6 +87,13 @@ export function ProfilePhotosSection({
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
+      <ProfilePhotoLightbox
+        photos={photos}
+        name={name}
+        activeIndex={activePreviewIndex}
+        onChangeIndex={setActivePreviewIndex}
+        onClose={() => setActivePreviewIndex(null)}
+      />
     </section>
   );
 }
