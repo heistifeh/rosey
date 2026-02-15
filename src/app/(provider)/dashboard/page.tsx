@@ -37,6 +37,34 @@ export default function DashboardPage() {
     "Advertising Policy",
   ];
 
+  const profileDetails = profile
+    ? [
+        { label: "Name", value: profile.working_name || "Not set" },
+        {
+          label: "Location",
+          value:
+            [profile.city, profile.country].filter(Boolean).join(", ") ||
+            "Not set",
+        },
+        {
+          label: "Base rate",
+          value:
+            typeof profile.base_hourly_rate === "number"
+              ? `${profile.base_currency || "$"}${profile.base_hourly_rate}/hr`
+              : "Not set",
+        },
+        { label: "Gender", value: profile.gender || "Not set" },
+        {
+          label: "Ethnicity",
+          value: profile.ethnicity_category || "Not set",
+        },
+        {
+          label: "Approval status",
+          value: profile.approval_status || "Pending",
+        },
+      ]
+    : [];
+
   return (
     <div className=" flex items-center justify-center mx-auto ">
       <div className="mb-8 md:pt-10 w-full max-w-4xl">
@@ -78,6 +106,27 @@ export default function DashboardPage() {
           Once you've completed the tasks below, you can submit your profile for
           review and publication. Please ensure you have:
         </p>
+
+        {profile && (
+          <section className="mb-8 rounded-2xl border border-dark-border bg-primary-bg p-4 md:p-5">
+            <h2 className="mb-4 text-base font-semibold text-primary-text md:text-lg">
+              Profile Snapshot
+            </h2>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+              {profileDetails.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-xl border border-dark-border bg-input-bg p-3"
+                >
+                  <p className="text-xs uppercase tracking-wide text-text-gray-opacity">
+                    {item.label}
+                  </p>
+                  <p className="mt-1 text-sm text-primary-text">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className="space-y-4">
           {profile ? (

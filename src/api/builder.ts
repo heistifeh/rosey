@@ -263,6 +263,7 @@ export const apiBuilder = {
     searchProfiles: (paramsIn: {
       countrySlug?: string;
       citySlug?: string;
+      ethnicity?: string;
       gender?: string;
       minRate?: number;
       maxRate?: number;
@@ -296,6 +297,14 @@ export const apiBuilder = {
         paramsIn.gender && paramsIn.gender !== "All" ? paramsIn.gender : null;
       if (gender) {
         params.append("gender", `eq.${gender}`);
+      }
+
+      const ethnicity =
+        paramsIn.ethnicity && paramsIn.ethnicity !== "All"
+          ? paramsIn.ethnicity
+          : null;
+      if (ethnicity) {
+        params.append("ethnicity_category", `eq.${ethnicity}`);
       }
 
       if (

@@ -13,9 +13,6 @@ export function TaglineReveal({ tagline }: TaglineRevealProps) {
 
   return (
     <div className="relative z-20">
-      <span className="text-[11px] font-medium text-primary md:text-xs">
-        Tagline
-      </span>
       <div
         className={cn(
           "pointer-events-none absolute bottom-full left-0 mb-1 w-56 max-w-[calc(100vw-4rem)] rounded-xl border border-dark-border bg-input-bg/95 p-2 text-xs text-text-gray-opacity shadow-xl backdrop-blur-sm transition-all duration-250 ease-out md:text-sm",

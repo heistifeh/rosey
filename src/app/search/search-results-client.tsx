@@ -30,6 +30,7 @@ const formatSlug = (slug: string) =>
 type SearchParamsState = {
   countrySlug?: string;
   citySlug?: string;
+  ethnicity?: string;
   gender?: string;
   minRate?: number;
   maxRate?: number;
@@ -297,6 +298,7 @@ export function SearchResultsClient({
       return apiBuilder.profiles.searchProfiles({
         countrySlug: params.countrySlug,
         citySlug: params.citySlug,
+        ethnicity: params.ethnicity,
         gender: params.gender,
         minRate: params.minRate,
         maxRate: params.maxRate,
@@ -389,6 +391,7 @@ export function SearchResultsClient({
     const nextParams: SearchParamsState = {
       countrySlug: countrySlug || undefined,
       citySlug: citySlug || undefined,
+      ethnicity: params.ethnicity,
       gender,
       minRate,
       maxRate,
@@ -401,6 +404,7 @@ export function SearchResultsClient({
     const query = new URLSearchParams();
     if (nextParams.countrySlug) query.set("country", nextParams.countrySlug);
     if (nextParams.citySlug) query.set("city", nextParams.citySlug);
+    if (nextParams.ethnicity) query.set("ethnicity", nextParams.ethnicity);
     if (nextParams.gender) query.set("gender", nextParams.gender);
     if (typeof minRate === "number") query.set("min", String(minRate));
     if (typeof maxRate === "number") query.set("max", String(maxRate));
@@ -428,6 +432,7 @@ export function SearchResultsClient({
     const query = new URLSearchParams();
     if (params.countrySlug) query.set("country", params.countrySlug);
     if (params.citySlug) query.set("city", params.citySlug);
+    if (params.ethnicity) query.set("ethnicity", params.ethnicity);
     if (params.gender && params.gender !== "All") query.set("gender", params.gender);
     if (typeof params.minRate === "number") query.set("min", String(params.minRate));
     if (typeof params.maxRate === "number") query.set("max", String(params.maxRate));
@@ -453,12 +458,13 @@ export function SearchResultsClient({
     const genderQuery =
       params.gender && params.gender !== "All" ? params.gender : undefined;
     const mergedProfiles = [...sponsoredProfiles, ...organicProfiles];
-    const randomSeedBase = `${params.countrySlug || ""}:${params.citySlug || ""}:${params.gender || ""}`;
+    const randomSeedBase = `${params.countrySlug || ""}:${params.citySlug || ""}:${params.ethnicity || ""}:${params.gender || ""}`;
 
     const buildHref = (citySlug?: string, countrySlug?: string) => {
       const search = new URLSearchParams();
       if (countrySlug) search.set("country", countrySlug);
       if (citySlug) search.set("city", citySlug);
+      if (params.ethnicity) search.set("ethnicity", params.ethnicity);
       if (genderQuery) search.set("gender", genderQuery);
       return `/search${search.toString() ? `?${search.toString()}` : ""}`;
     };
@@ -555,7 +561,7 @@ export function SearchResultsClient({
     }
 
     return locations.slice(0, 16);
-  }, [organicProfiles, params.citySlug, params.gender, params.countrySlug, sponsoredProfiles]);
+  }, [organicProfiles, params.citySlug, params.ethnicity, params.gender, params.countrySlug, sponsoredProfiles]);
 
   return (
     <section className="relative z-10 w-full bg-input-bg pb-12 pt-0 md:pb-16">
