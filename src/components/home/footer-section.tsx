@@ -40,18 +40,18 @@ const supportLinks = [
 ];
 
 const locationLinks = [
-  { label: "Escorts in Los Angeles", href: "/escorts/united-states/los-angeles" },
-  { label: "Escorts in San Diego", href: "/escorts/united-states/san-diego" },
-  { label: "Escorts in San Jose", href: "/escorts/united-states/san-jose" },
-  { label: "Escorts in San Francisco", href: "/escorts/united-states/san-francisco" },
-  { label: "Escorts in Sacramento", href: "/escorts/united-states/sacramento" },
-  { label: "Escorts in Fresno", href: "/escorts/united-states/fresno" },
-  { label: "Escorts in Oakland", href: "/escorts/united-states/oakland" },
-  { label: "Escorts in Long Beach", href: "/escorts/united-states/long-beach" },
-  { label: "Escorts in Anaheim", href: "/escorts/united-states/anaheim" },
-  { label: "Escorts in Santa Ana", href: "/escorts/united-states/santa-ana" },
-  { label: "Escorts in Riverside", href: "/escorts/united-states/riverside" },
-  { label: "Escorts in Irvine", href: "/escorts/united-states/irvine" },
+  { label: "Escorts in Los Angeles", href: "/escorts/united-states/california/los-angeles" },
+  { label: "Escorts in San Diego", href: "/escorts/united-states/california/san-diego" },
+  { label: "Escorts in San Jose", href: "/escorts/united-states/california/san-jose" },
+  { label: "Escorts in San Francisco", href: "/escorts/united-states/california/san-francisco" },
+  { label: "Escorts in Sacramento", href: "/escorts/united-states/california/sacramento" },
+  { label: "Escorts in Fresno", href: "/escorts/united-states/california/fresno" },
+  { label: "Escorts in Oakland", href: "/escorts/united-states/california/oakland" },
+  { label: "Escorts in Long Beach", href: "/escorts/united-states/california/long-beach" },
+  { label: "Escorts in Anaheim", href: "/escorts/united-states/california/anaheim" },
+  { label: "Escorts in Santa Ana", href: "/escorts/united-states/california/santa-ana" },
+  { label: "Escorts in Riverside", href: "/escorts/united-states/california/riverside" },
+  { label: "Escorts in Irvine", href: "/escorts/united-states/california/irvine" },
 ];
 
 const toEscortLabel = (raw: string) => {

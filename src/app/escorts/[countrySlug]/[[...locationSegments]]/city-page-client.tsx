@@ -6,16 +6,16 @@ import { useQuery } from "@tanstack/react-query";
 import { City, Country, State } from "country-state-city";
 import { apiBuilder } from "@/api/builder";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
-import { SafeImage } from "@/components/ui/safe-image";
 import { FooterSection } from "@/components/home/footer-section";
 import { Header } from "@/components/layout/header";
+import { ProfileCard } from "@/components/profile-card";
 import type { Profile } from "@/types/types";
 import { slugifyLocation } from "@/lib/google-places";
 
 export type CityPageClientProps = {
   params?: {
     countrySlug: string;
-    citySlug: string;
+    citySlug?: string;
     stateSlug?: string;
   };
 };
@@ -212,7 +212,7 @@ export function CityPageClient({ params }: CityPageClientProps) {
     queryFn: () =>
       invalidParams
         ? Promise.resolve([])
-        : apiBuilder.profiles.getCityProfiles({
+        : apiBuilder.profiles.searchProfiles({
           citySlug: citySlug!,
           countrySlug: countrySlug!,
           stateSlug,
@@ -438,42 +438,13 @@ export function CityPageClient({ params }: CityPageClientProps) {
             ? Array.from({ length: 8 }).map((_, index) => (
               <BaseCardSkeleton key={index} />
             ))
-            : finalProfiles.map((profile, index) => {
-              const isSponsored = sponsoredIds.has(profile.id);
-              return (
-                <Link
-                  key={profile.id}
-                  href={`/profile/${profile.username || profile.id}`}
-                  className="flex h-full flex-col overflow-hidden rounded-[24px] border border-[#26262a] bg-primary-bg p-2 shadow-sm transition-opacity hover:opacity-90 md:p-3"
-                >
-                  <div className="relative aspect-square w-full overflow-hidden rounded-[14px] md:aspect-[4/5] md:rounded-[16px]">
-                    <SafeImage
-                      src={
-                        profile.images?.[0]?.public_url || "/images/girl1.png"
-                      }
-                      alt={profile.working_name ?? "Profile"}
-                      fill
-                      className="object-cover object-top"
-                      sizes="(max-width: 768px) 100vw, 25vw"
-                      priority={index < 4}
-                    />
-                  </div>
-
-                  <div className="flex flex-1 flex-col justify-between gap-1.5 pt-2 md:gap-3 md:pt-3">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-normal text-primary-text md:text-lg">
-                        {profile.working_name ?? "Provider"}
-                      </p>
-                      {isSponsored && (
-                        <span className="rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[9px] font-medium text-primary/80">
-                          Sponsored
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
+            : finalProfiles.map((profile) => (
+              <ProfileCard
+                key={profile.id}
+                profile={profile}
+                isSponsored={sponsoredIds.has(profile.id)}
+              />
+            ))}
 
           {!isLoading && finalProfiles.length === 0 && (
             <div className="col-span-full py-10 text-center text-text-gray-opacity">
