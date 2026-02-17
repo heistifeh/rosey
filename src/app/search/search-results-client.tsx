@@ -231,6 +231,12 @@ export function SearchResultsClient({
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const locationInputRef = useRef<HTMLInputElement | null>(null);
+
+  const closeLocationPicker = () => {
+    setShowSuggestions(false);
+    locationInputRef.current?.blur();
+  };
 
   const {
     query,
@@ -282,6 +288,7 @@ export function SearchResultsClient({
 
   useEffect(() => {
     setParams(initialParams);
+    setShowSuggestions(false);
     setCurrentPage(
       Number.isFinite(initialPage) && initialPage > 0 ? initialPage : 1
     );
@@ -382,27 +389,30 @@ export function SearchResultsClient({
 
   const loading =
     loadingOrganic || fetchingOrganic || loadingSponsored || fetchingSponsored;
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
 
-    const countrySlug = formState.countrySlug.trim();
-    const citySlug = formState.citySlug.trim();
-    const stateSlug = formState.stateSlug.trim();
-    const gender = formState.gender === "All" ? undefined : formState.gender;
+  const applySearchFromState = (nextFormState: typeof formState) => {
+    const countrySlug = nextFormState.countrySlug.trim();
+    const citySlug = nextFormState.citySlug.trim();
+    const stateSlug = nextFormState.stateSlug.trim();
+    const gender = nextFormState.gender === "All" ? undefined : nextFormState.gender;
 
-    const parsedMin = formState.minRate ? Number(formState.minRate) : undefined;
+    const parsedMin = nextFormState.minRate
+      ? Number(nextFormState.minRate)
+      : undefined;
     const minRate =
       typeof parsedMin === "number" && !Number.isNaN(parsedMin)
         ? parsedMin
         : undefined;
 
-    const parsedMax = formState.maxRate ? Number(formState.maxRate) : undefined;
+    const parsedMax = nextFormState.maxRate
+      ? Number(nextFormState.maxRate)
+      : undefined;
     const maxRate =
       typeof parsedMax === "number" && !Number.isNaN(parsedMax)
         ? parsedMax
         : undefined;
 
-    const catersToParts = formState.catersTo
+    const catersToParts = nextFormState.catersTo
       .split(",")
       .map((item) => item.trim())
       .filter(Boolean);
@@ -423,7 +433,7 @@ export function SearchResultsClient({
       minRate,
       maxRate,
       catersTo,
-      availableNow: formState.availableNow,
+      availableNow: nextFormState.availableNow,
     };
 
     setParams(nextParams);
@@ -450,6 +460,12 @@ export function SearchResultsClient({
     router.push(queryString ? `/search?${queryString}` : "/search");
     setCurrentPage(1);
     setShowMoreFilters(false);
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    closeLocationPicker();
+    applySearchFromState(formState);
   };
 
   const handlePageChange = (page: number) => {
@@ -734,6 +750,7 @@ export function SearchResultsClient({
                   <div className="relative flex items-center rounded-[12px] bg-input-bg px-3 py-2 border border-dark-border focus-within:border-primary transition-colors">
                     <Search className="mr-2 h-4 w-4 text-text-gray-opacity" />
                     <input
+                      ref={locationInputRef}
                       type="text"
                       value={query}
                       onChange={(e) => {
@@ -760,17 +777,20 @@ export function SearchResultsClient({
                             `${result.country_slug}-${result.state_slug ?? "all"}-${result.city_slug}`
                           }
                           type="button"
-                          onClick={() => {
-                            setFormState((prev) => ({
-                              ...prev,
+                          onMouseDown={(event) => {
+                            event.preventDefault();
+                            const nextFormState = {
+                              ...formState,
                               citySlug: result.city_slug,
                               stateSlug:
                                 result.state_slug ??
                                 (result.state ? slugifyLocation(result.state) : ""),
                               countrySlug: result.country_slug,
-                            }));
+                            };
+                            setFormState(nextFormState);
                             setQuery(result.fullLabel);
-                            setShowSuggestions(false);
+                            closeLocationPicker();
+                            applySearchFromState(nextFormState);
                           }}
                           className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-input-bg"
                         >

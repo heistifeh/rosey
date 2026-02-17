@@ -53,24 +53,27 @@ function BlogCard({ post }: { post: Post }) {
   const excerpt = post.excerpt || buildExcerpt(post.body);
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-3xl bg-primary-bg">
-      <Link href={`/blog/${post.slug}`} className="relative block aspect-[16/10] w-full">
+    <Link
+      href={`/blog/${post.slug}`}
+      className="group flex h-full flex-col overflow-hidden rounded-3xl bg-primary-bg transition-transform duration-300 hover:-translate-y-1"
+    >
+      <div className="relative block aspect-[16/10] w-full">
         <Image src={imageUrl(post.mainImage)} alt={post.title} fill className="object-cover" />
-      </Link>
+      </div>
       <div className="flex flex-1 flex-col gap-4 p-5 md:p-6">
         <h3 className="line-clamp-2 text-xl font-semibold text-primary-text">{post.title}</h3>
         <p className="line-clamp-3 text-sm text-text-gray-opacity">{excerpt}</p>
         <div className="mt-auto flex items-center justify-between pt-2">
-          <Link href={`/blog/${post.slug}`} className="text-sm font-medium text-primary underline">
+          <span className="text-sm font-medium text-primary underline">
             Read Article
-          </Link>
+          </span>
           <div className="flex items-center gap-2 text-xs text-text-gray-opacity">
             <Clock className="h-3.5 w-3.5" />
             <span>{post.readTime || "5 min read"}</span>
           </div>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
 
@@ -121,8 +124,11 @@ export default async function BlogPage() {
           <section className="mt-12 md:mt-16">
             <h2 className="mb-4 text-xl font-semibold text-primary-text md:mb-8 md:text-3xl">Hot</h2>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-              <article className="md:col-span-2 flex h-full flex-col overflow-hidden rounded-3xl bg-primary-bg">
-                <Link href={`/blog/${heroPost.slug}`} className="relative block aspect-[16/10] w-full">
+              <Link
+                href={`/blog/${heroPost.slug}`}
+                className="group md:col-span-2 flex h-full flex-col overflow-hidden rounded-3xl bg-primary-bg transition-transform duration-300 hover:-translate-y-1"
+              >
+                <div className="relative block aspect-[16/10] w-full">
                   <Image
                     src={imageUrl(heroPost.mainImage)}
                     alt={heroPost.title}
@@ -130,25 +136,22 @@ export default async function BlogPage() {
                     className="object-cover"
                     priority
                   />
-                </Link>
+                </div>
                 <div className="flex flex-1 flex-col gap-4 p-5 md:p-6">
                   <h3 className="text-xl font-semibold text-primary-text md:text-2xl">{heroPost.title}</h3>
                   <p className="line-clamp-3 text-sm text-text-gray-opacity md:text-base">
                     {heroPost.excerpt || buildExcerpt(heroPost.body)}
                   </p>
                   <div className="mt-auto flex items-center justify-between">
-                    <Link
-                      href={`/blog/${heroPost.slug}`}
-                      className="text-sm font-medium text-primary underline md:text-base"
-                    >
+                    <span className="text-sm font-medium text-primary underline md:text-base">
                       Read Article
-                    </Link>
+                    </span>
                     <span className="text-xs text-text-gray-opacity md:text-sm">
                       {heroPost.readTime || "5 min read"}
                     </span>
                   </div>
                 </div>
-              </article>
+              </Link>
 
               <div className="flex flex-col gap-4 md:gap-6">
                 {sideHotPosts.map((post) => (
@@ -179,10 +182,14 @@ export default async function BlogPage() {
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
               {latestPosts.map((post) => (
-                <article key={post._id} className="flex h-full flex-col overflow-hidden rounded-3xl bg-primary-bg">
-                  <Link href={`/blog/${post.slug}`} className="relative block aspect-[16/10] w-full">
+                <Link
+                  key={post._id}
+                  href={`/blog/${post.slug}`}
+                  className="group flex h-full flex-col overflow-hidden rounded-3xl bg-primary-bg transition-transform duration-300 hover:-translate-y-1"
+                >
+                  <div className="relative block aspect-[16/10] w-full">
                     <Image src={imageUrl(post.mainImage)} alt={post.title} fill className="object-cover" />
-                  </Link>
+                  </div>
                   <div className="flex flex-1 flex-col gap-3 p-5">
                     <p className="text-xs text-text-gray-opacity">{publishedLabel(post)}</p>
                     <h3 className="line-clamp-2 text-lg font-semibold text-primary-text">{post.title}</h3>
@@ -190,13 +197,13 @@ export default async function BlogPage() {
                       {post.excerpt || buildExcerpt(post.body)}
                     </p>
                     <div className="mt-auto flex items-center justify-between pt-2">
-                      <Link href={`/blog/${post.slug}`} className="text-sm font-medium text-primary underline">
+                      <span className="text-sm font-medium text-primary underline">
                         Read Article
-                      </Link>
+                      </span>
                       <span className="text-xs text-text-gray-opacity">{post.readTime || "5 min read"}</span>
                     </div>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
           )}

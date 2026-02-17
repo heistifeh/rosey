@@ -120,22 +120,6 @@ export function FooterSection({
               Rosey
             </h2>
 
-            {/* Profile Filter */}
-            <div className="flex items-center gap-2">
-              <span className="text-text-gray text-sm md:text-base">
-                Showing
-              </span>
-              <button className="bg-input-bg text-primary-text px-4 py-2 rounded-full text-sm md:text-base">
-                Female Profiles
-              </button>
-              <Link
-                href="#"
-                className="text-primary text-sm md:text-base hover:underline"
-              >
-                Change
-              </Link>
-            </div>
-
             {/* Language Selector */}
             <div className="flex items-center gap-2">
               <Globe className="h-5 w-5 text-primary-text" />

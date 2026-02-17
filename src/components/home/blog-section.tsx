@@ -67,9 +67,10 @@ export function BlogSection() {
 
       <div className="grid grid-cols-1 gap-4 w-full md:grid-cols-3 md:gap-6">
         {cards.map((post) => (
-          <article
+          <Link
             key={post._id}
-            className="flex flex-col bg-input-bg rounded-3xl overflow-hidden"
+            href={`/blog/${post.slug}`}
+            className="group flex flex-col bg-input-bg rounded-3xl overflow-hidden transition-transform duration-300 hover:-translate-y-1"
           >
             <div className="relative w-full aspect-[424/311]">
               <Image src={post.image} alt={post.title} fill className="object-cover" />
@@ -86,19 +87,16 @@ export function BlogSection() {
               </div>
 
               <div className="flex items-center justify-between mt-auto">
-                <Link
-                  href={`/blog/${post.slug}`}
-                  className="text-primary text-sm md:text-base font-medium underline"
-                >
+                <span className="text-primary text-sm md:text-base font-medium underline">
                   Read Article
-                </Link>
+                </span>
                 <span className="text-sm md:text-base text-text-gray-opacity inline-flex items-center gap-2">
                   <Clock className="h-4 w-4" />
                   {post.readTime}
                 </span>
               </div>
             </div>
-          </article>
+          </Link>
         ))}
       </div>
 
