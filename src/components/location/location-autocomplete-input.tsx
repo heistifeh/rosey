@@ -118,8 +118,9 @@ export function LocationAutocompleteInput({
                   >
                     <div className="font-semibold">{suggestion.fullLabel}</div>
                     <div className="text-xs text-text-gray-opacity">
-                      {suggestion.country}
-                      {suggestion.state ? ` · ${suggestion.state}` : ""}
+                      {[suggestion.state, suggestion.country]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </div>
                   </button>
                 </li>

@@ -91,17 +91,31 @@ export function ProfileSetupTabs() {
                 .filter(Boolean)
                 .join(", ")
               : null) ||
-            [profile.city, profile.country].filter(Boolean).join(", "),
+            [profile.city, profile.state, profile.country].filter(Boolean).join(", "),
           homeLocation:
             profile.city && profile.country
               ? {
                 city: profile.city,
+                state:
+                  typeof profile.state === "string" ? profile.state : undefined,
                 country: profile.country,
-                city_slug: profile.city.toLowerCase().replace(/ /g, "-"),
-                country_slug: profile.country
-                  .toLowerCase()
-                  .replace(/ /g, "-"),
-                fullLabel: `${profile.city}, ${profile.country}`,
+                city_slug:
+                  typeof profile.city_slug === "string" && profile.city_slug
+                    ? profile.city_slug
+                    : profile.city.toLowerCase().replace(/ /g, "-"),
+                state_slug:
+                  typeof profile.state_slug === "string" && profile.state_slug
+                    ? profile.state_slug
+                    : typeof profile.state === "string"
+                      ? profile.state.toLowerCase().replace(/ /g, "-")
+                    : undefined,
+                country_slug:
+                  typeof profile.country_slug === "string" && profile.country_slug
+                    ? profile.country_slug
+                    : profile.country.toLowerCase().replace(/ /g, "-"),
+                fullLabel: [profile.city, profile.state, profile.country]
+                  .filter(Boolean)
+                  .join(", "),
               }
               : null,
         };

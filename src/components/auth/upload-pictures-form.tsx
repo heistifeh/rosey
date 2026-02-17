@@ -370,7 +370,17 @@ export function UploadPicturesForm({
             ? normalizedHomeLocations[0].split(",")[0].trim()
             : null);
         const country = locationSuggestion?.country ?? "Nigeria";
-        const state = locationSuggestion?.state ?? city;
+        const fallbackState =
+          normalizedHomeLocations.length > 0
+            ? (() => {
+                const parts = normalizedHomeLocations[0]
+                  .split(",")
+                  .map((part) => part.trim())
+                  .filter(Boolean);
+                return parts.length >= 3 ? parts[1] : null;
+              })()
+            : null;
+        const state = locationSuggestion?.state ?? fallbackState ?? null;
         const city_slug =
           locationSuggestion?.city_slug ?? (city ? slugify(city) : null);
         const country_slug =

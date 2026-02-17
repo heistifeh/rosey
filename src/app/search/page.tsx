@@ -4,6 +4,7 @@ type SearchPageProps = {
   searchParams: Promise<{
     country?: string | string[];
     city?: string | string[];
+    state?: string | string[];
     ethnicity?: string | string[];
     gender?: string | string[];
     min?: string | string[];
@@ -42,6 +43,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   const countrySlug = toSingleValue(params?.country);
   const citySlug = toSingleValue(params?.city);
+  const stateSlug = toSingleValue(params?.state);
   const ethnicityValue = toSingleValue(params?.ethnicity);
   const genderValue = toSingleValue(params?.gender);
   const availableNowValue = toSingleValue(params?.availableNow) === "true";
@@ -56,6 +58,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       initialParams={{
         countrySlug: countrySlug || undefined,
         citySlug: citySlug || undefined,
+        stateSlug: stateSlug || undefined,
         ethnicity: ethnicityValue || undefined,
         gender: genderValue && genderValue !== "All" ? genderValue : undefined,
         minRate: parseNumberParam(toSingleValue(params?.min)),

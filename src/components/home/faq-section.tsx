@@ -13,33 +13,27 @@ import { Button } from "../ui/button";
 const faqItems = [
   {
     id: "item-1",
-    question: "What services do the companions offer?",
+    question: "How do I book a companion on Rosey.link?",
     answer:
-      "Our companions offer a variety of services, from social outings to private, intimate appointments. Each provider sets their own boundaries, so please discuss your expectations politely when inquiring. Any form of coercion or pressure will end the appointment immediately.",
+      "Browse profiles, select someone who matches your preferences, and use the contact method provided (message, WhatsApp, phone, or booking form). Provide basic details: your name, desired date/time, duration, location (incall/outcall), and any special requests. Most companions reply quickly to confirm availability.",
   },
   {
     id: "item-2",
-    question: "What services do the companions offer?",
+    question: "What about deposits or payments?",
     answer:
-      "Our companions offer a variety of services, from social outings to private, intimate appointments. Each provider sets their own boundaries, so please discuss your expectations politely when inquiring. Any form of coercion or pressure will end the appointment immediately.",
+      "Payment details are handled directly with the companion (cash is most common; some accept transfers). Some may request a small deposit to secure the time, especially for outcalls or longer bookings. Never send money without confirming directly with her.",
   },
   {
     id: "item-3",
-    question: "What services do the companions offer?",
+    question: "What should I do to prepare for the meeting?",
     answer:
-      "Our companions offer a variety of services, from social outings to private, intimate appointments. Each provider sets their own boundaries, so please discuss your expectations politely when inquiring. Any form of coercion or pressure will end the appointment immediately.",
+      "Be clean, on time, respectful, and have the agreed payment ready. Good hygiene and manners go a long way. If it is an outcall to a hotel, inform reception if needed (many hotels allow guests without issue).",
   },
   {
     id: "item-4",
-    question: "What services do the companions offer?",
+    question: "Do I need to provide screening/verification?",
     answer:
-      "Our companions offer a variety of services, from social outings to private, intimate appointments. Each provider sets their own boundaries, so please discuss your expectations politely when inquiring. Any form of coercion or pressure will end the appointment immediately.",
-  },
-  {
-    id: "item-5",
-    question: "What services do the companions offer?",
-    answer:
-      "Our companions offer a variety of services, from social outings to private, intimate appointments. Each provider sets their own boundaries, so please discuss your expectations politely when inquiring. Any form of coercion or pressure will end the appointment immediately.",
+      "Many companions request light screening for safety (for example: a reference from someone they have seen before, a photo of ID, or a quick voice call). This is normal and helps build trust. Each companion sets her own requirements - they are usually listed in the profile or explained in replies.",
   },
 ];
 

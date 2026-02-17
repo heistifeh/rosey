@@ -25,8 +25,10 @@ interface HeroSectionProps {
     priceRange: string;
     location?: {
       city: string;
+      state?: string;
       country: string;
       city_slug: string;
+      state_slug?: string;
       country_slug: string;
     };
   };
@@ -36,8 +38,10 @@ interface HeroSectionProps {
       priceRange: string;
       location?: {
         city: string;
+        state?: string;
         country: string;
         city_slug: string;
+        state_slug?: string;
         country_slug: string;
       };
     }>
@@ -64,6 +68,9 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
     }
     if (filters.location?.city_slug) {
       params.set("city", filters.location.city_slug);
+    }
+    if (filters.location?.state_slug) {
+      params.set("state", filters.location.state_slug);
     }
 
     if (filters.gender && filters.gender !== "All") {

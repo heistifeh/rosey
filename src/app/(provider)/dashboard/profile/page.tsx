@@ -158,6 +158,23 @@ export default function ProfilePage() {
 
           <div className="flex flex-col md:flex-row gap-4 md:gap-6">
             <section className="flex flex-col gap-8 md:gap-12 p-4 md:p-6 bg-input-bg rounded-2xl flex-1">
+              <div className="bg-primary/10 border border-primary/40 rounded-xl p-4 md:p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div className="space-y-1">
+                  <h3 className="text-base md:text-lg font-semibold text-primary-text">
+                    Profile Details
+                  </h3>
+                  <p className="text-xs md:text-sm text-text-gray-opacity">
+                    Update your bio, rates, photos, and preferences.
+                  </p>
+                </div>
+                <Link href="/general-information?edit=true" className="w-full md:w-auto">
+                  <Button className="bg-primary hover:bg-primary/90 text-white w-full md:w-auto py-[10px] px-5 flex items-center justify-center gap-2">
+                    <Edit className="h-4 w-4" />
+                    Edit Profile
+                  </Button>
+                </Link>
+              </div>
+
               <div className="flex flex-col gap-4">
                 <h3 className="text-lg md:text-xl font-semibold text-primary-text">
                   Membership Plan
@@ -176,15 +193,6 @@ export default function ProfilePage() {
                     ? "Loading..."
                     : homeLocation || "Not set"}
                 </p>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <Link href="/general-information?edit=true">
-                  <Button className="bg-primary hover:bg-primary/90 text-white w-full md:w-[169px] py-[10px] flex items-center gap-2">
-                    <Edit className="h-4 w-4" />
-                    Edit Profile
-                  </Button>
-                </Link>
               </div>
             </section>
 

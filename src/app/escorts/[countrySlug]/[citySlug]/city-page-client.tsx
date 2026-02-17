@@ -16,8 +16,10 @@ export type CityPageClientProps = {
   params?: {
     countrySlug: string;
     citySlug: string;
+    stateSlug?: string;
   };
 };
+const RELATED_LOCATIONS_LIMIT = 20;
 
 const FALLBACK_CITIES_BY_COUNTRY: Record<string, string[]> = {
   nigeria: ["lagos", "abuja", "port-harcourt", "ibadan", "kano"],
@@ -105,6 +107,17 @@ const getCitiesForState = (countryIsoCode: string, stateName: string) => {
   }));
 };
 
+const getStateNameFromSlug = (countryIsoCode: string, stateSlug?: string) => {
+  if (!stateSlug) return null;
+  const normalizedStateSlug = slugifyLocation(stateSlug);
+  const state = State.getStatesOfCountry(countryIsoCode).find(
+    (item) =>
+      slugifyLocation(item.name) === normalizedStateSlug ||
+      item.isoCode.toLowerCase() === normalizedStateSlug
+  );
+  return state?.name ?? null;
+};
+
 const getStateNameByCitySlug = (countryIsoCode: string, citySlug?: string) => {
   if (!citySlug) return null;
   const normalizedCitySlug = slugifyLocation(citySlug);
@@ -179,25 +192,30 @@ const formatSlug = (slug: string) =>
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
+const formatLocationLabel = (...parts: Array<string | undefined>) =>
+  parts
+    .filter((part): part is string => Boolean(part))
+    .map((part) => formatSlug(part))
+    .join(", ");
+
 export function CityPageClient({ params }: CityPageClientProps) {
-  console.log("CityPageClient params:", params);
-  const { countrySlug, citySlug } = params || {};
+  const { countrySlug, citySlug, stateSlug } = params || {};
 
   const invalidParams = !citySlug || !countrySlug;
-  const cityName = citySlug ? citySlug.replace(/-/g, " ") : "";
-  const countryName = countrySlug ? countrySlug.replace(/-/g, " ") : "";
+  const cityLine = formatLocationLabel(citySlug, stateSlug, countrySlug);
 
   const {
     data: organicProfiles = [],
     isLoading: loadingOrganic,
   } = useQuery<Profile[]>({
-    queryKey: ["city-organic", countrySlug, citySlug],
+    queryKey: ["city-organic", countrySlug, stateSlug, citySlug],
     queryFn: () =>
       invalidParams
         ? Promise.resolve([])
         : apiBuilder.profiles.getCityProfiles({
           citySlug: citySlug!,
           countrySlug: countrySlug!,
+          stateSlug,
         }),
     enabled: !invalidParams,
   });
@@ -206,13 +224,14 @@ export function CityPageClient({ params }: CityPageClientProps) {
     data: sponsoredProfiles = [],
     isLoading: loadingSponsored,
   } = useQuery<Profile[]>({
-    queryKey: ["city-sponsored", countrySlug, citySlug],
+    queryKey: ["city-sponsored", countrySlug, stateSlug, citySlug],
     queryFn: () =>
       invalidParams
         ? Promise.resolve([])
         : apiBuilder.ads.getSponsoredProfilesForCity({
           citySlug: citySlug!,
           countrySlug: countrySlug!,
+          stateSlug,
         }),
     enabled: !invalidParams,
   });
@@ -230,34 +249,55 @@ export function CityPageClient({ params }: CityPageClientProps) {
     const seen = new Set<string>();
     const locations: { label: string; href: string }[] = [];
     const mergedProfiles = [...sponsoredProfiles, ...organicProfiles];
-    const randomSeedBase = `${countrySlug || ""}:${citySlug || ""}`;
+    const randomSeedBase = `${countrySlug || ""}:${stateSlug || ""}:${citySlug || ""}`;
 
-    const buildHref = (city?: string, country?: string) => {
+    const buildHref = (city?: string, country?: string, state?: string) => {
       const search = new URLSearchParams();
       if (country) search.set("country", country);
+      if (state) search.set("state", state);
       if (city) search.set("city", city);
       return `/search${search.toString() ? `?${search.toString()}` : ""}`;
     };
 
-    const addLocation = (citySlugValue: string, countrySlugValue: string, cityName?: string) => {
+    const addLocation = (
+      citySlugValue: string,
+      countrySlugValue: string,
+      cityName?: string,
+      stateSlugValue?: string,
+    ) => {
       if (!citySlugValue || !countrySlugValue) return;
-      if (citySlugValue === citySlug && countrySlugValue === countrySlug) return;
+      if (
+        citySlugValue === citySlug &&
+        countrySlugValue === countrySlug &&
+        (!stateSlug || stateSlug === stateSlugValue)
+      ) {
+        return;
+      }
 
-      const key = `${citySlugValue}-${countrySlugValue}`;
+      const key = `${citySlugValue}-${stateSlugValue || "all"}-${countrySlugValue}`;
       if (seen.has(key)) return;
       seen.add(key);
 
       locations.push({
-        label: `${cityName || formatSlug(citySlugValue)}, ${formatSlug(countrySlugValue)}`,
-        href: buildHref(citySlugValue, countrySlugValue),
+        label: [
+          cityName || formatSlug(citySlugValue),
+          stateSlugValue ? formatSlug(stateSlugValue) : null,
+          formatSlug(countrySlugValue),
+        ]
+          .filter(Boolean)
+          .join(", "),
+        href: buildHref(citySlugValue, countrySlugValue, stateSlugValue),
       });
     };
 
     mergedProfiles.forEach((profile) => {
       const cSlug = profile.city_slug;
       const coSlug = profile.country_slug;
+      const stSlug =
+        profile.state_slug ??
+        (typeof profile.state === "string" ? slugifyLocation(profile.state) : undefined);
       if (!cSlug || !coSlug) return;
-      addLocation(cSlug, coSlug);
+      addLocation(cSlug, coSlug, undefined, stSlug);
     });
 
     const normalizedCountry = normalizeCountryKey(countrySlug);
@@ -268,7 +308,7 @@ export function CityPageClient({ params }: CityPageClientProps) {
 
     let targetStateName: string | null = null;
 
-    if (locations.length < 16 && inferredCountrySlug) {
+    if (locations.length < RELATED_LOCATIONS_LIMIT && inferredCountrySlug) {
       const countryIsoCode = getCountryIsoCode(inferredCountrySlug);
       if (countryIsoCode) {
         const selectedStateFromProfileRaw =
@@ -282,38 +322,49 @@ export function CityPageClient({ params }: CityPageClientProps) {
           typeof selectedStateFromProfileRaw === "string"
             ? selectedStateFromProfileRaw
             : null;
+        const selectedStateFromSlug = stateSlug
+          ? getStateNameFromSlug(countryIsoCode, stateSlug)
+          : null;
         const selectedStateFromCitySlug = getStateNameByCitySlug(
           countryIsoCode,
           citySlug
         );
         targetStateName =
-          selectedStateFromProfiles || selectedStateFromCitySlug;
+          selectedStateFromSlug ||
+          selectedStateFromProfiles ||
+          selectedStateFromCitySlug;
 
         if (targetStateName) {
+          const targetStateSlug = slugifyLocation(targetStateName);
           seededShuffle(
             getCitiesForState(countryIsoCode, targetStateName),
             `${randomSeedBase}:state:${targetStateName}`
           ).forEach(
             (item) => {
-              if (locations.length >= 16) return;
-              addLocation(item.citySlug, inferredCountrySlug, item.cityName);
+              if (locations.length >= RELATED_LOCATIONS_LIMIT) return;
+              addLocation(
+                item.citySlug,
+                inferredCountrySlug,
+                item.cityName,
+                stateSlug || targetStateSlug,
+              );
             }
           );
         }
 
-        if (locations.length < 16 && !targetStateName) {
+        if (locations.length < RELATED_LOCATIONS_LIMIT && !targetStateName) {
           seededShuffle(
             getCitiesForCountry(countryIsoCode),
             `${randomSeedBase}:country:${countryIsoCode}`
           ).forEach((item) => {
-            if (locations.length >= 16) return;
+            if (locations.length >= RELATED_LOCATIONS_LIMIT) return;
             addLocation(item.citySlug, inferredCountrySlug, item.cityName);
           });
         }
       }
     }
 
-    if (locations.length < 16 && !targetStateName) {
+    if (locations.length < RELATED_LOCATIONS_LIMIT && !targetStateName) {
       const inferredCountry =
         normalizeCountryKey(inferredCountrySlug) ||
         normalizeCountryKey(
@@ -325,15 +376,15 @@ export function CityPageClient({ params }: CityPageClientProps) {
         ? FALLBACK_CITIES_BY_COUNTRY[inferredCountry] ?? []
         : [];
       fallbackCities.forEach((city) => {
-        if (locations.length >= 16) return;
+        if (locations.length >= RELATED_LOCATIONS_LIMIT) return;
         const fallbackCountrySlug = inferredCountrySlug || inferredCountry;
         if (!fallbackCountrySlug) return;
         addLocation(city, fallbackCountrySlug);
       });
     }
 
-    return locations.slice(0, 16);
-  }, [countrySlug, citySlug, invalidParams, organicProfiles, sponsoredProfiles]);
+    return locations.slice(0, RELATED_LOCATIONS_LIMIT);
+  }, [countrySlug, citySlug, invalidParams, organicProfiles, sponsoredProfiles, stateSlug]);
 
   return (
     <section className="relative z-10 w-full bg-input-bg pb-12 md:pb-16">
@@ -353,19 +404,26 @@ export function CityPageClient({ params }: CityPageClientProps) {
                   </Link>{" "}
                   /{" "}
                   <Link
-                    href={`/search?country=${encodeURIComponent(countrySlug ?? "")}`}
+                    href={
+                      `/search?${new URLSearchParams({
+                        country: countrySlug ?? "",
+                        ...(stateSlug ? { state: stateSlug } : {}),
+                      }).toString()}`
+                    }
                     className="hover:text-primary-text transition-colors"
                   >
                     {formatSlug(countrySlug ?? "")}
                   </Link>{" "}
                   /{" "}
-                  <span className="text-primary-text">{formatSlug(citySlug ?? "")}</span>
+                  <span className="text-primary-text">
+                    {formatLocationLabel(citySlug, stateSlug)}
+                  </span>
                 </div>
                 <h1 className="text-xl font-semibold text-primary-text md:text-2xl lg:text-[36px]">
-                  {formatSlug(citySlug ?? "")} escorts
+                  {formatLocationLabel(citySlug, stateSlug)} escorts
                 </h1>
                 <p className="mt-1 text-sm text-text-gray-opacity md:text-base">
-                  Browse verified independent escorts in {cityName}, {countryName}.
+                  Browse verified independent escorts in {cityLine}.
                 </p>
                 <p className="mt-3 text-xs text-text-gray-opacity md:text-sm">
                   {finalProfiles.length} profile{finalProfiles.length !== 1 ? "s" : ""} available
@@ -407,7 +465,7 @@ export function CityPageClient({ params }: CityPageClientProps) {
                         {profile.working_name ?? "Provider"}
                       </p>
                       {isSponsored && (
-                        <span className="rounded-full border border-primary bg-primary/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                        <span className="rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[9px] font-medium text-primary/80">
                           Sponsored
                         </span>
                       )}

@@ -367,7 +367,7 @@ const mergeProfileData = (
     ? images.map((img) => img.public_url).filter(Boolean)
     : [];
 
-  const locationParts = [supabaseProfile.city, supabaseProfile.country].filter(
+  const locationParts = [supabaseProfile.city, supabaseProfile.state, supabaseProfile.country].filter(
     Boolean,
   );
   const normalizedLocation =
@@ -604,6 +604,7 @@ export default function ProfilePage({
       queryKey: [
         "profile-similar",
         supabaseProfile?.city_slug,
+        supabaseProfile?.state,
         supabaseProfile?.country_slug,
         supabaseProfile?.gender,
       ],
@@ -614,12 +615,17 @@ export default function ProfilePage({
         const gender = supabaseProfile.gender;
         const countrySlug = supabaseProfile.country_slug;
         const citySlug = supabaseProfile.city_slug ?? undefined;
+        const stateSlug =
+          typeof supabaseProfile.state === "string" && supabaseProfile.state
+            ? supabaseProfile.state.toLowerCase().trim().replace(/\s+/g, "-")
+            : undefined;
 
         let results: Profile[] = [];
         if (citySlug) {
           results =
             (await apiBuilder.profiles.getProfiles({
               citySlug,
+              stateSlug,
               countrySlug,
               gender,
               applyDefaults: false,
@@ -636,6 +642,7 @@ export default function ProfilePage({
 
         return (
           (await apiBuilder.profiles.getProfiles({
+            stateSlug,
             countrySlug,
             gender,
             applyDefaults: false,

@@ -12,8 +12,8 @@ import {
 
 const menuLinks = [
   { label: "Home", href: "/" },
-  { label: "All Escorts", href: "/" },
-  { label: "Locations", href: "/" },
+  { label: "All Escorts", href: "/search" },
+  { label: "Locations", href: "/locations" },
   { label: "Sign Up", href: "/" },
   { label: "Login", href: "/" },
 ];
@@ -73,10 +73,15 @@ const toEscortLabel = (raw: string) => {
   }
 
   if (label.includes(",")) {
-    const [firstPart] = label.split(",");
-    const city = firstPart?.trim();
-    if (city) {
-      return `${city} escorts`;
+    const parts = label
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0]}, ${parts[1]} escorts`;
+    }
+    if (parts.length === 1) {
+      return `${parts[0]} escorts`;
     }
   }
 
@@ -87,12 +92,14 @@ type FooterSectionProps = {
   relatedLocations?: { label: string; href: string }[];
   relatedHeading?: string;
   relatedDescription?: string;
+  hideLocationsSection?: boolean;
 };
 
 export function FooterSection({
   relatedLocations,
   relatedHeading,
   relatedDescription,
+  hideLocationsSection = false,
 }: FooterSectionProps) {
   const hasRelated = Boolean(relatedLocations && relatedLocations.length > 0);
   const locationsToRender = (hasRelated ? relatedLocations! : locationLinks).map(
@@ -229,31 +236,32 @@ export function FooterSection({
         {/* Horizontal Separator */}
         <div className="border-t border-dark-border my-8"></div>
 
-        {/* Bottom Section - Location Links */}
-        <div className="pt-4 md:pt-8 flex flex-col gap-4">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-base md:text-lg font-semibold text-primary-text">
-              {hasRelated ? relatedHeading || "Related cities" : "Locations"}
-            </h3>
-            <p className="text-sm text-text-gray-opacity">
-              {hasRelated
-                ? relatedDescription ||
-                "Explore nearby cities to find more providers."
-                : "Browse popular locations on Rosey."}
-            </p>
+        {!hideLocationsSection && (
+          <div className="pt-4 md:pt-8 flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <h3 className="text-base md:text-lg font-semibold text-primary-text">
+                {hasRelated ? relatedHeading || "Related cities" : "Locations"}
+              </h3>
+              <p className="text-sm text-text-gray-opacity">
+                {hasRelated
+                  ? relatedDescription ||
+                    "Explore nearby cities to find more providers."
+                  : "Browse popular locations on Rosey."}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-4 md:gap-x-8 md:gap-y-3">
+              {locationsToRender.map((link) => (
+                <Link
+                  key={`${link.href}-${link.label}`}
+                  href={link.href}
+                  className="text-text-gray text-sm md:text-base hover:text-primary-text transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-4 md:gap-x-8 md:gap-y-3">
-            {locationsToRender.map((link) => (
-              <Link
-                key={`${link.href}-${link.label}`}
-                href={link.href}
-                className="text-text-gray text-sm md:text-base hover:text-primary-text transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
     </footer>
   );

@@ -4,12 +4,13 @@ import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { City, State } from "country-state-city";
+import { City, Country, State } from "country-state-city";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
+  SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -31,7 +32,7 @@ type CityOption = {
 
 type StateOption = {
   name: string;
-  state_slug: string;
+  state_slug: string | null;
   country_name: string;
   country_code: string;
   country_slug: string;
@@ -40,8 +41,14 @@ type StateOption = {
 
 type SelectedCity = {
   country_slug: string;
-  state_slug: string;
+  state_slug: string | null;
   city_slug: string;
+};
+
+type CountryOption = {
+  name: string;
+  isoCode: string;
+  country_slug: string;
 };
 
 type PlaceAdPayload = {
@@ -51,19 +58,8 @@ type PlaceAdPayload = {
 };
 
 const CREDITS_PER_CITY = 15;
-
-const AD_COUNTRIES = [
-  {
-    name: "United States",
-    isoCode: "US",
-    country_slug: "united-states",
-  },
-  {
-    name: "Canada",
-    isoCode: "CA",
-    country_slug: "canada",
-  },
-] as const;
+const PRIORITY_COUNTRY_ISO_CODES = ["US", "CA"] as const;
+const DEFAULT_AD_TITLE = "Featured Campaign";
 
 const slugify = (value: string) =>
   value
@@ -73,45 +69,38 @@ const slugify = (value: string) =>
 
 const makeCityKey = (
   country_slug: string,
-  state_slug: string,
+  state_slug: string | null,
   city_slug: string
-) => `${country_slug}/${state_slug}/${city_slug}`;
+) => `${country_slug}/${state_slug ?? "all"}/${city_slug}`;
+
+const makeStateKey = (country_slug: string, state_slug: string | null) =>
+  `${country_slug}/${state_slug ?? "all"}`;
 
 export default function PlaceAdPage() {
-  const stateOptions = useMemo<StateOption[]>(() => {
-    return AD_COUNTRIES.flatMap((country) => {
-      const states = State.getStatesOfCountry(country.isoCode);
-      return states
-        .map((state) => {
-          const rawCities = City.getCitiesOfState(country.isoCode, state.isoCode);
-          const uniqueCities = new Map<string, CityOption>();
+  const countryOptions = useMemo<CountryOption[]>(() => {
+    const priorityIndex = (isoCode: string) => {
+      const index = PRIORITY_COUNTRY_ISO_CODES.indexOf(
+        isoCode as (typeof PRIORITY_COUNTRY_ISO_CODES)[number]
+      );
+      return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+    };
 
-          rawCities.forEach((city) => {
-            const city_slug = slugify(city.name);
-            if (!city_slug || uniqueCities.has(city_slug)) {
-              return;
-            }
-            uniqueCities.set(city_slug, {
-              name: city.name,
-              city_slug,
-            });
-          });
+    return Country.getAllCountries()
+      .map((country) => ({
+        name: country.name,
+        isoCode: country.isoCode,
+        country_slug: slugify(country.name),
+      }))
+      .sort((a, b) => {
+        const aPriority = priorityIndex(a.isoCode);
+        const bPriority = priorityIndex(b.isoCode);
 
-          const cities = Array.from(uniqueCities.values()).sort((a, b) =>
-            a.name.localeCompare(b.name)
-          );
+        if (aPriority !== bPriority) {
+          return aPriority - bPriority;
+        }
 
-          return {
-            name: state.name,
-            state_slug: slugify(state.name),
-            country_name: country.name,
-            country_code: country.isoCode,
-            country_slug: country.country_slug,
-            cities,
-          };
-        })
-        .filter((state) => state.cities.length > 0);
-    });
+        return a.name.localeCompare(b.name);
+      });
   }, []);
 
   const [selectedCities, setSelectedCities] = useState<Record<string, SelectedCity>>({});
@@ -119,9 +108,97 @@ export default function PlaceAdPage() {
   const [isLowBalanceOpen, setIsLowBalanceOpen] = useState(false);
   const [adTitle, setAdTitle] = useState("");
   const [placementAvailableNow, setPlacementAvailableNow] = useState(false);
+  const [selectedCountrySlug, setSelectedCountrySlug] = useState("");
+  const [countrySearchQuery, setCountrySearchQuery] = useState("");
+  const [citySearchByStateKey, setCitySearchByStateKey] = useState<
+    Record<string, string>
+  >({});
+  const [openStateKey, setOpenStateKey] = useState<string | null>(null);
   const router = useRouter();
   const { wallet } = useWallet();
   const availableCredits = wallet?.balance_credits ?? 0;
+
+  const selectedCountry = useMemo(
+    () =>
+      countryOptions.find((country) => country.country_slug === selectedCountrySlug) ??
+      null,
+    [countryOptions, selectedCountrySlug]
+  );
+
+  const filteredCountryOptions = useMemo(() => {
+    const query = countrySearchQuery.trim().toLowerCase();
+    if (!query) {
+      return countryOptions;
+    }
+    return countryOptions.filter((country) =>
+      country.name.toLowerCase().includes(query)
+    );
+  }, [countryOptions, countrySearchQuery]);
+
+  const stateOptions = useMemo<StateOption[]>(() => {
+    if (!selectedCountry) {
+      return [];
+    }
+
+    const toUniqueCities = (rawCities: { name: string }[]) => {
+      const uniqueCities = new Map<string, CityOption>();
+
+      rawCities.forEach((city) => {
+        const city_slug = slugify(city.name);
+        if (!city_slug || uniqueCities.has(city_slug)) {
+          return;
+        }
+        uniqueCities.set(city_slug, {
+          name: city.name,
+          city_slug,
+        });
+      });
+
+      return Array.from(uniqueCities.values()).sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+    };
+
+    const stateEntries = State.getStatesOfCountry(selectedCountry.isoCode)
+      .map((state) => {
+        const cities = toUniqueCities(
+          City.getCitiesOfState(selectedCountry.isoCode, state.isoCode)
+        );
+
+        return {
+          name: state.name,
+          state_slug: slugify(state.name),
+          country_name: selectedCountry.name,
+          country_code: selectedCountry.isoCode,
+          country_slug: selectedCountry.country_slug,
+          cities,
+        };
+      })
+      .filter((state) => state.cities.length > 0)
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    if (stateEntries.length > 0) {
+      return stateEntries;
+    }
+
+    const countryCities = toUniqueCities(
+      City.getCitiesOfCountry(selectedCountry.isoCode) ?? []
+    );
+    if (countryCities.length === 0) {
+      return [];
+    }
+
+    return [
+      {
+        name: selectedCountry.name,
+        state_slug: null,
+        country_name: selectedCountry.name,
+        country_code: selectedCountry.isoCode,
+        country_slug: selectedCountry.country_slug,
+        cities: countryCities,
+      },
+    ];
+  }, [selectedCountry]);
 
   const citiesSelected = useMemo(
     () => Object.keys(selectedCities).length,
@@ -133,11 +210,12 @@ export default function PlaceAdPage() {
     [selectedCities]
   );
   const trimmedTitle = adTitle.trim();
-  const hasTitle = trimmedTitle.length > 0;
+  const resolvedAdTitle = trimmedTitle || DEFAULT_AD_TITLE;
   const hasInsufficientCredits = creditsUsed > availableCredits;
 
   const isAllSelected = useMemo(
     () =>
+      stateOptions.length > 0 &&
       stateOptions.every((state) =>
         state.cities.every((city) =>
           Boolean(
@@ -147,7 +225,7 @@ export default function PlaceAdPage() {
           )
         )
       ),
-    [selectedCities]
+    [selectedCities, stateOptions]
   );
 
   const toggleCity = useCallback(
@@ -195,32 +273,46 @@ export default function PlaceAdPage() {
   }, []);
 
   const toggleAllCities = useCallback(() => {
-    if (isAllSelected) {
-      setSelectedCities({});
+    if (stateOptions.length === 0) {
       return;
     }
 
-    const next: typeof selectedCities = {};
-    stateOptions.forEach((state) => {
-      state.cities.forEach((city) => {
-        const key = makeCityKey(state.country_slug, state.state_slug, city.city_slug);
-        next[key] = {
-          country_slug: state.country_slug,
-          state_slug: state.state_slug,
-          city_slug: city.city_slug,
-        };
-      });
-    });
-    setSelectedCities(next);
-  }, [isAllSelected]);
+    setSelectedCities((prev) => {
+      const next = { ...prev };
 
-  const canPlaceAd = hasTitle && citiesSelected > 0;
+      if (isAllSelected) {
+        stateOptions.forEach((state) => {
+          state.cities.forEach((city) => {
+            delete next[
+              makeCityKey(state.country_slug, state.state_slug, city.city_slug)
+            ];
+          });
+        });
+        return next;
+      }
+
+      stateOptions.forEach((state) => {
+        state.cities.forEach((city) => {
+          const key = makeCityKey(
+            state.country_slug,
+            state.state_slug,
+            city.city_slug
+          );
+          next[key] = {
+            country_slug: state.country_slug,
+            state_slug: state.state_slug,
+            city_slug: city.city_slug,
+          };
+        });
+      });
+
+      return next;
+    });
+  }, [isAllSelected, stateOptions]);
+
+  const canPlaceAd = citiesSelected > 0;
 
   const handlePlaceAd = useCallback(async () => {
-    if (!hasTitle) {
-      toast.error("Please enter an ad title.");
-      return;
-    }
     if (citiesSelected === 0) {
       toast.error("Select at least one city.");
       return;
@@ -233,7 +325,7 @@ export default function PlaceAdPage() {
     setIsPlacing(true);
     try {
       const payload: PlaceAdPayload = {
-        title: trimmedTitle,
+        title: resolvedAdTitle,
         placement_available_now: placementAvailableNow,
         cities: selectedValues,
       };
@@ -249,11 +341,8 @@ export default function PlaceAdPage() {
     }
   }, [
     citiesSelected,
-    availableCredits,
-    creditsUsed,
     selectedValues,
-    trimmedTitle,
-    hasTitle,
+    resolvedAdTitle,
     hasInsufficientCredits,
     placementAvailableNow,
     router,
@@ -280,11 +369,11 @@ export default function PlaceAdPage() {
             <Input
               value={adTitle}
               onChange={(event) => setAdTitle(event.target.value)}
-              placeholder="Holiday Lagos Promo"
+              placeholder="Optional: Holiday Promo"
               className="bg-input-bg text-primary-text"
             />
             <p className="text-xs text-text-gray-opacity">
-              This title will appear to clients when they view your campaigns.
+              Leave blank to use the default title: "{DEFAULT_AD_TITLE}".
             </p>
           </div>
           <label className="flex items-start gap-3 text-sm text-primary-text">
@@ -303,6 +392,55 @@ export default function PlaceAdPage() {
               </span>
             </span>
           </label>
+        </div>
+
+        <div className="mx-auto mt-6 w-full max-w-lg space-y-2">
+          <label className="text-sm font-semibold text-primary-text">
+            Country
+          </label>
+          <Select
+            value={selectedCountrySlug || undefined}
+            onValueChange={(value) => {
+              setSelectedCountrySlug(value);
+              setCountrySearchQuery("");
+              setOpenStateKey(null);
+            }}
+          >
+            <SelectTrigger className="h-12 rounded-[12px] border border-dark-border bg-input-bg px-4 py-3 text-sm text-primary-text focus:ring-1 focus:ring-primary md:h-auto md:rounded-[10px]">
+              <SelectValue placeholder="Select a country to load cities" />
+            </SelectTrigger>
+            <SelectContent className="border-dark-border bg-input-bg p-0">
+              <div className="border-b border-dark-border p-2">
+                <input
+                  type="text"
+                  value={countrySearchQuery}
+                  onChange={(event) => setCountrySearchQuery(event.target.value)}
+                  onKeyDown={(event) => event.stopPropagation()}
+                  placeholder="Search country"
+                  className="h-9 w-full rounded-md border border-dark-border bg-primary-bg px-3 text-sm text-primary-text placeholder:text-text-gray-opacity focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+              <div className="max-h-72 overflow-y-auto p-1 pr-3 [scrollbar-gutter:stable]">
+                {filteredCountryOptions.map((country) => (
+                  <SelectItem
+                    key={country.isoCode}
+                    value={country.country_slug}
+                    className="text-sm"
+                  >
+                    {country.name}
+                  </SelectItem>
+                ))}
+                {filteredCountryOptions.length === 0 && (
+                  <div className="px-3 py-2 text-sm text-text-gray-opacity">
+                    No countries found.
+                  </div>
+                )}
+              </div>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-text-gray-opacity">
+            United States and Canada are pinned to the top.
+          </p>
         </div>
 
         <div className="mt-6 flex flex-col items-center justify-center gap-3 md:mt-10 md:flex-row md:gap-24">
@@ -325,7 +463,8 @@ export default function PlaceAdPage() {
           <button
             type="button"
             onClick={toggleAllCities}
-            className="flex items-center gap-2 text-sm text-primary-text hover:text-primary transition-colors"
+            disabled={!selectedCountry || stateOptions.length === 0}
+            className="flex items-center gap-2 text-sm text-primary-text transition-colors hover:text-primary disabled:cursor-not-allowed disabled:text-text-gray-opacity"
           >
             <span className="w-4 h-4">
               <input
@@ -335,72 +474,145 @@ export default function PlaceAdPage() {
                 className="h-4 w-4 rounded border-dark-border bg-primary-bg text-primary"
               />
             </span>
-            <span>{isAllSelected ? "Deselect all" : "Select All"}</span>
+            <span>
+              {isAllSelected
+                ? "Deselect all shown"
+                : selectedCountry
+                ? `Select all in ${selectedCountry.name}`
+                : "Select a country first"}
+            </span>
           </button>
         </div>
 
         <div className="mt-6 pr-0 md:pr-2">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {stateOptions.map((state) => {
-              const stateCost = state.cities.length * CREDITS_PER_CITY;
-              const isStateFullySelected = state.cities.every((city) =>
-                Boolean(
-                  selectedCities[
-                    makeCityKey(state.country_slug, state.state_slug, city.city_slug)
-                  ]
-                )
-              );
-              return (
-                <Select key={state.state_slug}>
-                  <SelectTrigger className="h-12 rounded-[12px] border border-dark-border bg-input-bg px-4 py-3 text-sm text-primary-text focus:ring-1 focus:ring-primary md:h-auto md:rounded-[10px]">
-                    <SelectValue placeholder={`${state.name}, ${state.country_name}`} />
-                  </SelectTrigger>
-                  <SelectContent className="border-dark-border bg-input-bg p-0">
-                    <div className="px-4 py-3">
-                      <ul className="max-h-72 overflow-y-auto pr-1 space-y-4 text-sm text-text-gray-opacity md:text-base">
-                        {state.cities.map((city) => {
-                          const key = makeCityKey(
-                            state.country_slug,
-                            state.state_slug,
-                            city.city_slug
-                          );
-                          const checked = Boolean(selectedCities[key]);
-                          return (
-                            <li
-                              key={key}
-                              className="flex items-center justify-between gap-4"
+          {!selectedCountry ? (
+            <div className="rounded-2xl border border-dark-border bg-input-bg px-4 py-6 text-sm text-text-gray-opacity">
+              Select a country above to view available states and cities.
+            </div>
+          ) : stateOptions.length === 0 ? (
+            <div className="rounded-2xl border border-dark-border bg-input-bg px-4 py-6 text-sm text-text-gray-opacity">
+              No city coverage data is currently available for {selectedCountry.name}.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {stateOptions.map((state) => {
+                const stateCost = state.cities.length * CREDITS_PER_CITY;
+                const isStateFullySelected = state.cities.every((city) =>
+                  Boolean(
+                    selectedCities[
+                      makeCityKey(state.country_slug, state.state_slug, city.city_slug)
+                    ]
+                  )
+                );
+                const stateKey = makeStateKey(state.country_slug, state.state_slug);
+                const citySearch = citySearchByStateKey[stateKey] ?? "";
+                const normalizedCitySearch = citySearch.trim().toLowerCase();
+                const filteredCities = normalizedCitySearch
+                  ? state.cities.filter((city) =>
+                      city.name.toLowerCase().includes(normalizedCitySearch)
+                    )
+                  : state.cities;
+                return (
+                  <Select
+                    key={stateKey}
+                    open={openStateKey === stateKey}
+                    onOpenChange={(open) => {
+                      if (!open) {
+                        setCitySearchByStateKey((prev) =>
+                          prev[stateKey] ? { ...prev, [stateKey]: "" } : prev
+                        );
+                      }
+                      setOpenStateKey((prev) =>
+                        open ? stateKey : prev === stateKey ? null : prev
+                      );
+                    }}
+                  >
+                    <SelectTrigger className="h-12 rounded-[12px] border border-dark-border bg-input-bg px-4 py-3 text-sm text-primary-text focus:ring-1 focus:ring-primary md:h-auto md:rounded-[10px]">
+                      <SelectValue placeholder={`${state.name}, ${state.country_name}`} />
+                    </SelectTrigger>
+                    <SelectContent className="border-dark-border bg-input-bg p-0">
+                      <div className="px-4 py-3">
+                        <div className="mb-3">
+                          <input
+                            type="text"
+                            value={citySearch}
+                            onChange={(event) =>
+                              setCitySearchByStateKey((prev) => ({
+                                ...prev,
+                                [stateKey]: event.target.value,
+                              }))
+                            }
+                            onKeyDown={(event) => event.stopPropagation()}
+                            placeholder={`Search cities in ${state.name}`}
+                            className="h-9 w-full rounded-md border border-dark-border bg-primary-bg px-3 text-sm text-primary-text placeholder:text-text-gray-opacity focus:outline-none focus:ring-1 focus:ring-primary"
+                          />
+                        </div>
+                        <div className="max-h-72 overflow-y-auto pr-4 [scrollbar-gutter:stable]">
+                          <ul className="space-y-4 text-sm text-text-gray-opacity md:text-base">
+                            {filteredCities.map((city) => {
+                              const key = makeCityKey(
+                                state.country_slug,
+                                state.state_slug,
+                                city.city_slug
+                              );
+                              const checked = Boolean(selectedCities[key]);
+                              return (
+                                <li
+                                  key={key}
+                                  className="flex items-center justify-between gap-4 pr-1"
+                                >
+                                  <span>{city.name}</span>
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    onChange={() => toggleCity(state, city)}
+                                    className="h-4 w-4 rounded border-dark-border bg-primary-bg text-primary"
+                                  />
+                                </li>
+                              );
+                            })}
+                          </ul>
+                          {filteredCities.length === 0 && (
+                            <p className="pt-2 text-sm text-text-gray-opacity">
+                              No cities found.
+                            </p>
+                          )}
+                        </div>
+                        <div className="mt-6 flex items-center justify-between gap-4 text-sm font-semibold text-primary-text md:text-base">
+                          <span>
+                            {isStateFullySelected
+                              ? "Selected all cities"
+                              : `Select all cities in ${state.name} (${stateCost} Credits)`}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => selectAllInState(state)}
+                              className="text-xs uppercase tracking-wide text-primary transition-colors hover:text-primary/80"
                             >
-                              <span>{city.name}</span>
-                              <input
-                                type="checkbox"
-                                checked={checked}
-                                onChange={() => toggleCity(state, city)}
-                                className="h-4 w-4 rounded border-dark-border bg-primary-bg text-primary"
-                              />
-                            </li>
-                          );
-                        })}
-                      </ul>
-                      <div className="mt-6 flex items-center justify-between gap-4 text-sm font-semibold text-primary-text md:text-base">
-                        <span>
-                          {isStateFullySelected
-                            ? "Selected all cities"
-                            : `Select all cities in ${state.name} (${stateCost} Credits)`}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => selectAllInState(state)}
-                          className="text-xs uppercase tracking-wide text-primary text-primary transition-colors hover:text-primary/80"
-                        >
-                          {isStateFullySelected ? "Clear" : "Select all"}
-                        </button>
+                              {isStateFullySelected ? "Clear" : "Select all"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenStateKey(null);
+                                setCitySearchByStateKey((prev) =>
+                                  prev[stateKey] ? { ...prev, [stateKey]: "" } : prev
+                                );
+                              }}
+                              className="rounded-full border border-dark-border bg-primary-bg px-3 py-1 text-[11px] font-semibold text-primary-text transition-colors hover:border-primary/50 hover:bg-primary/10"
+                            >
+                              Done
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </SelectContent>
-                </Select>
-              );
-            })}
-          </div>
+                    </SelectContent>
+                  </Select>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
