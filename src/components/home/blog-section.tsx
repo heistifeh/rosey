@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
+import { useI18n } from "@/lib/i18n/provider";
 
 type BlogPreviewPost = {
   _id: string;
@@ -16,6 +17,7 @@ type BlogPreviewPost = {
 };
 
 export function BlogSection() {
+  const { t } = useI18n();
   const [posts, setPosts] = useState<BlogPreviewPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -58,10 +60,10 @@ export function BlogSection() {
     <section className="flex flex-col gap-6 bg-primary-bg items-center pt-10 pb-10 px-4 md:gap-10 md:pt-20 md:pb-[47px] md:px-[60px]">
       <div className="flex flex-col gap-3 items-center text-center md:gap-6">
         <p className="text-xl font-semibold text-primary-text md:text-2xl lg:text-3xl">
-          Our Blog
+          {t("blogSection.title")}
         </p>
         <p className="text-xs font-normal text-text-gray md:text-sm">
-          Simple essentials to make the booking process smoother
+          {t("blogSection.subtitle")}
         </p>
       </div>
 
@@ -88,7 +90,7 @@ export function BlogSection() {
 
               <div className="flex items-center justify-between mt-auto">
                 <span className="text-primary text-sm md:text-base font-medium underline">
-                  Read Article
+                  {t("blogSection.readArticle")}
                 </span>
                 <span className="text-sm md:text-base text-text-gray-opacity inline-flex items-center gap-2">
                   <Clock className="h-4 w-4" />
@@ -101,7 +103,7 @@ export function BlogSection() {
       </div>
 
       {!isLoading && cards.length === 0 ? (
-        <p className="text-text-gray-opacity text-sm">No articles published yet.</p>
+        <p className="text-text-gray-opacity text-sm">{t("blogSection.noArticles")}</p>
       ) : null}
 
       <Link href="/blog">
@@ -110,7 +112,7 @@ export function BlogSection() {
           size="sm"
           className="w-full md:w-auto text-xs md:text-sm px-4 md:px-6 py-2 md:py-3"
         >
-          Visit Our Blog Page
+          {t("blogSection.visitBlogPage")}
           <ArrowRight className="h-4 w-4 md:h-6 md:w-6" />
         </Button>
       </Link>

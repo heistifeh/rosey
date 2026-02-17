@@ -194,6 +194,7 @@
 
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useI18n } from "@/lib/i18n/provider";
 
 const testimonials = [
   {
@@ -224,6 +225,7 @@ const testimonials = [
 ];
 
 export function TestimonialsSection() {
+  const { t } = useI18n();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const goToPrevious = () => {
@@ -247,12 +249,10 @@ export function TestimonialsSection() {
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center">
         <div className="flex flex-col items-center gap-2 md:gap-6 text-center">
           <h2 className="text-2xl md:text-3xl lg:text-3xl font-semibold text-primary-text">
-            Testimonials From Satisfied Companions
+            {t("testimonials.title")}
           </h2>
           <p className="max-w-2xl text-sm md:text-base text-primary-text/80">
-            We truly value the voices of those who use and appreciate Rosey.
-            Here's a look at some of the experiences and kind words
-            people have shared about our platform.
+            {t("testimonials.subtitle")}
           </p>
         </div>
 
@@ -275,7 +275,7 @@ export function TestimonialsSection() {
                   >
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                   </svg>
-                  {testimonials[currentIndex].source}
+                  {t("testimonials.viaTwitter")}
                 </button>
               </div>
             </div>
@@ -285,7 +285,7 @@ export function TestimonialsSection() {
             <button
               onClick={goToPrevious}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-400/50 bg-[#1a1a1a] text-primary-text hover:bg-[#2a2a2d] transition"
-              aria-label="Previous testimonial"
+              aria-label={t("testimonials.previousAria")}
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
@@ -300,7 +300,7 @@ export function TestimonialsSection() {
                       ? "w-8 bg-primary"
                       : "w-2 bg-[#2a2a2d] hover:bg-[#3a3a3a]"
                   }`}
-                  aria-label={`Go to testimonial ${index + 1}`}
+                  aria-label={t("testimonials.goToAria", { index: index + 1 })}
                 />
               ))}
             </div>
@@ -308,7 +308,7 @@ export function TestimonialsSection() {
             <button
               onClick={goToNext}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-400/50 bg-[#1a1a1a] text-primary-text hover:bg-[#2a2a2d] transition"
-              aria-label="Next testimonial"
+              aria-label={t("testimonials.nextAria")}
             >
               <ChevronRight className="h-5 w-5" />
             </button>

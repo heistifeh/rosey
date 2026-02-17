@@ -20,6 +20,7 @@ interface LocationFilterProps {
   onChange?: (location: LocationValue | null) => void;
   className?: string;
   variant?: "default" | "minimal";
+  placeholder?: string;
 }
 
 export function LocationFilter({
@@ -27,6 +28,7 @@ export function LocationFilter({
   onChange,
   className,
   variant = "default",
+  placeholder = "Search city",
 }: LocationFilterProps) {
   const suggestionValue = useMemo<LocationSuggestion | null>(() => {
     if (!value) return null;
@@ -74,7 +76,7 @@ export function LocationFilter({
         <LocationAutocompleteInput
           value={suggestionValue}
           onChange={handleLocationChange}
-          placeholder="Search city"
+          placeholder={placeholder}
         />
       </div>
     </div>

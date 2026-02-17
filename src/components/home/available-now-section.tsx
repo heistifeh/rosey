@@ -4,6 +4,7 @@ import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
 import { SafeImage } from "@/components/ui/safe-image";
 import { TaglineReveal } from "@/components/home/tagline-reveal";
 import { createServiceRoleClient, SERVICE_ROLE_KEY } from "@/server/supabase-client";
+import { getServerTranslator } from "@/lib/i18n/server";
 
 export const revalidate = 30;
 
@@ -19,6 +20,8 @@ type NormalizedAvailableNowItem = {
 };
 
 export async function AvailableNowSection() {
+  const { t } = await getServerTranslator();
+
   if (!SERVICE_ROLE_KEY) {
     return null;
   }
@@ -49,7 +52,7 @@ export async function AvailableNowSection() {
         type: "profile",
         profileId: profile.id,
         username: profile.username ?? null,
-        workingName: profile.working_name ?? "Provider",
+        workingName: profile.working_name ?? t("common.provider"),
         city: profile.city ?? null,
         country: profile.country ?? null,
         tagline: profile.tagline ?? null,
@@ -65,7 +68,7 @@ export async function AvailableNowSection() {
         type: "ad",
         profileId: adProfile.id,
         username: adProfile.username ?? null,
-        workingName: adProfile.working_name ?? "Provider",
+        workingName: adProfile.working_name ?? t("common.provider"),
         city: adProfile.city ?? null,
         country: adProfile.country ?? null,
         tagline: adProfile.tagline ?? null,
@@ -87,7 +90,7 @@ export async function AvailableNowSection() {
       <div className="mx-auto flex w-full px-0 md:px-[60px] flex-col gap-4 md:gap-10">
         <div className=" flex justify-between items-center px-4">
           <h2 className="text-xl md:text-2xl font-semibold text-primary-text lg:text-[36px]">
-            Available Now
+            {t("availableNow.title")}
           </h2>
 
           {normalizedProfiles.length >= 12 ? (
@@ -95,7 +98,7 @@ export async function AvailableNowSection() {
               href="/search?availableNow=true"
               className="ml-auto inline-flex items-center gap-1 md:gap-2 rounded-full bg-primary px-3 py-1.5 md:px-[42px] md:py-[13px] text-xs font-semibold text-primary-text cursor-pointer hover:bg-primary/90 transition-colors"
             >
-              See All
+              {t("availableNow.seeAll")}
               <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
             </Link>
           ) : (
@@ -103,7 +106,7 @@ export async function AvailableNowSection() {
               disabled
               className="ml-auto inline-flex items-center gap-1 md:gap-2 rounded-full bg-primary/50 px-3 py-1.5 md:px-[42px] md:py-[13px] text-xs font-semibold text-primary-text/50 cursor-not-allowed"
             >
-              See All
+              {t("availableNow.seeAll")}
               <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
             </button>
           )}
@@ -139,14 +142,14 @@ export async function AvailableNowSection() {
                     </p>
                   </div>
                   <p className="text-xs text-text-gray-opacity md:text-sm">
-                    {[item.city, item.country].filter(Boolean).join(", ") || "Location not set"}
+                    {[item.city, item.country].filter(Boolean).join(", ") || t("common.locationNotSet")}
                   </p>
                   <TaglineReveal tagline={item.tagline} />
 
                   <div className="flex items-center gap-1.5 md:gap-2 bg-input-bg rounded-[200px] px-2 py-1 md:px-3 md:py-2">
                     <Circle className="h-1.5 w-1.5 md:h-2 md:w-2 fill-current text-emerald-400" />
                     <span className="text-xs md:text-sm lg:text-[16px] font-normal text-primary-text">
-                      Available Now
+                      {t("availableNow.badge")}
                     </span>
                   </div>
                 </div>
@@ -155,8 +158,7 @@ export async function AvailableNowSection() {
           )}
           {finalItems.length === 0 && (
             <div className="col-span-full py-10 text-center text-text-gray-opacity">
-              No providers are currently marked as Available Now
-              .
+              {t("availableNow.empty")}
             </div>
           )}
         </div>

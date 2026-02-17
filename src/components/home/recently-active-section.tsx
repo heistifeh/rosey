@@ -3,6 +3,7 @@ import { ArrowRight, Circle } from "lucide-react";
 import { SafeImage } from "@/components/ui/safe-image";
 import { TaglineReveal } from "@/components/home/tagline-reveal";
 import { createServiceRoleClient, SERVICE_ROLE_KEY } from "@/server/supabase-client";
+import { getServerTranslator } from "@/lib/i18n/server";
 
 export const revalidate = 30;
 
@@ -17,6 +18,8 @@ type RecentlyActiveProfile = {
 };
 
 export async function RecentlyActiveSection() {
+  const { t } = await getServerTranslator();
+
   if (!SERVICE_ROLE_KEY) {
     return null;
   }
@@ -34,8 +37,8 @@ export async function RecentlyActiveSection() {
     const imageUrl = primaryImage?.public_url || "/images/girl1.png";
     return {
       id: profile.id,
-      name: profile.working_name ?? "Provider",
-      status: "Available",
+      name: profile.working_name ?? t("common.provider"),
+      status: t("recentlyActive.status"),
       city: profile.city ?? null,
       country: profile.country ?? null,
       tagline: profile.tagline ?? null,
@@ -51,11 +54,11 @@ export async function RecentlyActiveSection() {
       <div className="mx-auto flex w-full px-0 md:px-[60px] flex-col gap-4 md:gap-10">
         <div className=" flex justify-between items-center">
           <h2 className="text-xl md:text-2xl font-semibold text-primary-text lg:text-[36px]">
-            Recently Active
+            {t("recentlyActive.title")}
           </h2>
 
           <Link href="/search" className="ml-auto inline-flex items-center gap-1 md:gap-2 rounded-full bg-primary px-3 py-1.5 md:px-[42px] md:py-[13px] text-xs font-semibold text-primary-text cursor-pointer hover:bg-primary/90 transition-colors">
-            See All
+            {t("recentlyActive.seeAll")}
             <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
           </Link>
         </div>
@@ -85,7 +88,7 @@ export async function RecentlyActiveSection() {
                     </p>
                   </div>
                   <p className="text-xs text-text-gray-opacity md:text-sm">
-                    {[profile.city, profile.country].filter(Boolean).join(", ") || "Location not set"}
+                    {[profile.city, profile.country].filter(Boolean).join(", ") || t("common.locationNotSet")}
                   </p>
                   <TaglineReveal tagline={profile.tagline} />
 

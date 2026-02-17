@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getServerTranslator } from "@/lib/i18n/server";
 
 const ETHNICITY_OPTIONS = [
   "Asian",
@@ -16,22 +17,24 @@ const COUNTRY_SHORTCUTS = [
   { label: "Canada", slug: "canada" },
 ];
 
-export function SearchShortcutsSection() {
+export async function SearchShortcutsSection() {
+  const { t } = await getServerTranslator();
+
   return (
     <section className="w-full bg-input-bg px-4 py-10 md:px-[60px] md:py-14">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 rounded-[24px] border border-dark-border bg-primary-bg/70 p-4 md:p-6">
         <div className="flex flex-col gap-1">
           <h2 className="text-xl font-semibold text-primary-text md:text-2xl">
-            Explore By Ethnicity And Country
+            {t("searchShortcuts.title")}
           </h2>
           <p className="text-sm text-text-gray-opacity">
-            Jump straight to filtered results.
+            {t("searchShortcuts.subtitle")}
           </p>
         </div>
 
         <div className="flex flex-col gap-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-text-gray-opacity">
-            Ethnicity
+            {t("searchShortcuts.ethnicity")}
           </p>
           <div className="flex flex-wrap gap-2">
             {ETHNICITY_OPTIONS.map((ethnicity) => (
@@ -48,7 +51,7 @@ export function SearchShortcutsSection() {
 
         <div className="flex flex-col gap-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-text-gray-opacity">
-            Country
+            {t("searchShortcuts.country")}
           </p>
           <div className="flex flex-wrap gap-2">
             {COUNTRY_SHORTCUTS.map((country) => (

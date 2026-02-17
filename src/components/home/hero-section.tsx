@@ -18,6 +18,7 @@ import {
   LocationFilter,
   type LocationValue,
 } from "@/components/location-filter";
+import { useI18n } from "@/lib/i18n/provider";
 
 interface HeroSectionProps {
   filters: {
@@ -49,7 +50,14 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ filters, setFilters }: HeroSectionProps) {
-  const genders = ["All", "Male", "Female", "Transgender", "Non-binary"];
+  const { t } = useI18n();
+  const genders = [
+    { value: "All", label: t("hero.gender.all") },
+    { value: "Male", label: t("hero.gender.male") },
+    { value: "Female", label: t("hero.gender.female") },
+    { value: "Transgender", label: t("hero.gender.transgender") },
+    { value: "Non-binary", label: t("hero.gender.nonBinary") },
+  ];
   const router = useRouter();
 
   const priceRanges = [
@@ -109,13 +117,12 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-10 text-center ">
         <section className=" flex flex-col gap-4 items-center">
           <h1 className="text-2xl font-semibold leading-tight sm:text-4xl lg:text-[72px] text-primary-text animate-fadeInUp">
-            Where Adult Companions
+            {t("hero.titleLine1")}
             <br />
-            Grow and Connect
+            {t("hero.titleLine2")}
           </h1>
           <p className="max-w-[500px] text-base sm:text-lg font-normal text-primary-text text-center animate-fadeInUp animation-delay-200">
-            Created for providers of adult companionship and intimate services
-            to showcase their offerings and reach paying clients.
+            {t("hero.subtitle")}
           </p>
         </section>
 
@@ -126,6 +133,7 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
             <LocationFilter
               value={filters.location}
               onChange={handleLocationChange}
+              placeholder={t("hero.locationPlaceholder")}
               className="w-full [&>button]:bg-[#1C1C1E] [&>button]:border [&>button]:border-gray-700 [&>button]:h-12 [&>button]:text-sm [&>button]:text-white [&>button]:px-4 [&>button]:rounded-2xl [&>button]:shadow-sm [&>button]:hover:shadow-md [&>button]:transition-all"
             />
           </div>
@@ -141,13 +149,13 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
               <SelectTrigger className="h-12 rounded-2xl bg-[#575757] border-0 px-4 text-sm font-medium text-white hover:bg-[#6a6a6a] transition-all focus:ring-2 focus:ring-primary/20 focus:ring-offset-0">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <Venus className="h-4 w-4 text-white" />
-                  <SelectValue placeholder="All" />
+                  <SelectValue placeholder={t("hero.gender.all")} />
                 </div>
               </SelectTrigger>
               <SelectContent className="rounded-2xl border-gray-700 bg-[#2C2C2E]">
                 {genders.map((gen) => (
-                  <SelectItem key={gen} value={gen} className="rounded-lg text-white focus:bg-[#3C3C3E] focus:text-white">
-                    {gen}
+                  <SelectItem key={gen.value} value={gen.value} className="rounded-lg text-white focus:bg-[#3C3C3E] focus:text-white">
+                    {gen.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -163,7 +171,7 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
               <SelectTrigger className="h-12 rounded-2xl bg-[#575757] border-0 px-4 text-sm font-medium text-white hover:bg-[#6a6a6a] transition-all focus:ring-2 focus:ring-primary/20 focus:ring-offset-0">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <CircleDollarSign className="h-4 w-4 text-white" />
-                  <SelectValue placeholder="Price" />
+                  <SelectValue placeholder={t("hero.price")} />
                 </div>
               </SelectTrigger>
               <SelectContent className="rounded-2xl border-gray-700 bg-[#2C2C2E]">
@@ -191,7 +199,7 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
               className="h-14 w-full rounded-2xl bg-gradient-to-r from-primary via-pink-500 to-primary bg-size-200 bg-pos-0 hover:bg-pos-100 text-white text-base font-bold transition-all duration-500 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
             >
               <Search className="h-5 w-5" />
-              <span>Find Companions</span>
+              <span>{t("hero.findCompanions")}</span>
             </button>
           </div>
         </div>
@@ -202,6 +210,7 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
             <LocationFilter
               value={filters.location}
               onChange={handleLocationChange}
+              placeholder={t("hero.locationPlaceholder")}
               className="w-full"
             />
           </div>
@@ -215,13 +224,13 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
             <SelectTrigger className="h-auto w-auto rounded-full bg-[#575757] px-5 py-2 text-base font-normal text-white border-0 hover:bg-[#6a6a6a] focus:ring-0 focus:ring-offset-0 min-w-[140px] justify-between gap-1">
               <div className="flex items-center gap-1 pr-1 text-base font-normal whitespace-nowrap">
                 <Venus className="h-4 w-4 text-white" />
-                <SelectValue placeholder="Select Gender" />
+                <SelectValue placeholder={t("hero.selectGender")} />
               </div>
             </SelectTrigger>
             <SelectContent>
               {genders.map((gen) => (
-                <SelectItem key={gen} value={gen}>
-                  {gen}
+                <SelectItem key={gen.value} value={gen.value}>
+                  {gen.label}
                 </SelectItem>
               ))}
             </SelectContent>

@@ -9,19 +9,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { useI18n } from "@/lib/i18n/provider";
+import { isSupportedLocale, type Locale } from "@/lib/i18n/config";
 
-const menuLinks = [
-  { label: "Home", href: "/" },
-  { label: "All Escorts", href: "/search" },
-  { label: "Locations", href: "/locations" },
-  { label: "Sign Up", href: "/" },
-  { label: "Login", href: "/" },
+type LocalizedLink = {
+  labelKey: string;
+  href: string;
+};
+
+const languageOptions: Array<{ value: Locale; labelKey: string }> = [
+  { value: "en", labelKey: "common.english" },
+  { value: "es", labelKey: "common.spanish" },
+  { value: "fr", labelKey: "common.french" },
 ];
 
-const resourcesLinks = [
-  { label: "Blog", href: "/" },
-  { label: "Escort Terms", href: "/" },
-  { label: "FAQs", href: "/" },
+const menuLinks: LocalizedLink[] = [
+  { labelKey: "common.home", href: "/" },
+  { labelKey: "common.allEscorts", href: "/search" },
+  { labelKey: "common.locations", href: "/locations" },
+  { labelKey: "common.signUp", href: "/" },
+  { labelKey: "common.login", href: "/" },
+];
+
+const resourcesLinks: LocalizedLink[] = [
+  { labelKey: "common.blog", href: "/blog" },
+  { labelKey: "footer.resourceEscortTerms", href: "/" },
+  { labelKey: "footer.resourceFaqs", href: "/" },
 ];
 
 const socialsLinks = [
@@ -32,44 +45,80 @@ const socialsLinks = [
   { label: "Reddit", href: "/" },
 ];
 
-const supportLinks = [
-  { label: "Help/Support", href: "/" },
-  { label: "Terms & Conditions", href: "/" },
-  { label: "Privacy & Policy", href: "/" },
-  { label: "Legal Notices", href: "/" },
+const supportLinks: LocalizedLink[] = [
+  { labelKey: "footer.supportHelp", href: "/" },
+  { labelKey: "footer.supportTerms", href: "/" },
+  { labelKey: "footer.supportPrivacy", href: "/" },
+  { labelKey: "footer.supportLegal", href: "/" },
 ];
 
 const locationLinks = [
-  { label: "Escorts in Los Angeles", href: "/escorts/united-states/california/los-angeles" },
-  { label: "Escorts in San Diego", href: "/escorts/united-states/california/san-diego" },
-  { label: "Escorts in San Jose", href: "/escorts/united-states/california/san-jose" },
-  { label: "Escorts in San Francisco", href: "/escorts/united-states/california/san-francisco" },
-  { label: "Escorts in Sacramento", href: "/escorts/united-states/california/sacramento" },
-  { label: "Escorts in Fresno", href: "/escorts/united-states/california/fresno" },
-  { label: "Escorts in Oakland", href: "/escorts/united-states/california/oakland" },
-  { label: "Escorts in Long Beach", href: "/escorts/united-states/california/long-beach" },
-  { label: "Escorts in Anaheim", href: "/escorts/united-states/california/anaheim" },
-  { label: "Escorts in Santa Ana", href: "/escorts/united-states/california/santa-ana" },
-  { label: "Escorts in Riverside", href: "/escorts/united-states/california/riverside" },
-  { label: "Escorts in Irvine", href: "/escorts/united-states/california/irvine" },
+  {
+    label: "Escorts in Los Angeles",
+    href: "/escorts/united-states/california/los-angeles",
+  },
+  {
+    label: "Escorts in San Diego",
+    href: "/escorts/united-states/california/san-diego",
+  },
+  {
+    label: "Escorts in San Jose",
+    href: "/escorts/united-states/california/san-jose",
+  },
+  {
+    label: "Escorts in San Francisco",
+    href: "/escorts/united-states/california/san-francisco",
+  },
+  {
+    label: "Escorts in Sacramento",
+    href: "/escorts/united-states/california/sacramento",
+  },
+  {
+    label: "Escorts in Fresno",
+    href: "/escorts/united-states/california/fresno",
+  },
+  {
+    label: "Escorts in Oakland",
+    href: "/escorts/united-states/california/oakland",
+  },
+  {
+    label: "Escorts in Long Beach",
+    href: "/escorts/united-states/california/long-beach",
+  },
+  {
+    label: "Escorts in Anaheim",
+    href: "/escorts/united-states/california/anaheim",
+  },
+  {
+    label: "Escorts in Santa Ana",
+    href: "/escorts/united-states/california/santa-ana",
+  },
+  {
+    label: "Escorts in Riverside",
+    href: "/escorts/united-states/california/riverside",
+  },
+  {
+    label: "Escorts in Irvine",
+    href: "/escorts/united-states/california/irvine",
+  },
 ];
 
-const toEscortLabel = (raw: string) => {
+const toEscortLabel = (raw: string, escortsWord: string) => {
   const label = raw.trim();
-  if (!label) return "Escorts";
+  if (!label) return escortsWord;
 
   if (/escorts$/i.test(label)) {
-    return label;
+    return label.replace(/escorts$/i, escortsWord);
   }
 
   const allEscortsMatch = label.match(/^all\s+escorts\s+in\s+(.+)$/i);
   if (allEscortsMatch?.[1]) {
-    return `${allEscortsMatch[1].trim()} escorts`;
+    return `${allEscortsMatch[1].trim()} ${escortsWord}`;
   }
 
   const escortsInMatch = label.match(/^escorts\s+in\s+(.+)$/i);
   if (escortsInMatch?.[1]) {
-    return `${escortsInMatch[1].trim()} escorts`;
+    return `${escortsInMatch[1].trim()} ${escortsWord}`;
   }
 
   if (label.includes(",")) {
@@ -78,14 +127,14 @@ const toEscortLabel = (raw: string) => {
       .map((part) => part.trim())
       .filter(Boolean);
     if (parts.length >= 2) {
-      return `${parts[0]}, ${parts[1]} escorts`;
+      return `${parts[0]}, ${parts[1]} ${escortsWord}`;
     }
     if (parts.length === 1) {
-      return `${parts[0]} escorts`;
+      return `${parts[0]} ${escortsWord}`;
     }
   }
 
-  return `${label} escorts`;
+  return `${label} ${escortsWord}`;
 };
 
 type FooterSectionProps = {
@@ -101,93 +150,96 @@ export function FooterSection({
   relatedDescription,
   hideLocationsSection = false,
 }: FooterSectionProps) {
+  const { locale, setLocale, t } = useI18n();
+  const selectedLocale: Locale = isSupportedLocale(locale) ? locale : "en";
+  const escortsWord = t("common.escorts");
+
   const hasRelated = Boolean(relatedLocations && relatedLocations.length > 0);
   const locationsToRender = (hasRelated ? relatedLocations! : locationLinks).map(
     (item) => ({
       ...item,
-      label: toEscortLabel(item.label),
+      label: toEscortLabel(item.label, escortsWord),
     }),
   );
 
+  const handleLocaleChange = (nextLocale: string) => {
+    if (!isSupportedLocale(nextLocale)) return;
+    setLocale(nextLocale);
+  };
+
   return (
     <footer className="w-full bg-primary-bg">
-      <div className="px-4 md:px-[60px] py-8 md:py-12">
-        {/* Top Section */}
-        <div className="flex flex-col lg:flex-row gap-8 md:gap-12 pb-8 md:pb-12">
-          {/* Left Side - Branding and Controls */}
+      <div className="px-4 py-8 md:px-[60px] md:py-12">
+        <div className="flex flex-col gap-8 pb-8 md:gap-12 md:pb-12 lg:flex-row">
           <div className="flex flex-col gap-6">
-            <h2 className="text-primary text-4xl md:text-5xl font-normal petemoss">
+            <h2 className="petemoss text-4xl font-normal text-primary md:text-5xl">
               Rosey
             </h2>
 
-            {/* Language Selector */}
             <div className="flex items-center gap-2">
               <Globe className="h-5 w-5 text-primary-text" />
-              <Select defaultValue="english">
-                <SelectTrigger className="w-auto border-none bg-transparent text-primary-text p-0 h-auto focus:ring-0">
+              <Select value={selectedLocale} onValueChange={handleLocaleChange}>
+                <SelectTrigger className="h-auto w-auto border-none bg-transparent p-0 text-primary-text focus:ring-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="english">English</SelectItem>
-                  <SelectItem value="spanish">Spanish</SelectItem>
-                  <SelectItem value="french">French</SelectItem>
+                  {languageOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {t(option.labelKey)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              {/* <ChevronDown className="h-4 w-4 text-primary-text" /> */}
             </div>
           </div>
 
-          {/* Right Side - Navigation Links */}
           <div className="flex flex-wrap gap-8 md:gap-12 lg:ml-auto">
-            {/* Menu Column */}
             <div className="flex flex-col gap-3 md:gap-4">
-              <h3 className="text-primary-text font-semibold text-base md:text-lg">
-                Menu
+              <h3 className="text-base font-semibold text-primary-text md:text-lg">
+                {t("footer.menuTitle")}
               </h3>
               <ul className="flex flex-col gap-2 md:gap-3">
                 {menuLinks.map((link) => (
-                  <li key={link.label}>
+                  <li key={link.labelKey}>
                     <Link
                       href={link.href}
-                      className="text-text-gray text-sm md:text-base hover:text-primary-text transition-colors font-normal"
+                      className="text-sm font-normal text-text-gray transition-colors hover:text-primary-text md:text-base"
                     >
-                      {link.label}
+                      {t(link.labelKey)}
                     </Link>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Resources Column */}
             <div className="flex flex-col gap-3 md:gap-4">
-              <h3 className="text-primary-text font-semibold text-sm md:text-base">
-                Resources
+              <h3 className="text-sm font-semibold text-primary-text md:text-base">
+                {t("footer.resourcesTitle")}
               </h3>
               <ul className="flex flex-col gap-2 md:gap-3">
                 {resourcesLinks.map((link) => (
-                  <li key={link.label}>
+                  <li key={link.labelKey}>
                     <Link
                       href={link.href}
-                      className="text-text-gray text-sm md:text-base hover:text-primary-text transition-colors"
+                      className="text-sm text-text-gray transition-colors hover:text-primary-text md:text-base"
                     >
-                      {link.label}
+                      {t(link.labelKey)}
                     </Link>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Socials Column */}
             <div className="flex flex-col gap-3 md:gap-4">
-              <h3 className="text-primary-text font-semibold text-sm md:text-base">
-                Socials
+              <h3 className="text-sm font-semibold text-primary-text md:text-base">
+                {t("footer.socialsTitle")}
               </h3>
               <ul className="flex flex-col gap-2 md:gap-3">
                 {socialsLinks.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-text-gray text-sm md:text-base hover:text-primary-text transition-colors"
+                      className="text-sm text-text-gray transition-colors hover:text-primary-text md:text-base"
                     >
                       {link.label}
                     </Link>
@@ -196,19 +248,18 @@ export function FooterSection({
               </ul>
             </div>
 
-            {/* Support Column */}
             <div className="flex flex-col gap-3 md:gap-4">
-              <h3 className="text-primary-text font-semibold text-sm md:text-base">
-                Socials
+              <h3 className="text-sm font-semibold text-primary-text md:text-base">
+                {t("footer.supportTitle")}
               </h3>
               <ul className="flex flex-col gap-2 md:gap-3">
                 {supportLinks.map((link) => (
-                  <li key={link.label}>
+                  <li key={link.labelKey}>
                     <Link
                       href={link.href}
-                      className="text-text-gray text-sm md:text-base hover:text-primary-text transition-colors"
+                      className="text-sm text-text-gray transition-colors hover:text-primary-text md:text-base"
                     >
-                      {link.label}
+                      {t(link.labelKey)}
                     </Link>
                   </li>
                 ))}
@@ -217,20 +268,20 @@ export function FooterSection({
           </div>
         </div>
 
-        {/* Horizontal Separator */}
-        <div className="border-t border-dark-border my-8"></div>
+        <div className="my-8 border-t border-dark-border" />
 
         {!hideLocationsSection && (
-          <div className="pt-4 md:pt-8 flex flex-col gap-4">
+          <div className="flex flex-col gap-4 pt-4 md:pt-8">
             <div className="flex flex-col gap-1">
-              <h3 className="text-base md:text-lg font-semibold text-primary-text">
-                {hasRelated ? relatedHeading || "Related cities" : "Locations"}
+              <h3 className="text-base font-semibold text-primary-text md:text-lg">
+                {hasRelated
+                  ? relatedHeading || t("footer.relatedCitiesTitle")
+                  : t("footer.locationsTitle")}
               </h3>
               <p className="text-sm text-text-gray-opacity">
                 {hasRelated
-                  ? relatedDescription ||
-                    "Explore nearby cities to find more providers."
-                  : "Browse popular locations on Rosey."}
+                  ? relatedDescription || t("footer.relatedCitiesDescription")
+                  : t("footer.locationsDescription")}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-4 md:gap-x-8 md:gap-y-3">
@@ -238,7 +289,7 @@ export function FooterSection({
                 <Link
                   key={`${link.href}-${link.label}`}
                   href={link.href}
-                  className="text-text-gray text-sm md:text-base hover:text-primary-text transition-colors"
+                  className="text-sm text-text-gray transition-colors hover:text-primary-text md:text-base"
                 >
                   {link.label}
                 </Link>
