@@ -23,6 +23,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  buildMissingFieldsMessage,
+  getAvailabilityMissingFields,
+} from "@/lib/profile-onboarding-validation";
 export function AvailabilityForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -162,6 +166,12 @@ export function AvailabilityForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const missingFields = getAvailabilityMissingFields({ dayTimes, selectedDays });
+    if (missingFields.length > 0) {
+      toast.error(buildMissingFieldsMessage(missingFields));
+      return;
+    }
+
     setIsSubmitting(true);
     // Save to local storage under "availability" key
     saveData("availability", { selectedDays, dayTimes });

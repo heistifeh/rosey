@@ -12,7 +12,7 @@ export function VerifyIdentityForm() {
   };
 
   const handleSkipVerification = () => {
-    router.push("/profile-setup");
+    router.push("/general-information?tab=general");
   };
 
   const verificationSteps = [

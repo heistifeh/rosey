@@ -15,6 +15,10 @@ import { useState, useEffect } from "react";
 import { useProfileStore } from "@/hooks/use-profile-store";
 import { toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
+import {
+  buildMissingFieldsMessage,
+  getRatesMissingFields,
+} from "@/lib/profile-onboarding-validation";
 
 const currencyOptions = [
   { value: "$", label: "$ – US Dollar" },
@@ -112,6 +116,13 @@ export function RatesForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
+
+    const missingFields = getRatesMissingFields(formData);
+    if (missingFields.length > 0) {
+      toast.error(buildMissingFieldsMessage(missingFields));
+      return;
+    }
+
     setIsSubmitting(true);
     saveData("rates", formData);
     // toast.success("Progress saved"); // Optional: remove toast for faster feel? User said "loading time takes time". Keeping it is verify feedback.
@@ -154,11 +165,12 @@ export function RatesForm() {
                   htmlFor="baseHourlyRates"
                   className="text-base font-normal text-primary-text"
                 >
-                  Base Hourly Rates
+                  Base Hourly Rates <span className="text-primary">*</span>
                 </Label>
                 <Input
                   id="baseHourlyRates"
                   type="number"
+                  required
                   inputMode="numeric"
                   pattern="[0-9]*"
                   min="0"
@@ -183,7 +195,7 @@ export function RatesForm() {
                   htmlFor="baseCurrency"
                   className="text-base font-normal text-primary-text"
                 >
-                  Base Currency
+                  Base Currency <span className="text-primary">*</span>
                 </Label>
                 <Select
                   value={formData.baseCurrency}
