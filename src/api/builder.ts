@@ -28,10 +28,19 @@ const SUPABASE_URL =
 
 const STORAGE_BASE = `${SUPABASE_URL}/storage/v1`;
 
+const humanizeSlug = (value?: string | null) => {
+  if (!value) return undefined;
+  return value
+    .split("-")
+    .filter(Boolean)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
+};
+
 const PROFILE_SELECT =
   "id,user_id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images(public_url,is_primary), about,pronouns,languages,caters_to,age,height_cm,hair_color,eye_color,gender,gender_presentation,profile_type,trans_status,appear_on_other_profiles,trans_only,temporary_hide_days,onboarding_completed,contact_email,contact_phone,socials";
 const SEARCH_PROFILE_SELECT =
-  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,country,city_slug,country_slug,images!inner(public_url,is_primary)";
+  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,images!inner(public_url,is_primary)";
 
 export const apiBuilder = {
   auth: {
@@ -139,17 +148,31 @@ export const apiBuilder = {
     },
   },
   locations: {
-    getLocations: (query: string) => {
-      const params: any = {
-        select: "country,city,country_slug,city_slug",
+    getLocations: async (query: string) => {
+      const safeQuery = query.replace(/[(),]/g, " ").trim();
+      const params: Record<string, string | number> = {
+        select: "country,state,city,country_slug,state_slug,city_slug",
         limit: 10,
       };
-      if (query) {
-        params.city = `ilike.*${query}*`;
+      if (safeQuery) {
+        params.or = `(city.ilike.*${safeQuery}*,state.ilike.*${safeQuery}*,country.ilike.*${safeQuery}*)`;
       }
-      return API.get("/city_locations", { params }).then(
-        (response) => response.data,
-      );
+
+      try {
+        const response = await API.get("/city_locations", { params });
+        return response.data;
+      } catch {
+        const fallbackParams: Record<string, string | number> = {
+          select: "country,city,country_slug,city_slug",
+          limit: 10,
+        };
+        if (safeQuery) {
+          fallbackParams.or = `(city.ilike.*${safeQuery}*,country.ilike.*${safeQuery}*)`;
+        }
+        return API.get("/city_locations", { params: fallbackParams }).then(
+          (response) => response.data,
+        );
+      }
     },
   },
   profiles: {
@@ -210,6 +233,7 @@ export const apiBuilder = {
         gender?: string;
         priceRange?: string;
         citySlug?: string;
+        stateSlug?: string;
         countrySlug?: string;
         applyDefaults?: boolean;
       } = {},
@@ -218,6 +242,7 @@ export const apiBuilder = {
         gender,
         priceRange,
         citySlug,
+        stateSlug,
         countrySlug,
         applyDefaults = true,
       } = filters;
@@ -238,6 +263,11 @@ export const apiBuilder = {
 
       if (citySlug) {
         params.append("city_slug", `eq.${citySlug}`);
+      }
+
+      if (stateSlug) {
+        const stateName = humanizeSlug(stateSlug) ?? stateSlug.replace(/-/g, " ");
+        params.append("state", `ilike.*${stateName}*`);
       }
 
       if (countrySlug) {
@@ -263,6 +293,7 @@ export const apiBuilder = {
     searchProfiles: (paramsIn: {
       countrySlug?: string;
       citySlug?: string;
+      stateSlug?: string;
       ethnicity?: string;
       gender?: string;
       minRate?: number;
@@ -283,6 +314,11 @@ export const apiBuilder = {
       }
       if (paramsIn.citySlug) {
         params.append("city_slug", `eq.${paramsIn.citySlug}`);
+      }
+      if (paramsIn.stateSlug) {
+        const stateName =
+          humanizeSlug(paramsIn.stateSlug) ?? paramsIn.stateSlug.replace(/-/g, " ");
+        params.append("state", `ilike.*${stateName}*`);
       }
 
       if (paramsIn.availableNow) {
@@ -333,13 +369,22 @@ export const apiBuilder = {
         (response) => response.data ?? [],
       );
     },
-    getCityProfiles: (paramsIn: { citySlug: string; countrySlug: string }) => {
+    getCityProfiles: (paramsIn: {
+      citySlug: string;
+      countrySlug: string;
+      stateSlug?: string;
+    }) => {
       const params = new URLSearchParams();
       params.append("select", PROFILE_SELECT);
       params.append("limit", "24");
       params.append("is_active", "eq.true");
       params.append("city_slug", `eq.${paramsIn.citySlug}`);
       params.append("country_slug", `eq.${paramsIn.countrySlug}`);
+      if (paramsIn.stateSlug) {
+        const stateName =
+          humanizeSlug(paramsIn.stateSlug) ?? paramsIn.stateSlug.replace(/-/g, " ");
+        params.append("state", `ilike.*${stateName}*`);
+      }
 
       return API.get<Profile[]>("/profiles", { params }).then(
         (response) => response.data ?? [],
@@ -565,11 +610,12 @@ export const apiBuilder = {
     getSponsoredProfilesForCity: (paramsIn: {
       citySlug: string;
       countrySlug: string;
+      stateSlug?: string;
     }) => {
       const params = new URLSearchParams();
       params.append(
         "select",
-        `profile:profiles(${PROFILE_SELECT}),ad_city_targets!inner(city_slug,country_slug)`,
+        `profile:profiles(${PROFILE_SELECT}),ad_city_targets!inner(city_slug,state_slug,country_slug)`,
       );
       params.append("status", "eq.active");
       params.append("ad_city_targets.city_slug", `eq.${paramsIn.citySlug}`);
@@ -577,8 +623,20 @@ export const apiBuilder = {
         "ad_city_targets.country_slug",
         `eq.${paramsIn.countrySlug}`,
       );
+      if (paramsIn.stateSlug) {
+        params.append("ad_city_targets.state_slug", `eq.${paramsIn.stateSlug}`);
+      }
 
-      return API.get<Array<{ profile?: Profile | null }>>("/ads", {
+      return API.get<
+        Array<{
+          profile?: Profile | null;
+          ad_city_targets?: {
+            city_slug?: string | null;
+            state_slug?: string | null;
+            country_slug?: string | null;
+          }[];
+        }>
+      >("/ads", {
         params,
       }).then((response) => {
         const rows = response.data ?? [];
@@ -587,7 +645,20 @@ export const apiBuilder = {
         rows.forEach((row) => {
           const profile = row?.profile;
           if (profile?.id && !unique.has(profile.id)) {
-            unique.set(profile.id, profile);
+            const target = row.ad_city_targets?.[0];
+            const citySlug = target?.city_slug ?? paramsIn.citySlug;
+            const stateSlug = target?.state_slug ?? paramsIn.stateSlug ?? null;
+            const countrySlug = target?.country_slug ?? paramsIn.countrySlug;
+
+            unique.set(profile.id, {
+              ...profile,
+              city_slug: citySlug || profile.city_slug,
+              ...(stateSlug ? { state_slug: stateSlug } : {}),
+              country_slug: countrySlug || profile.country_slug,
+              city: citySlug ? humanizeSlug(citySlug) : profile.city,
+              country: countrySlug ? humanizeSlug(countrySlug) : profile.country,
+              ...(stateSlug ? { state: humanizeSlug(stateSlug) } : {}),
+            });
           }
         });
 
@@ -599,7 +670,7 @@ export const apiBuilder = {
       placement_available_now: boolean;
       cities: {
         country_slug: string;
-        state_slug: string;
+        state_slug: string | null;
         city_slug: string;
       }[];
     }) =>

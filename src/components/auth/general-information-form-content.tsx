@@ -17,6 +17,10 @@ import { toast } from "react-hot-toast";
 import { LocationAutocompleteInput } from "@/components/location/location-autocomplete-input";
 import { LocationSuggestion } from "@/hooks/use-location-autocomplete";
 import { Loader2 } from "lucide-react";
+import {
+  buildMissingFieldsMessage,
+  getGeneralMissingFields,
+} from "@/lib/profile-onboarding-validation";
 
 interface GeneralInformationFormContentProps {
   onNext?: () => void;
@@ -73,7 +77,7 @@ export function GeneralInformationFormContent({
     homeLocations: "",
     homeLocation: null,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting] = useState(false);
 
   useEffect(() => {
     const savedData = getData("general") as Partial<FormState> | null;
@@ -114,22 +118,10 @@ export function GeneralInformationFormContent({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const missingFields: string[] = [];
-    if (!formData.workingName.trim()) missingFields.push("Working name");
-    if (!formData.profileUsername.trim())
-      missingFields.push("Profile username");
-    if (!formData.gender.trim()) missingFields.push("Gender");
-    if (!formData.age.trim()) missingFields.push("Age");
-    if (!formData.homeLocations.trim()) missingFields.push("Location");
+    const missingFields = getGeneralMissingFields(formData);
 
     if (missingFields.length > 0) {
-      const list =
-        missingFields.length === 1
-          ? missingFields[0]
-          : missingFields.slice(0, -1).join(", ") +
-            " and " +
-            missingFields[missingFields.length - 1];
-      toast.error(`Please fill ${list} before continuing.`);
+      toast.error(buildMissingFieldsMessage(missingFields));
       return;
     }
 
@@ -158,6 +150,7 @@ export function GeneralInformationFormContent({
               <Input
                 id="workingName"
                 type="text"
+                required
                 value={formData.workingName}
                 onChange={(e) => handleChange("workingName", e.target.value)}
               />
@@ -263,6 +256,8 @@ export function GeneralInformationFormContent({
               <Input
                 id="age"
                 type="number"
+                min={18}
+                required
                 inputMode="numeric"
                 pattern="[0-9]*"
                 value={formData.age}
@@ -351,6 +346,7 @@ export function GeneralInformationFormContent({
               <Input
                 id="profileUsername"
                 type="text"
+                required
                 value={formData.profileUsername}
                 onChange={(e) =>
                   handleChange("profileUsername", e.target.value)
@@ -515,6 +511,7 @@ export function GeneralInformationFormContent({
                 value={formData.homeLocation}
                 onChange={handleLocationChange}
                 placeholder="Type city, state, or country"
+                required
               />
               <p className="text-[12px] font-normal text-text-gray-opacity">
                 Start typing to pull suggestions from Google Places; select the

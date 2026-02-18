@@ -27,9 +27,16 @@ const formatSlug = (slug: string) =>
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
+const formatLocationLabel = (...parts: Array<string | undefined>) =>
+  parts
+    .filter((part): part is string => Boolean(part))
+    .map((part) => formatSlug(part))
+    .join(", ");
+
 type SearchParamsState = {
   countrySlug?: string;
   citySlug?: string;
+  stateSlug?: string;
   ethnicity?: string;
   gender?: string;
   minRate?: number;
@@ -45,6 +52,7 @@ type SearchResultsClientProps = {
 
 const genderOptions = ["All", "Female", "Male", "Trans", "Non-Binary"];
 const PROFILES_PER_PAGE = 20;
+const RELATED_LOCATIONS_LIMIT = 20;
 
 const FALLBACK_CITIES_BY_COUNTRY: Record<string, string[]> = {
   nigeria: ["lagos", "abuja", "port-harcourt", "ibadan", "kano"],
@@ -223,6 +231,12 @@ export function SearchResultsClient({
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const locationInputRef = useRef<HTMLInputElement | null>(null);
+
+  const closeLocationPicker = () => {
+    setShowSuggestions(false);
+    locationInputRef.current?.blur();
+  };
 
   const {
     query,
@@ -231,7 +245,15 @@ export function SearchResultsClient({
     isLoading: locationLoading,
   } = useLocationAutocomplete(
     initialParams.citySlug
-      ? formatSlug(initialParams.citySlug)
+      ? [
+          formatSlug(initialParams.citySlug),
+          initialParams.stateSlug ? formatSlug(initialParams.stateSlug) : null,
+          initialParams.countrySlug ? formatSlug(initialParams.countrySlug) : null,
+        ]
+          .filter(Boolean)
+          .join(", ")
+      : initialParams.stateSlug
+        ? formatSlug(initialParams.stateSlug)
       : initialParams.countrySlug
         ? formatSlug(initialParams.countrySlug)
         : "",
@@ -240,6 +262,7 @@ export function SearchResultsClient({
   const [formState, setFormState] = useState({
     countrySlug: initialParams.countrySlug ?? "",
     citySlug: initialParams.citySlug ?? "",
+    stateSlug: initialParams.stateSlug ?? "",
     gender: initialParams.gender ?? "All",
     minRate: initialParams.minRate?.toString() ?? "",
     maxRate: initialParams.maxRate?.toString() ?? "",
@@ -265,12 +288,14 @@ export function SearchResultsClient({
 
   useEffect(() => {
     setParams(initialParams);
+    setShowSuggestions(false);
     setCurrentPage(
       Number.isFinite(initialPage) && initialPage > 0 ? initialPage : 1
     );
     setFormState({
       countrySlug: initialParams.countrySlug ?? "",
       citySlug: initialParams.citySlug ?? "",
+      stateSlug: initialParams.stateSlug ?? "",
       gender: initialParams.gender ?? "All",
       minRate: initialParams.minRate?.toString() ?? "",
       maxRate: initialParams.maxRate?.toString() ?? "",
@@ -298,6 +323,7 @@ export function SearchResultsClient({
       return apiBuilder.profiles.searchProfiles({
         countrySlug: params.countrySlug,
         citySlug: params.citySlug,
+        stateSlug: params.stateSlug,
         ethnicity: params.ethnicity,
         gender: params.gender,
         minRate: params.minRate,
@@ -314,7 +340,12 @@ export function SearchResultsClient({
     isLoading: loadingSponsored,
     isFetching: fetchingSponsored,
   } = useQuery<Profile[]>({
-    queryKey: ["searchSponsoredProfiles", params.countrySlug, params.citySlug],
+    queryKey: [
+      "searchSponsoredProfiles",
+      params.countrySlug,
+      params.stateSlug,
+      params.citySlug,
+    ],
     queryFn: () => {
       if (!params.countrySlug || !params.citySlug) {
         return Promise.resolve([]);
@@ -322,6 +353,7 @@ export function SearchResultsClient({
       return apiBuilder.ads.getSponsoredProfilesForCity({
         citySlug: params.citySlug,
         countrySlug: params.countrySlug,
+        stateSlug: params.stateSlug,
       });
     },
     enabled,
@@ -357,26 +389,30 @@ export function SearchResultsClient({
 
   const loading =
     loadingOrganic || fetchingOrganic || loadingSponsored || fetchingSponsored;
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
 
-    const countrySlug = formState.countrySlug.trim();
-    const citySlug = formState.citySlug.trim();
-    const gender = formState.gender === "All" ? undefined : formState.gender;
+  const applySearchFromState = (nextFormState: typeof formState) => {
+    const countrySlug = nextFormState.countrySlug.trim();
+    const citySlug = nextFormState.citySlug.trim();
+    const stateSlug = nextFormState.stateSlug.trim();
+    const gender = nextFormState.gender === "All" ? undefined : nextFormState.gender;
 
-    const parsedMin = formState.minRate ? Number(formState.minRate) : undefined;
+    const parsedMin = nextFormState.minRate
+      ? Number(nextFormState.minRate)
+      : undefined;
     const minRate =
       typeof parsedMin === "number" && !Number.isNaN(parsedMin)
         ? parsedMin
         : undefined;
 
-    const parsedMax = formState.maxRate ? Number(formState.maxRate) : undefined;
+    const parsedMax = nextFormState.maxRate
+      ? Number(nextFormState.maxRate)
+      : undefined;
     const maxRate =
       typeof parsedMax === "number" && !Number.isNaN(parsedMax)
         ? parsedMax
         : undefined;
 
-    const catersToParts = formState.catersTo
+    const catersToParts = nextFormState.catersTo
       .split(",")
       .map((item) => item.trim())
       .filter(Boolean);
@@ -391,12 +427,13 @@ export function SearchResultsClient({
     const nextParams: SearchParamsState = {
       countrySlug: countrySlug || undefined,
       citySlug: citySlug || undefined,
+      stateSlug: stateSlug || undefined,
       ethnicity: params.ethnicity,
       gender,
       minRate,
       maxRate,
       catersTo,
-      availableNow: formState.availableNow,
+      availableNow: nextFormState.availableNow,
     };
 
     setParams(nextParams);
@@ -404,6 +441,7 @@ export function SearchResultsClient({
     const query = new URLSearchParams();
     if (nextParams.countrySlug) query.set("country", nextParams.countrySlug);
     if (nextParams.citySlug) query.set("city", nextParams.citySlug);
+    if (nextParams.stateSlug) query.set("state", nextParams.stateSlug);
     if (nextParams.ethnicity) query.set("ethnicity", nextParams.ethnicity);
     if (nextParams.gender) query.set("gender", nextParams.gender);
     if (typeof minRate === "number") query.set("min", String(minRate));
@@ -424,6 +462,12 @@ export function SearchResultsClient({
     setShowMoreFilters(false);
   };
 
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    closeLocationPicker();
+    applySearchFromState(formState);
+  };
+
   const handlePageChange = (page: number) => {
     const nextPage = Math.min(Math.max(page, 1), totalPages);
     if (nextPage === currentPage) return;
@@ -432,6 +476,7 @@ export function SearchResultsClient({
     const query = new URLSearchParams();
     if (params.countrySlug) query.set("country", params.countrySlug);
     if (params.citySlug) query.set("city", params.citySlug);
+    if (params.stateSlug) query.set("state", params.stateSlug);
     if (params.ethnicity) query.set("ethnicity", params.ethnicity);
     if (params.gender && params.gender !== "All") query.set("gender", params.gender);
     if (typeof params.minRate === "number") query.set("min", String(params.minRate));
@@ -458,36 +503,61 @@ export function SearchResultsClient({
     const genderQuery =
       params.gender && params.gender !== "All" ? params.gender : undefined;
     const mergedProfiles = [...sponsoredProfiles, ...organicProfiles];
-    const randomSeedBase = `${params.countrySlug || ""}:${params.citySlug || ""}:${params.ethnicity || ""}:${params.gender || ""}`;
+    const randomSeedBase = `${params.countrySlug || ""}:${params.stateSlug || ""}:${params.citySlug || ""}:${params.ethnicity || ""}:${params.gender || ""}`;
 
-    const buildHref = (citySlug?: string, countrySlug?: string) => {
+    const buildHref = (
+      citySlug?: string,
+      countrySlug?: string,
+      stateSlug?: string,
+    ) => {
       const search = new URLSearchParams();
       if (countrySlug) search.set("country", countrySlug);
+      if (stateSlug) search.set("state", stateSlug);
       if (citySlug) search.set("city", citySlug);
       if (params.ethnicity) search.set("ethnicity", params.ethnicity);
       if (genderQuery) search.set("gender", genderQuery);
       return `/search${search.toString() ? `?${search.toString()}` : ""}`;
     };
 
-    const addLocation = (citySlug: string, countrySlug: string, cityName?: string) => {
+    const addLocation = (
+      citySlug: string,
+      countrySlug: string,
+      cityName?: string,
+      stateSlug?: string,
+    ) => {
       if (!citySlug || !countrySlug) return;
-      if (params.citySlug && citySlug === params.citySlug) return;
+      if (
+        params.citySlug &&
+        citySlug === params.citySlug &&
+        (!params.stateSlug || params.stateSlug === stateSlug)
+      ) {
+        return;
+      }
 
-      const key = `${citySlug}-${countrySlug}`;
+      const key = `${citySlug}-${stateSlug || "all"}-${countrySlug}`;
       if (seen.has(key)) return;
       seen.add(key);
 
       locations.push({
-        label: `${cityName || formatSlug(citySlug)}, ${formatSlug(countrySlug)}`,
-        href: buildHref(citySlug, countrySlug),
+        label: [
+          cityName || formatSlug(citySlug),
+          stateSlug ? formatSlug(stateSlug) : null,
+          formatSlug(countrySlug),
+        ]
+          .filter(Boolean)
+          .join(", "),
+        href: buildHref(citySlug, countrySlug, stateSlug),
       });
     };
 
     mergedProfiles.forEach((profile) => {
       const citySlug = profile.city_slug;
       const countrySlug = profile.country_slug;
+      const stateSlug =
+        profile.state_slug ??
+        (typeof profile.state === "string" ? slugifyLocation(profile.state) : undefined);
       if (!citySlug || !countrySlug) return;
-      addLocation(citySlug, countrySlug);
+      addLocation(citySlug, countrySlug, undefined, stateSlug);
     });
 
     const normalizedCountry = normalizeCountryKey(params.countrySlug);
@@ -498,7 +568,7 @@ export function SearchResultsClient({
 
     let targetStateName: string | null = null;
 
-    if (locations.length < 16 && inferredCountrySlug) {
+    if (locations.length < RELATED_LOCATIONS_LIMIT && inferredCountrySlug) {
       const countryIsoCode = getCountryIsoCode(inferredCountrySlug);
       if (countryIsoCode) {
         const selectedStateFromProfileRaw = params.citySlug
@@ -513,8 +583,8 @@ export function SearchResultsClient({
           typeof selectedStateFromProfileRaw === "string"
             ? selectedStateFromProfileRaw
             : null;
-        const selectedStateFromSlug = params.citySlug
-          ? getStateNameFromSlug(countryIsoCode, params.citySlug)
+        const selectedStateFromSlug = params.stateSlug
+          ? getStateNameFromSlug(countryIsoCode, params.stateSlug)
           : null;
         const selectedStateFromCitySlug = params.citySlug
           ? getStateNameByCitySlug(countryIsoCode, params.citySlug)
@@ -525,28 +595,34 @@ export function SearchResultsClient({
           selectedStateFromCitySlug;
 
         if (targetStateName) {
+          const targetStateSlug = slugifyLocation(targetStateName);
           seededShuffle(
             getCitiesForState(countryIsoCode, targetStateName),
             `${randomSeedBase}:state:${targetStateName}`
           ).forEach((item) => {
-            if (locations.length >= 16) return;
-            addLocation(item.citySlug, inferredCountrySlug, item.cityName);
+            if (locations.length >= RELATED_LOCATIONS_LIMIT) return;
+            addLocation(
+              item.citySlug,
+              inferredCountrySlug,
+              item.cityName,
+              params.stateSlug || targetStateSlug,
+            );
           });
         }
 
-        if (locations.length < 16 && !targetStateName) {
+        if (locations.length < RELATED_LOCATIONS_LIMIT && !targetStateName) {
           seededShuffle(
             getCitiesForCountry(countryIsoCode),
             `${randomSeedBase}:country:${countryIsoCode}`
           ).forEach((item) => {
-            if (locations.length >= 16) return;
+            if (locations.length >= RELATED_LOCATIONS_LIMIT) return;
             addLocation(item.citySlug, inferredCountrySlug, item.cityName);
           });
         }
       }
     }
 
-    if (locations.length < 16 && !targetStateName) {
+    if (locations.length < RELATED_LOCATIONS_LIMIT && !targetStateName) {
       const inferredCountry =
         normalizeCountryKey(inferredCountrySlug) ||
         normalizeCountryKey(
@@ -557,15 +633,15 @@ export function SearchResultsClient({
         ? FALLBACK_CITIES_BY_COUNTRY[inferredCountry] ?? []
         : [];
       fallbackCities.forEach((citySlug) => {
-        if (locations.length >= 16) return;
+        if (locations.length >= RELATED_LOCATIONS_LIMIT) return;
         const fallbackCountrySlug = inferredCountrySlug || inferredCountry;
         if (!fallbackCountrySlug) return;
         addLocation(citySlug, fallbackCountrySlug);
       });
     }
 
-    return locations.slice(0, 16);
-  }, [organicProfiles, params.citySlug, params.ethnicity, params.gender, params.countrySlug, sponsoredProfiles]);
+    return locations.slice(0, RELATED_LOCATIONS_LIMIT);
+  }, [organicProfiles, params.citySlug, params.ethnicity, params.gender, params.countrySlug, params.stateSlug, sponsoredProfiles]);
 
   return (
     <section className="relative z-10 w-full bg-input-bg pb-12 pt-0 md:pb-16">
@@ -645,7 +721,15 @@ export function SearchResultsClient({
           <div className="mb-2 flex flex-col gap-1 md:gap-2 text-center">
             <h1 className="text-2xl font-bold text-primary-text md:text-4xl">
               {params.citySlug
-                ? `Find independent escorts in ${formatSlug(params.citySlug)}`
+                ? `Find independent escorts in ${formatLocationLabel(
+                    params.citySlug,
+                    params.stateSlug,
+                  )}`
+                : params.stateSlug
+                  ? `Find independent escorts in ${formatLocationLabel(
+                      params.stateSlug,
+                      params.countrySlug,
+                    )}`
                 : params.countrySlug
                   ? `Find independent escorts in ${formatSlug(params.countrySlug)}`
                   : "Find independent escorts"}
@@ -666,6 +750,7 @@ export function SearchResultsClient({
                   <div className="relative flex items-center rounded-[12px] bg-input-bg px-3 py-2 border border-dark-border focus-within:border-primary transition-colors">
                     <Search className="mr-2 h-4 w-4 text-text-gray-opacity" />
                     <input
+                      ref={locationInputRef}
                       type="text"
                       value={query}
                       onChange={(e) => {
@@ -673,7 +758,7 @@ export function SearchResultsClient({
                         setShowSuggestions(true);
                       }}
                       onFocus={() => setShowSuggestions(true)}
-                      placeholder="City or country"
+                      placeholder="City, state, or country"
                       className="flex-1 bg-transparent text-base md:text-sm text-primary-text placeholder:text-text-gray-opacity focus:outline-none min-w-0"
                     />
                     {locationLoading && (
@@ -687,23 +772,34 @@ export function SearchResultsClient({
                     <div className="absolute left-0 right-0 top-full mt-1 overflow-hidden rounded-[12px] border border-dark-border bg-primary-bg shadow-xl z-50 max-h-[300px] overflow-y-auto">
                       {results.map((result) => (
                         <button
-                          key={result.placeId}
+                          key={
+                            result.placeId ??
+                            `${result.country_slug}-${result.state_slug ?? "all"}-${result.city_slug}`
+                          }
                           type="button"
-                          onClick={() => {
-                            setFormState((prev) => ({
-                              ...prev,
+                          onMouseDown={(event) => {
+                            event.preventDefault();
+                            const nextFormState = {
+                              ...formState,
                               citySlug: result.city_slug,
+                              stateSlug:
+                                result.state_slug ??
+                                (result.state ? slugifyLocation(result.state) : ""),
                               countrySlug: result.country_slug,
-                            }));
+                            };
+                            setFormState(nextFormState);
                             setQuery(result.fullLabel);
-                            setShowSuggestions(false);
+                            closeLocationPicker();
+                            applySearchFromState(nextFormState);
                           }}
                           className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-input-bg"
                         >
                           <MapPin className="h-3 w-3 min-w-[12px] text-text-gray-opacity" />
                           <div className="flex flex-col overflow-hidden">
                             <span className="text-sm font-medium text-primary-text truncate">
-                              {result.city}, {result.country}
+                              {[result.city, result.state, result.country]
+                                .filter(Boolean)
+                                .join(", ")}
                             </span>
                           </div>
                         </button>
@@ -826,7 +922,9 @@ export function SearchResultsClient({
           <div className="flex flex-col gap-4 border-b border-dark-border pb-4 md:flex-row md:items-end md:justify-between">
             <h2 className="text-2xl font-bold text-primary-text">
               {params.citySlug
-                ? `${formatSlug(params.citySlug)} escorts`
+                ? `${formatLocationLabel(params.citySlug, params.stateSlug)} escorts`
+                : params.stateSlug
+                  ? `${formatLocationLabel(params.stateSlug, params.countrySlug)} escorts`
                 : params.countrySlug
                   ? `${formatSlug(params.countrySlug)} escorts`
                   : "All Profiles"}

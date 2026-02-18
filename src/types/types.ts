@@ -94,8 +94,10 @@ export type Profile = {
   ethnicity_category?: string;
   available_days?: string[] | null;
   city?: string;
+  state?: string;
   country?: string;
   city_slug?: string;
+  state_slug?: string;
   country_slug?: string;
   gender?: string;
   bio?: string;

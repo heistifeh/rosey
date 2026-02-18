@@ -13,6 +13,7 @@ interface LocationAutocompleteInputProps {
   placeholder?: string;
   className?: string;
   countryRestriction?: string;
+  required?: boolean;
 }
 
 export function LocationAutocompleteInput({
@@ -21,6 +22,7 @@ export function LocationAutocompleteInput({
   placeholder = "Search city",
   className,
   countryRestriction,
+  required = false,
 }: LocationAutocompleteInputProps) {
   const { setQuery, results, isLoading, error } = useLocationAutocomplete(
     value?.fullLabel ?? "",
@@ -79,6 +81,7 @@ export function LocationAutocompleteInput({
       <div className="relative">
         <input
           type="text"
+          required={required}
           className="w-full rounded-full border border-dark-border bg-transparent px-4 py-2 text-base md:text-sm text-primary-text placeholder:text-text-gray outline-none focus:border-primary"
           placeholder={placeholder}
           value={inputValue}
@@ -118,8 +121,9 @@ export function LocationAutocompleteInput({
                   >
                     <div className="font-semibold">{suggestion.fullLabel}</div>
                     <div className="text-xs text-text-gray-opacity">
-                      {suggestion.country}
-                      {suggestion.state ? ` · ${suggestion.state}` : ""}
+                      {[suggestion.state, suggestion.country]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </div>
                   </button>
                 </li>

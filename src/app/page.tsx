@@ -9,10 +9,12 @@ import { FooterSection } from "@/components/home/footer-section";
 import { AvailableNowSection } from "@/components/home/available-now-section";
 import { HeroShell } from "@/components/home/hero-shell";
 import { SearchShortcutsSection } from "@/components/home/search-shortcuts-section";
+import { AgeGateModal } from "@/components/home/age-gate-modal";
 
 export default function Home() {
   return (
     <section className="flex flex-col">
+      <AgeGateModal />
       <main className="relative overflow-hidden bg-[#0f0f10]">
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-linear-to-b z-1" />

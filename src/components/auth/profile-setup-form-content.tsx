@@ -15,6 +15,10 @@ import { useState, useEffect } from "react";
 import { useProfileStore } from "@/hooks/use-profile-store";
 import { toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
+import {
+  buildMissingFieldsMessage,
+  getProfileMissingFields,
+} from "@/lib/profile-onboarding-validation";
 
 interface ProfileSetupFormContentProps {
   onNext?: () => void;
@@ -38,7 +42,7 @@ export function ProfileSetupFormContent({
     phoneNumber: "",
     instagramHandle: "",
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting] = useState(false);
 
   useEffect(() => {
     const savedData = getData("profile") as any;
@@ -79,6 +83,12 @@ export function ProfileSetupFormContent({
     e.preventDefault();
     if (isSubmitting) return;
 
+    const missingFields = getProfileMissingFields(formData);
+    if (missingFields.length > 0) {
+      toast.error(buildMissingFieldsMessage(missingFields));
+      return;
+    }
+
     saveData("profile", formData);
     if (onNext) onNext();
   };
@@ -114,6 +124,7 @@ export function ProfileSetupFormContent({
           </Label>
           <textarea
             id="about"
+            required
             value={formData.about}
             onChange={(e) => handleChange("about", e.target.value)}
             className="flex min-h-[200px] w-full rounded-lg border border-transparent bg-input-bg px-4 py-3 text-sm text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset disabled:cursor-not-allowed disabled:opacity-50 resize-y"

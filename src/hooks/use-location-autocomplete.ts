@@ -13,6 +13,7 @@ export interface LocationSuggestion {
   placeId?: string;
   city: string;
   state?: string;
+  state_slug?: string;
   country: string;
   city_slug: string;
   country_slug: string;
@@ -45,20 +46,30 @@ const getApiKey = () =>
   process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
   process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY;
 
+const buildLocationLabel = (city: string, country: string, state?: string) =>
+  [city, state, country].filter(Boolean).join(", ");
+
 const normalizePredictionFallback = (prediction: any): LocationSuggestion | null => {
   const terms = prediction?.terms as Array<{ value?: string }> | undefined;
+  const secondaryParts =
+    prediction?.structured_formatting?.secondary_text
+      ?.split(",")
+      .map((part: string) => part.trim())
+      .filter(Boolean) ?? [];
   const city =
     prediction?.structured_formatting?.main_text ??
     terms?.[0]?.value ??
     "";
+  const state =
+    terms && terms.length > 2 && terms[terms.length - 2]?.value
+      ? terms[terms.length - 2].value
+      : secondaryParts.length > 1
+        ? secondaryParts[0]
+        : "";
   const country =
     terms?.length && terms[terms.length - 1]?.value
       ? terms[terms.length - 1].value
-      : prediction?.structured_formatting?.secondary_text
-          ?.split(",")
-          .map((part: string) => part.trim())
-          .filter(Boolean)
-          .at(-1) ?? "";
+      : secondaryParts.at(-1) ?? "";
 
   if (!city || !country) {
     return null;
@@ -67,10 +78,13 @@ const normalizePredictionFallback = (prediction: any): LocationSuggestion | null
   return {
     placeId: prediction.place_id,
     city,
+    state: state || undefined,
+    state_slug: state ? slugifyLocation(state) : undefined,
     country,
     city_slug: slugifyLocation(city),
     country_slug: slugifyLocation(country),
-    fullLabel: prediction.description ?? `${city}, ${country}`,
+    fullLabel:
+      prediction.description ?? buildLocationLabel(city, country, state || undefined),
   };
 };
 
@@ -88,10 +102,13 @@ export function useLocationAutocomplete(
     const rows = await apiBuilder.locations.getLocations(rawQuery);
     const normalizedFromDb = (rows ?? []).map((row: any) => ({
       city: row.city,
+      state: row.state ?? undefined,
+      state_slug:
+        row.state_slug ?? (row.state ? slugifyLocation(row.state) : undefined),
       country: row.country,
       city_slug: row.city_slug ?? slugifyLocation(row.city ?? ""),
       country_slug: row.country_slug ?? slugifyLocation(row.country ?? ""),
-      fullLabel: `${row.city}, ${row.country}`,
+      fullLabel: buildLocationLabel(row.city, row.country, row.state ?? undefined),
     }));
     if (normalizedFromDb.length > 0) {
       setResults(normalizedFromDb);
@@ -109,7 +126,7 @@ export function useLocationAutocomplete(
         country: item.country,
         city_slug: slugifyLocation(item.city),
         country_slug: slugifyLocation(item.country),
-        fullLabel: `${item.city}, ${item.country}`,
+        fullLabel: buildLocationLabel(item.city, item.country),
       }));
 
     setResults(localFallback);
@@ -267,11 +284,14 @@ export function useLocationAutocomplete(
                           placeId: prediction.place_id,
                           city,
                           state: state ?? undefined,
+                          state_slug: state ? slugifyLocation(state) : undefined,
                           country,
                           city_slug: slugifyLocation(city),
                           country_slug: slugifyLocation(country),
                           fullLabel:
-                            details.formatted_address ?? prediction.description,
+                            details.formatted_address ??
+                            prediction.description ??
+                            buildLocationLabel(city, country, state ?? undefined),
                         });
                       }
                     );

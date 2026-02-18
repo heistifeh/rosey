@@ -14,7 +14,9 @@ export function ProfileCard({ profile, isSponsored = false }: ProfileCardProps) 
   const images = profile.images ?? [];
   const primaryImage = images.find((img) => img.is_primary) ?? images[0];
   const imageUrl = primaryImage?.public_url || "/images/girl1.png";
-  const locationLabel = [profile.city, profile.country].filter(Boolean).join(", ");
+  const locationLabel = [profile.city, profile.state, profile.country]
+    .filter(Boolean)
+    .join(", ");
 
   return (
     <Link
@@ -37,7 +39,7 @@ export function ProfileCard({ profile, isSponsored = false }: ProfileCardProps) 
             {profile.working_name ?? "Provider"}
           </p>
           {isSponsored && (
-            <span className="rounded-full border border-primary bg-primary/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary">
+            <span className="rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[9px] font-medium text-primary/80">
               Sponsored
             </span>
           )}

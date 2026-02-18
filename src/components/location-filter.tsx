@@ -9,6 +9,8 @@ import { LocationSuggestion } from "@/hooks/use-location-autocomplete";
 export interface LocationValue {
   city: string;
   city_slug: string;
+  state?: string;
+  state_slug?: string;
   country: string;
   country_slug: string;
 }
@@ -18,6 +20,7 @@ interface LocationFilterProps {
   onChange?: (location: LocationValue | null) => void;
   className?: string;
   variant?: "default" | "minimal";
+  placeholder?: string;
 }
 
 export function LocationFilter({
@@ -25,15 +28,20 @@ export function LocationFilter({
   onChange,
   className,
   variant = "default",
+  placeholder = "Search city",
 }: LocationFilterProps) {
   const suggestionValue = useMemo<LocationSuggestion | null>(() => {
     if (!value) return null;
     return {
       city: value.city,
+      state: value.state,
+      state_slug: value.state_slug,
       country: value.country,
       city_slug: value.city_slug,
       country_slug: value.country_slug,
-      fullLabel: `${value.city}, ${value.country}`,
+      fullLabel: [value.city, value.state, value.country]
+        .filter(Boolean)
+        .join(", "),
     };
   }, [value]);
 
@@ -45,6 +53,8 @@ export function LocationFilter({
     onChange?.({
       city: location.city,
       city_slug: location.city_slug,
+      state: location.state,
+      state_slug: location.state_slug,
       country: location.country,
       country_slug: location.country_slug,
     });
@@ -66,7 +76,7 @@ export function LocationFilter({
         <LocationAutocompleteInput
           value={suggestionValue}
           onChange={handleLocationChange}
-          placeholder="Search city"
+          placeholder={placeholder}
         />
       </div>
     </div>

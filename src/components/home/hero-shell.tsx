@@ -8,8 +8,10 @@ type Filters = {
   priceRange: string;
   location?: {
     city: string;
+    state?: string;
     country: string;
     city_slug: string;
+    state_slug?: string;
     country_slug: string;
   };
 };

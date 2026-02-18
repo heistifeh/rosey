@@ -13,6 +13,11 @@ import { useProfileStore } from "@/hooks/use-profile-store";
 import { LocationSuggestion } from "@/hooks/use-location-autocomplete";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useProfile } from "@/hooks/use-profile";
+import {
+  buildMissingFieldsMessage,
+  getBackendRequiredMissingFields,
+  normalizeOnboardingLocation,
+} from "@/lib/profile-onboarding-validation";
 
 const getUserId = () => {
   if (typeof document === "undefined") return null;
@@ -290,6 +295,18 @@ export function UploadPicturesForm({
         return;
       }
 
+      const onboardingData =
+        isCreateMode || isUpdateMode ? getAllData<ProfileFormData>() : null;
+
+      if (onboardingData) {
+        const missingFields = getBackendRequiredMissingFields(onboardingData);
+        if (missingFields.length > 0) {
+          toast.error(buildMissingFieldsMessage(missingFields));
+          setIsUploading(false);
+          return;
+        }
+      }
+
       const uploadedImagesData: { publicUrl: string; path: string }[] = [];
       for (const file of selectedFiles) {
         try {
@@ -338,7 +355,7 @@ export function UploadPicturesForm({
 
         router.push("/dashboard");
       } else {
-        const allData = getAllData<ProfileFormData>();
+        const allData = onboardingData as ProfileFormData;
 
         const parseIntSafe = (val: string | undefined) => {
           if (!val) return null;
@@ -346,35 +363,11 @@ export function UploadPicturesForm({
           return isNaN(parsed) ? null : parsed;
         };
 
-        const slugify = (text: string) => {
-          return text
-            .toString()
-            .toLowerCase()
-            .trim()
-            .replace(/\s+/g, "-")
-            .replace(/[^\w-]+/g, "")
-            .replace(/--+/g, "-");
-        };
-
-        const locationSuggestion = allData.homeLocation;
-
-        const normalizedHomeLocations = locationSuggestion
-          ? [locationSuggestion.fullLabel]
-          : allData.homeLocations
-            ? allData.homeLocations.split(",").map((s) => s.trim())
-            : [];
-
-        const city =
-          locationSuggestion?.city ??
-          (normalizedHomeLocations.length
-            ? normalizedHomeLocations[0].split(",")[0].trim()
-            : null);
-        const country = locationSuggestion?.country ?? "Nigeria";
-        const state = locationSuggestion?.state ?? city;
-        const city_slug =
-          locationSuggestion?.city_slug ?? (city ? slugify(city) : null);
-        const country_slug =
-          locationSuggestion?.country_slug ?? slugify(country);
+        const normalizedLocation = normalizeOnboardingLocation(allData);
+        const normalizedHomeLocations = [
+          normalizedLocation.fullLabel ||
+          (allData.homeLocations ? allData.homeLocations.trim() : ""),
+        ].filter(Boolean);
 
         const availabilityData = allData.dayTimes ?? {};
         const availabilityEntries = Object.entries(availabilityData).flatMap(
@@ -415,12 +408,12 @@ export function UploadPicturesForm({
             ? allData.catersTo.split(",").map((s) => s.trim())
             : [],
           home_locations: normalizedHomeLocations,
-          city: city,
-          state: state,
-          country: country,
-
-          city_slug: city_slug,
-          country_slug: country_slug,
+          city: normalizedLocation.city,
+          state: normalizedLocation.state,
+          country: normalizedLocation.country,
+          city_slug: normalizedLocation.city_slug,
+          state_slug: normalizedLocation.state_slug,
+          country_slug: normalizedLocation.country_slug,
           is_active: true,
           onboarding_completed: true,
 
