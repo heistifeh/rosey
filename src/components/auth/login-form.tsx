@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UnclaimedProfileModal } from "@/components/modals/unclaimed-profile-modal";
 import { errorMessageHandler, type ErrorType } from "@/utils/error-handler";
+import { getPublicSiteOrigin } from "@/lib/public-site-origin";
 import { useMutation } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,19 +19,6 @@ import { Eye, EyeOff } from "lucide-react";
 type LoginValues = {
   email: string;
   password: string;
-};
-
-const getPublicSiteOrigin = () => {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (configured) {
-    return configured.replace(/\/$/, "");
-  }
-
-  if (typeof window !== "undefined") {
-    return window.location.origin;
-  }
-
-  return "https://rosey.link";
 };
 
 export function LoginForm() {

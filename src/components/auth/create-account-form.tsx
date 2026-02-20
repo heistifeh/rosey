@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiBuilder } from "@/api/builder";
 import { errorMessageHandler, type ErrorType } from "@/utils/error-handler";
+import { getPublicSiteOrigin } from "@/lib/public-site-origin";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -23,19 +24,6 @@ type CreateAccountValues = {
   password: string;
   confirmPassword: string;
   terms: boolean;
-};
-
-const getPublicSiteOrigin = () => {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (configured) {
-    return configured.replace(/\/$/, "");
-  }
-
-  if (typeof window !== "undefined") {
-    return window.location.origin;
-  }
-
-  return "https://rosey.link";
 };
 
 export function CreateAccountForm() {

@@ -24,6 +24,7 @@ export default function ManagePicturesPage() {
   } = useProfileImages(profile?.id);
 
   const remainingSlots = Math.max(0, MAX_IMAGES - images.length);
+  const placeholderImage = "/placeholder.png";
   const isUploadDisabled = isUploading || remainingSlots === 0;
 
   const showMaxPhotosError = () => {
@@ -221,9 +222,21 @@ export default function ManagePicturesPage() {
             {imagesLoading ? (
               <div className="grid grid-cols-3 gap-4">{renderSkeleton()}</div>
             ) : images.length === 0 ? (
-              <p className="text-sm text-primary-text text-center">
-                No photos uploaded yet.
-              </p>
+              <div className="flex flex-col items-center gap-3 py-2">
+                <div className="relative w-[134px] h-[107px] rounded-[16px] overflow-hidden">
+                  <SafeImage
+                    src={placeholderImage}
+                    fallbackSrc={placeholderImage}
+                    alt="Placeholder"
+                    width={134}
+                    height={107}
+                    className="object-cover rounded-[16px]"
+                  />
+                </div>
+                <p className="text-sm text-primary-text text-center">
+                  No photos uploaded yet.
+                </p>
+              </div>
             ) : (
               <div className="grid grid-cols-3 gap-4">
                 {images.map((image) => (

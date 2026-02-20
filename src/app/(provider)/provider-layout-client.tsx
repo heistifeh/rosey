@@ -45,10 +45,14 @@ export default function ProviderLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [showNotification, setShowNotification] = useState(true);
-  const [mounted, setMounted] = useState(false);
   useCurrentUser();
   const { data: profile, isLoading: profileLoading, isFetching } = useProfile();
   const { data: profileImages = [] } = useProfileImages(profile?.id);
+  const placeholderImage = "/placeholder.png";
+  const profileImageSrc =
+    profileImages.find((img) => img.is_primary)?.public_url ||
+    profileImages[0]?.public_url ||
+    placeholderImage;
   const profileType =
     typeof profile?.profile_type === "string" ? profile.profile_type : "";
   const isEscort = profileType.toLowerCase() === "escort";
@@ -66,10 +70,6 @@ export default function ProviderLayout({
       router.replace("/");
     }
   }, [profileLoading, isFetching, profile, isEscort, router]);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!showNotification) return;
@@ -196,12 +196,8 @@ export default function ProviderLayout({
                 <div className="hidden xl:flex items-center gap-2 px-4 py-3 bg-primary-bg rounded-full">
                   <div className="relative h-10 w-10 rounded-full overflow-hidden">
                     <SafeImage
-                      src={
-                        profileImages.find((img) => img.is_primary)
-                          ?.public_url ||
-                        profileImages[0]?.public_url ||
-                        "/placeholder.png"
-                      }
+                      src={profileImageSrc}
+                      fallbackSrc={placeholderImage}
                       alt="Profile"
                       width={40}
                       height={40}
@@ -215,11 +211,8 @@ export default function ProviderLayout({
                 {/* Profile image only - show on smaller screens to prevent name cutoff */}
                 <div className="xl:hidden relative h-10 w-10 rounded-full overflow-hidden">
                   <SafeImage
-                    src={
-                      profileImages.find((img) => img.is_primary)?.public_url ||
-                      profileImages[0]?.public_url ||
-                      "/placeholder.png"
-                    }
+                    src={profileImageSrc}
+                    fallbackSrc={placeholderImage}
                     alt="Profile"
                     width={40}
                     height={40}
