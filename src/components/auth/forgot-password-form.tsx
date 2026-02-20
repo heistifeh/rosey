@@ -16,6 +16,19 @@ type ForgotPasswordValues = {
     email: string;
 };
 
+const getPublicSiteOrigin = () => {
+    const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+    if (configured) {
+        return configured.replace(/\/$/, "");
+    }
+
+    if (typeof window !== "undefined") {
+        return window.location.origin;
+    }
+
+    return "https://rosey.link";
+};
+
 export function ForgotPasswordForm() {
     const [emailSent, setEmailSent] = useState(false);
     const {
@@ -31,7 +44,7 @@ export function ForgotPasswordForm() {
 
     const { mutate, isPending: isLoading } = useMutation({
         mutationFn: (values: ForgotPasswordValues) => {
-            const redirectUrl = `${window.location.origin}/reset-password`;
+            const redirectUrl = `${getPublicSiteOrigin()}/reset-password`;
             return apiBuilder.auth.resetPassword(values.email, redirectUrl);
         },
         mutationKey: ["auth", "resetPassword"],
