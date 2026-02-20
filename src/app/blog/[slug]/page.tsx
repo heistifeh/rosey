@@ -26,7 +26,7 @@ type PageProps = {
 };
 
 const imageUrl = (image?: Post["mainImage"]) =>
-  image ? urlFor(image).width(1600).height(900).url() : "/images/blog1.png";
+  image ? urlFor(image).width(1600).height(900).url() : "/placeholder.png";
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: "The requested article could not be found.",
       path: `/blog/${slug}`,
       noIndex: true,
-      imagePath: "/images/blog1.png",
+      imagePath: "/placeholder.png",
       keywords: [...CORE_SEO_KEYWORDS, "article not found"],
     });
   }
@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${title} | Rosey`,
     description,
     path: canonicalPath,
-    imagePath: image || "/images/blog1.png",
+    imagePath: image || "/placeholder.png",
     type: "article",
     keywords: [
       ...CORE_SEO_KEYWORDS,

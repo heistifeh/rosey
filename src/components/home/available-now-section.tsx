@@ -47,7 +47,7 @@ export async function AvailableNowSection() {
     (profile) => {
       const images = profile.images ?? [];
       const primary = images.find((img) => img.is_primary) ?? images[0];
-      const imageUrl = primary?.public_url || "/images/girl1.png";
+      const imageUrl = primary?.public_url || "/placeholder.png";
       return {
         type: "profile",
         profileId: profile.id,
@@ -75,7 +75,7 @@ export async function AvailableNowSection() {
         imageUrl:
           adProfile.images?.find((img) => img.is_primary)?.public_url ||
           adProfile.images?.[0]?.public_url ||
-          "/images/girl1.png",
+          "/placeholder.png",
       }
     : null;
 

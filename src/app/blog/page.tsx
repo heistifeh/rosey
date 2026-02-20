@@ -22,7 +22,7 @@ export const metadata: Metadata = buildPageMetadata({
   description:
     "Read Rosey insights, stories, and practical guidance on safer bookings, better profile quality, and companion industry trends.",
   path: "/blog",
-  imagePath: "/images/blog1.png",
+  imagePath: "/placeholder.png",
   keywords: [
     ...CORE_SEO_KEYWORDS,
     "escort blog",
@@ -32,7 +32,7 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 const imageUrl = (image?: Post["mainImage"]) =>
-  image ? urlFor(image).width(1200).height(700).url() : "/images/blog1.png";
+  image ? urlFor(image).width(1200).height(700).url() : "/placeholder.png";
 
 const publishedLabel = (post: Post) => {
   const dateRaw = post.publishedAt || post._createdAt;

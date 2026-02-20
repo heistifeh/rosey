@@ -13,7 +13,7 @@ interface ProfileCardProps {
 export function ProfileCard({ profile, isSponsored = false }: ProfileCardProps) {
   const images = profile.images ?? [];
   const primaryImage = images.find((img) => img.is_primary) ?? images[0];
-  const imageUrl = primaryImage?.public_url || "/images/girl1.png";
+  const imageUrl = primaryImage?.public_url || "/placeholder.png";
   const locationLabel = [profile.city, profile.state, profile.country]
     .filter(Boolean)
     .join(", ");

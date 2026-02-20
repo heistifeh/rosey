@@ -361,7 +361,7 @@ const mergeProfileData = (
   const heroImage =
     images.find((img) => img.is_primary)?.public_url ??
     images[0]?.public_url ??
-    "/images/girl1.png"; // Default placeholder if NO images at all
+    "/placeholder.png"; // Default placeholder if NO images at all
 
   const photos = images.length
     ? images.map((img) => img.public_url).filter(Boolean)

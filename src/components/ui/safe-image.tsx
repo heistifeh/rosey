@@ -8,7 +8,7 @@ type SafeImageProps = ImageProps & {
 };
 
 export function SafeImage({
-  fallbackSrc = "/images/girl1.png",
+  fallbackSrc = "/placeholder.png",
   src,
   alt,
   onError,

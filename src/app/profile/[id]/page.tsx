@@ -128,7 +128,7 @@ export async function generateMetadata({
     title,
     description,
     path: `/profile/${canonicalUsername}`,
-    imagePath: primaryImageUrl(profile.images) || "/images/hero-bg.png",
+    imagePath: primaryImageUrl(profile.images) || "/placeholder.png",
     keywords: [
       ...CORE_SEO_KEYWORDS,
       displayName,

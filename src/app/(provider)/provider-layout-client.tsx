@@ -200,7 +200,7 @@ export default function ProviderLayout({
                         profileImages.find((img) => img.is_primary)
                           ?.public_url ||
                         profileImages[0]?.public_url ||
-                        "/images/girl1.png"
+                        "/placeholder.png"
                       }
                       alt="Profile"
                       width={40}
@@ -218,7 +218,7 @@ export default function ProviderLayout({
                     src={
                       profileImages.find((img) => img.is_primary)?.public_url ||
                       profileImages[0]?.public_url ||
-                      "/images/girl1.png"
+                      "/placeholder.png"
                     }
                     alt="Profile"
                     width={40}
