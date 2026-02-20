@@ -62,18 +62,33 @@ export function LoginForm() {
 
       try {
         const user = await apiBuilder.auth.getCurrentUser();
-        const onboardingStep = user?.user_metadata?.onboarding_step;
-        const role = user?.user_metadata?.role;
+        let onboardingStep = user?.user_metadata?.onboarding_step;
+        let role = user?.user_metadata?.role;
 
         const profile = await apiBuilder.profiles.getMyProfile();
 
         // If profile exists...
         if (profile) {
           const profileType = typeof profile?.profile_type === "string" ? profile.profile_type : "";
+          const isEscortProfile = profileType.toLowerCase() === "escort";
+
+          // Repair missing auth metadata for claimed/legacy escort profiles.
+          if (isEscortProfile && (role ?? "").toLowerCase() !== "escort") {
+            try {
+              await apiBuilder.auth.updateUserMetadata({
+                role: "escort",
+                onboarding_step: profile.onboarding_completed ? "completed" : "started",
+              });
+              role = "escort";
+              onboardingStep = profile.onboarding_completed ? "completed" : "started";
+            } catch (metadataError) {
+              console.error("Failed to sync escort role metadata:", metadataError);
+            }
+          }
 
           // Check if onboarding is completed
           if (profile.onboarding_completed) {
-            if (profileType.toLowerCase() === "escort") {
+            if (isEscortProfile) {
               router.push("/dashboard");
             } else {
               router.push("/");

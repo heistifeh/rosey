@@ -3,6 +3,7 @@ import {
   API,
   setAuthCookie,
   getAccessToken,
+  getAuthData,
   getUserId,
   getStoredUser,
 } from "./axios-config";
@@ -144,7 +145,16 @@ export const apiBuilder = {
     updateUserMetadata: (data: Record<string, any>) => {
       return LOGINAPI.put("/user", {
         data
-      }).then((response) => response.data);
+      }).then((response) => {
+        const currentAuth = getAuthData();
+        if (currentAuth?.access_token && response.data?.id) {
+          setAuthCookie({
+            ...currentAuth,
+            user: response.data,
+          });
+        }
+        return response.data;
+      });
     },
   },
   locations: {

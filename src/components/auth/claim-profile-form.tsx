@@ -144,6 +144,16 @@ export function ClaimProfileForm() {
           return;
         }
 
+        // Keep auth metadata aligned with claimed escort profile so role-based UI is correct.
+        try {
+          await apiBuilder.auth.updateUserMetadata({
+            role: "escort",
+            onboarding_step: "completed",
+          });
+        } catch (metadataError) {
+          console.error("Failed to sync claimed profile metadata:", metadataError);
+        }
+
         toast.success("Profile claimed successfully!", { id: "verify-otp" });
 
         if (!getAccessToken()) {
