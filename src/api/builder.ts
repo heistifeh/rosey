@@ -400,23 +400,35 @@ export const apiBuilder = {
         (response) => response.data?.[0] ?? null,
       );
     },
-    verifyProfileContact: (email: string, phone: string) => {
+    verifyProfileContact: (
+      email: string,
+      phone: string,
+      options?: { onlyUnclaimed?: boolean },
+    ) => {
       const params = new URLSearchParams();
-      params.append("select", "id,username,working_name");
+      params.append("select", "id,username,working_name,contact_email,contact_phone");
+
+      const emailToCheck = email?.trim().toLowerCase();
+      const phoneToCheck = phone?.trim();
 
 
-      if (email && phone) {
+      if (emailToCheck && phoneToCheck) {
 
-        params.append("or", `(contact_email.eq.${email},contact_phone.eq.${phone})`);
-      } else if (email) {
-        params.append("contact_email", `eq.${email}`);
-      } else if (phone) {
-        params.append("contact_phone", `eq.${phone}`);
+        params.append(
+          "or",
+          `(contact_email.eq.${emailToCheck},contact_phone.eq.${phoneToCheck})`,
+        );
+      } else if (emailToCheck) {
+        params.append("contact_email", `eq.${emailToCheck}`);
+      } else if (phoneToCheck) {
+        params.append("contact_phone", `eq.${phoneToCheck}`);
       } else {
         return Promise.resolve(null);
       }
 
-      // params.append("claim_status", "eq.unclaimed");
+      if (options?.onlyUnclaimed) {
+        params.append("user_id", "is.null");
+      }
 
       params.append("limit", "1");
 

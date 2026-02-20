@@ -4,6 +4,7 @@ import { apiBuilder } from "@/api/builder";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { UnclaimedProfileModal } from "@/components/modals/unclaimed-profile-modal";
 import { errorMessageHandler, type ErrorType } from "@/utils/error-handler";
 import { useMutation } from "@tanstack/react-query";
 import Image from "next/image";
@@ -34,6 +35,8 @@ const getPublicSiteOrigin = () => {
 
 export function LoginForm() {
   const router = useRouter();
+  const [showUnclaimedModal, setShowUnclaimedModal] = useState(false);
+  const [claimEmail, setClaimEmail] = useState("");
   const {
     register,
     handleSubmit,
@@ -108,8 +111,43 @@ export function LoginForm() {
     },
   });
 
-  const onSubmit = (values: LoginValues) => {
-    mutate(values);
+  const routeToClaimProfile = () => {
+    const params = new URLSearchParams();
+    if (claimEmail) {
+      params.set("email", claimEmail);
+    }
+    router.push(`/claim-profile${params.toString() ? `?${params.toString()}` : ""}`);
+  };
+
+  const checkForUnclaimedProfile = async (email: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) return false;
+
+    try {
+      const profile = await apiBuilder.profiles.verifyProfileContact(
+        normalizedEmail,
+        "",
+        { onlyUnclaimed: true },
+      );
+
+      if (profile) {
+        setClaimEmail(normalizedEmail);
+        setShowUnclaimedModal(true);
+        return true;
+      }
+    } catch (error) {
+      console.error("Failed checking unclaimed profile:", error);
+    }
+
+    return false;
+  };
+
+  const onSubmit = async (values: LoginValues) => {
+    const normalizedEmail = values.email.trim().toLowerCase();
+    const hasUnclaimedProfile = await checkForUnclaimedProfile(normalizedEmail);
+    if (hasUnclaimedProfile) return;
+
+    mutate({ ...values, email: normalizedEmail });
   };
 
   const handleGoogleSignIn = () => {
@@ -120,8 +158,15 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="w-full max-w-md flex flex-col gap-10">
+    <>
+      <UnclaimedProfileModal
+        isOpen={showUnclaimedModal}
+        email={claimEmail}
+        onClose={() => setShowUnclaimedModal(false)}
+        onClaim={routeToClaimProfile}
+      />
+      <div className="flex flex-col items-center justify-center">
+        <div className="w-full max-w-md flex flex-col gap-10">
         <div className="flex flex-col gap-2 text-center">
           <h1 className="text-4xl font-semibold text-primary-text sm:text-4xl">
             Welcome Back
@@ -257,7 +302,8 @@ export function LoginForm() {
             </Link>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 import { apiBuilder } from "@/api/builder";
 import { getAccessToken } from "@/api/axios-config";
 import { toast } from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { CodeInput } from "@/components/ui/code-input";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import Image from "next/image";
@@ -24,7 +24,9 @@ type ClaimProfileValues = {
 };
 
 export function ClaimProfileForm() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
+  const prefilledEmail = searchParams.get("email") ?? "";
+  const prefilledPhone = searchParams.get("phone") ?? "";
   const [step, setStep] = useState<"input" | "otp">("input");
   const [foundProfileId, setFoundProfileId] = useState<string | null>(null);
   const [contactInfo, setContactInfo] = useState<{
@@ -39,8 +41,8 @@ export function ClaimProfileForm() {
     formState: { errors, isSubmitting },
   } = useForm<ClaimProfileValues>({
     defaultValues: {
-      email: "",
-      phone: "",
+      email: prefilledEmail,
+      phone: prefilledPhone,
     },
   });
 
@@ -54,7 +56,7 @@ export function ClaimProfileForm() {
   }, [otpCountdown]);
 
   const onSearchSubmit = async (values: ClaimProfileValues) => {
-    const emailToCheck = values.email?.trim() || "";
+    const emailToCheck = values.email?.trim().toLowerCase() || "";
     const phoneToCheck = values.phone?.trim() || "";
 
     if (!emailToCheck && !phoneToCheck) {
@@ -66,24 +68,28 @@ export function ClaimProfileForm() {
 
       const profile = await apiBuilder.profiles.verifyProfileContact(
         emailToCheck,
-        phoneToCheck
+        phoneToCheck,
+        { onlyUnclaimed: true },
       );
 
       if (profile) {
         setFoundProfileId(profile.id);
-        setContactInfo(values);
+        setContactInfo({
+          email: emailToCheck,
+          phone: phoneToCheck,
+        });
 
 
         toast.loading("Sending OTP...", { id: "send-otp" });
-        if (values.email) {
+        if (emailToCheck) {
           await apiBuilder.auth.sendOtp({
-            email: values.email,
+            email: emailToCheck,
             type: "signup",
             create_user: true,
           } as any);
-        } else if (values.phone) {
+        } else if (phoneToCheck) {
           await apiBuilder.auth.sendOtp({
-            phone: values.phone,
+            phone: phoneToCheck,
             type: "sms",
             create_user: true,
           } as any);
