@@ -19,6 +19,19 @@ type LoginValues = {
   password: string;
 };
 
+const getPublicSiteOrigin = () => {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (configured) {
+    return configured.replace(/\/$/, "");
+  }
+
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+
+  return "https://rosey.link";
+};
+
 export function LoginForm() {
   const router = useRouter();
   const {
@@ -85,7 +98,7 @@ export function LoginForm() {
           router.push("/");
         }
 
-      } catch (error) {
+      } catch {
         // Fallback
         router.push("/");
       }
@@ -97,6 +110,11 @@ export function LoginForm() {
 
   const onSubmit = (values: LoginValues) => {
     mutate(values);
+  };
+
+  const handleGoogleSignIn = () => {
+    const redirectUrl = `${getPublicSiteOrigin()}/auth/callback`;
+    apiBuilder.auth.signInWithGoogle(redirectUrl);
   };
 
   const [showPassword, setShowPassword] = useState(false);
@@ -115,6 +133,35 @@ export function LoginForm() {
 
 
         <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="default"
+              className="w-full justify-center rounded-[200px] bg-input-bg text-sm font-normal h-10"
+              onClick={handleGoogleSignIn}
+            >
+              <Image
+                src="/svg/google.svg"
+                alt="Google"
+                width={18}
+                height={18}
+                className="h-5 w-5 mr-2"
+              />
+              Continue with Google
+            </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border-gray"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-2 bg-primary-bg text-text-gray">
+                  or sign in with email
+                </span>
+              </div>
+            </div>
+          </div>
 
           <form className="flex flex-col gap-10" onSubmit={handleSubmit(onSubmit)}>
             <section className=" flex flex-col gap-4">

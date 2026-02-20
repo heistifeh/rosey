@@ -24,6 +24,19 @@ type CreateAccountValues = {
   terms: boolean;
 };
 
+const getPublicSiteOrigin = () => {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (configured) {
+    return configured.replace(/\/$/, "");
+  }
+
+  if (typeof window !== "undefined") {
+    return window.location.origin;
+  }
+
+  return "https://rosey.link";
+};
+
 export function CreateAccountForm() {
   const router = useRouter();
   const {
@@ -96,7 +109,7 @@ export function CreateAccountForm() {
     setShowRoleModal(false);
 
     // Initiate Google OAuth
-    const redirectUrl = `${window.location.origin}/auth/callback`;
+    const redirectUrl = `${getPublicSiteOrigin()}/auth/callback`;
     apiBuilder.auth.signInWithGoogle(redirectUrl);
   };
 
