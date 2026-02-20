@@ -33,8 +33,8 @@ const menuLinks: LocalizedLink[] = [
 
 const resourcesLinks: LocalizedLink[] = [
   { labelKey: "common.blog", href: "/blog" },
-  { labelKey: "footer.resourceEscortTerms", href: "/" },
-  { labelKey: "footer.resourceFaqs", href: "/" },
+  { labelKey: "footer.resourceEscortTerms", href: "/escort-terms" },
+  { labelKey: "footer.resourceFaqs", href: "/faq" },
 ];
 
 const socialsLinks = [
@@ -46,10 +46,11 @@ const socialsLinks = [
 ];
 
 const supportLinks: LocalizedLink[] = [
-  { labelKey: "footer.supportHelp", href: "/" },
-  { labelKey: "footer.supportTerms", href: "/" },
-  { labelKey: "footer.supportPrivacy", href: "/" },
-  { labelKey: "footer.supportLegal", href: "/" },
+  { labelKey: "footer.supportHelp", href: "/help-support" },
+  { labelKey: "footer.supportTerms", href: "/terms" },
+  { labelKey: "footer.supportPrivacy", href: "/privacy-policy" },
+  { labelKey: "footer.supportLegal", href: "/legal-notices" },
+  { labelKey: "footer.supportReportTrafficking", href: "/report-trafficking" },
 ];
 
 const locationLinks = [
@@ -100,6 +101,38 @@ const locationLinks = [
   {
     label: "Escorts in Irvine",
     href: "/escorts/united-states/california/irvine",
+  },
+  {
+    label: "Escorts in Miami",
+    href: "/escorts/united-states/florida/miami",
+  },
+  {
+    label: "Escorts in New York",
+    href: "/escorts/united-states/new-york/new-york",
+  },
+  {
+    label: "Escorts in Houston",
+    href: "/escorts/united-states/texas/houston",
+  },
+  {
+    label: "Escorts in Dallas",
+    href: "/escorts/united-states/texas/dallas",
+  },
+  {
+    label: "Escorts in Las Vegas",
+    href: "/escorts/united-states/nevada/las-vegas",
+  },
+  {
+    label: "Escorts in Chicago",
+    href: "/escorts/united-states/illinois/chicago",
+  },
+  {
+    label: "Escorts in Phoenix",
+    href: "/escorts/united-states/arizona/phoenix",
+  },
+  {
+    label: "Escorts in Atlanta",
+    href: "/escorts/united-states/georgia/atlanta",
   },
 ];
 
@@ -284,7 +317,7 @@ export function FooterSection({
                   : t("footer.locationsDescription")}
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-4 md:gap-x-8 md:gap-y-3">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-4 md:gap-x-8 md:gap-y-3 lg:grid-cols-5">
               {locationsToRender.map((link) => (
                 <Link
                   key={`${link.href}-${link.label}`}

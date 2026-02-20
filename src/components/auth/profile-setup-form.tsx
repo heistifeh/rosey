@@ -387,7 +387,7 @@ export function ProfileSetupForm() {
     tagline: "",
     height: "",
     ethnicityCategory: "",
-    languages: "",
+    languages: [] as string[],
     eyeColor: "",
     bodyType: "",
     hairColor: "",
@@ -404,6 +404,37 @@ export function ProfileSetupForm() {
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+  const handleAddLanguage = (value: string) => {
+    if (!formData.languages.includes(value)) {
+      setFormData((prev) => ({
+        ...prev,
+        languages: [...prev.languages, value],
+      }));
+    }
+  };
+
+  const handleRemoveLanguage = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      languages: prev.languages.filter((lang) => lang !== value),
+    }));
+  };
+
+  const availableLanguages = [
+    "English",
+    "Spanish",
+    "French",
+    "German",
+    "Italian",
+    "Portuguese",
+    "Russian",
+    "Chinese",
+    "Japanese",
+    "Korean",
+    "Arabic",
+    "Hindi",
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -633,27 +664,40 @@ export function ProfileSetupForm() {
                   >
                     Languages
                   </Label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {formData.languages.map((lang) => (
+                      <span
+                        key={lang}
+                        className="flex items-center gap-1 rounded-full bg-primary text-primary-text px-3 py-1 text-xs font-semibold"
+                      >
+                        {lang}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveLanguage(lang)}
+                          className="ml-1 rounded-full hover:bg-white/20 p-0.5"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
                   <Select
-                    value={formData.languages || undefined}
-                    onValueChange={(value) => handleChange("languages", value)}
+                    value=""
+                    onValueChange={handleAddLanguage}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Add a language..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="English">English</SelectItem>
-                      <SelectItem value="Spanish">Spanish</SelectItem>
-                      <SelectItem value="French">French</SelectItem>
-                      <SelectItem value="German">German</SelectItem>
-                      <SelectItem value="Italian">Italian</SelectItem>
-                      <SelectItem value="Portuguese">Portuguese</SelectItem>
-                      <SelectItem value="Russian">Russian</SelectItem>
-                      <SelectItem value="Chinese">Chinese</SelectItem>
-                      <SelectItem value="Japanese">Japanese</SelectItem>
-                      <SelectItem value="Korean">Korean</SelectItem>
-                      <SelectItem value="Arabic">Arabic</SelectItem>
-                      <SelectItem value="Hindi">Hindi</SelectItem>
-                      <SelectItem value="Multiple">Multiple</SelectItem>
+                      {availableLanguages.map((lang) => (
+                        <SelectItem
+                          key={lang}
+                          value={lang}
+                          disabled={formData.languages.includes(lang)}
+                        >
+                          {lang}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <p className="text-[12px] font-normal text-text-gray-opacity">

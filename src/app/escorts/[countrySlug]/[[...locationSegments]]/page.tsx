@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { permanentRedirect } from "next/navigation";
 import { City, Country, State } from "country-state-city";
 import { CityPageClient } from "./city-page-client";
+import { CORE_SEO_KEYWORDS, buildPageMetadata } from "@/lib/seo";
 
 type CityPageParams = {
   countrySlug: string;
@@ -179,13 +180,14 @@ export async function generateMetadata({
   );
 
   if (!parsed.valid || !parsed.citySlug) {
-    return {
-      title: "Escorts | Rosey",
-      description: "Browse verified escorts on Rosey.",
-      alternates: {
-        canonical: buildEscortsPath(parsed.countrySlug),
-      },
-    };
+    return buildPageMetadata({
+      title: "Escorts by Location | Rosey",
+      description:
+        "Browse verified companion profiles on Rosey by country, state, and city.",
+      path: buildEscortsPath(parsed.countrySlug),
+      noIndex: true,
+      keywords: [...CORE_SEO_KEYWORDS, "escorts by location", "city escorts"],
+    });
   }
 
   const cityLine = [
@@ -196,13 +198,17 @@ export async function generateMetadata({
     .filter(Boolean)
     .join(", ");
 
-  return {
+  return buildPageMetadata({
     title: `Escorts in ${cityLine} | Rosey`,
-    description: `Browse verified escorts in ${cityLine} on Rosey. View profiles, rates, and availability.`,
-    alternates: {
-      canonical: canonicalPath,
-    },
-  };
+    description: `Browse verified escorts in ${cityLine} on Rosey. Compare profiles, rates, and real-time availability.`,
+    path: canonicalPath,
+    keywords: [
+      ...CORE_SEO_KEYWORDS,
+      `${humanizeSlug(parsed.citySlug)} escorts`,
+      parsed.stateSlug ? `${humanizeSlug(parsed.stateSlug)} escorts` : "",
+      `${humanizeSlug(parsed.countrySlug)} escorts`,
+    ].filter(Boolean),
+  });
 }
 
 export default async function CityPage({

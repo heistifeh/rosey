@@ -129,7 +129,7 @@ export default function AuthCallbackPage() {
                                 } else {
                                     console.log("✅ Returning escort with incomplete profile");
                                     toast.success("Welcome back! Please complete your profile");
-                                    router.push("/profile-setup");
+                                    router.push("/general-information?tab=profile");
                                 }
                                 return;
                             }

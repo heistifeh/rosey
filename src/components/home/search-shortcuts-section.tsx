@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { Country } from "country-state-city";
 import { getServerTranslator } from "@/lib/i18n/server";
+import { slugifyLocation } from "@/lib/google-places";
+import { SearchCountryShortcuts } from "./search-country-shortcuts";
 
 const ETHNICITY_OPTIONS = [
   "Asian",
@@ -12,10 +15,53 @@ const ETHNICITY_OPTIONS = [
   "Mixed",
 ];
 
-const COUNTRY_SHORTCUTS = [
-  { label: "United States", slug: "united-states" },
-  { label: "Canada", slug: "canada" },
+const HOMEPAGE_COUNTRY_ISO_CODES = [
+  "US",
+  "CA",
+  "MX",
+  "GB",
+  "FR",
+  "DE",
+  "NL",
+  "ES",
+  "IT",
+  "IE",
+  "CH",
+  "DK",
+  "NO",
+  "SE",
+  "FI",
+  "PL",
+  "AE",
+  "HK",
+  "TH",
+  "KR",
+  "PH",
+  "JP",
+  "SG",
+  "AU",
+  "NZ",
 ];
+
+const COUNTRY_SHORTCUTS = (() => {
+  const preferredOrder = new Map(
+    HOMEPAGE_COUNTRY_ISO_CODES.map((isoCode, index) => [isoCode, index]),
+  );
+
+  return Country.getAllCountries()
+    .filter((country) => preferredOrder.has(country.isoCode))
+    .map((country) => ({
+      isoCode: country.isoCode,
+      label: country.name,
+      slug: slugifyLocation(country.name),
+    }))
+    .sort(
+      (a, b) =>
+        (preferredOrder.get(a.isoCode) ?? Number.MAX_SAFE_INTEGER) -
+        (preferredOrder.get(b.isoCode) ?? Number.MAX_SAFE_INTEGER),
+    )
+    .map(({ label, slug }) => ({ label, slug }));
+})();
 
 export async function SearchShortcutsSection() {
   const { t } = await getServerTranslator();
@@ -53,17 +99,12 @@ export async function SearchShortcutsSection() {
           <p className="text-xs font-semibold uppercase tracking-wide text-text-gray-opacity">
             {t("searchShortcuts.country")}
           </p>
-          <div className="flex flex-wrap gap-2">
-            {COUNTRY_SHORTCUTS.map((country) => (
-              <Link
-                key={country.slug}
-                href={`/search?country=${country.slug}`}
-                className="rounded-full border border-dark-border bg-input-bg px-3 py-1.5 text-xs text-primary-text transition-colors hover:border-primary hover:text-primary md:text-sm"
-              >
-                {country.label}
-              </Link>
-            ))}
-          </div>
+          <SearchCountryShortcuts
+            countries={COUNTRY_SHORTCUTS}
+            viewAllLabel={t("searchShortcuts.viewAllCountries")}
+            showMoreLabel={t("searchShortcuts.showMoreCountries")}
+            showLessLabel={t("searchShortcuts.showFewerCountries")}
+          />
         </div>
       </div>
     </section>

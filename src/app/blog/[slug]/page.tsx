@@ -12,9 +12,14 @@ import { urlFor } from "@/sanity/lib/image";
 import { buildExcerpt } from "@/sanity/lib/serializers";
 import { PortableText } from "@portabletext/react";
 import { portableTextComponents } from "@/sanity/lib/portableText";
+import {
+  CORE_SEO_KEYWORDS,
+  SITE_URL,
+  absoluteUrl,
+  buildPageMetadata,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://rosey.link";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -30,37 +35,48 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 
   if (!article) {
-    return {
-      title: "Article not found | Rosey",
+    return buildPageMetadata({
+      title: "Article Not Found | Rosey",
       description: "The requested article could not be found.",
-    };
+      path: `/blog/${slug}`,
+      noIndex: true,
+      imagePath: "/images/blog1.png",
+      keywords: [...CORE_SEO_KEYWORDS, "article not found"],
+    });
   }
 
   const title = article.seoTitle || article.title;
   const description =
     article.seoDescription || article.excerpt || buildExcerpt(article.body);
   const ogImage = article.seoImage || article.mainImage;
-  const canonical = `${SITE_URL}/blog/${article.slug}`;
+  const canonicalPath = `/blog/${article.slug}`;
+  const canonical = absoluteUrl(canonicalPath);
   const image = ogImage ? urlFor(ogImage).width(1200).height(630).url() : undefined;
 
-  return {
+  const baseMetadata = buildPageMetadata({
     title: `${title} | Rosey`,
     description,
-    alternates: {
-      canonical,
-    },
+    path: canonicalPath,
+    imagePath: image || "/images/blog1.png",
+    type: "article",
+    keywords: [
+      ...CORE_SEO_KEYWORDS,
+      "blog article",
+      "companion insights",
+      article.title,
+    ],
+  });
+
+  return {
+    ...baseMetadata,
+    authors: [{ name: article.authorName || "Rosey" }],
     openGraph: {
-      title,
-      description,
+      ...baseMetadata.openGraph,
       type: "article",
+      publishedTime: article.publishedAt || article._createdAt,
+      modifiedTime: article._updatedAt || article.publishedAt || article._createdAt,
+      authors: article.authorName ? [article.authorName] : ["Rosey"],
       url: canonical,
-      images: image ? [image] : [],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: image ? [image] : [],
     },
   };
 }

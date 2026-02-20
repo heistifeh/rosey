@@ -26,11 +26,14 @@ import { Label } from "@/components/ui/label";
 import {
   buildMissingFieldsMessage,
   getAvailabilityMissingFields,
+  getGeneralMissingFields,
+  getProfileMissingFields,
+  getRatesMissingFields,
 } from "@/lib/profile-onboarding-validation";
 export function AvailabilityForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { saveData, getData } = useProfileStore();
+  const { saveData, getData, getAllData } = useProfileStore();
 
   const [selectedDays, setSelectedDays] = useState<string[]>(["Monday"]);
   const [dayTimes, setDayTimes] = useState<Record<string, string[]>>({
@@ -166,6 +169,32 @@ export function AvailabilityForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const allData = getAllData<Record<string, unknown>>();
+    const generalMissing = getGeneralMissingFields(allData);
+    if (generalMissing.length > 0) {
+      toast.error(buildMissingFieldsMessage(generalMissing));
+      const query = searchParams.get("edit") === "true" ? "&edit=true" : "";
+      router.push(`/general-information?tab=general${query}`);
+      return;
+    }
+
+    const profileMissing = getProfileMissingFields(allData);
+    if (profileMissing.length > 0) {
+      toast.error(buildMissingFieldsMessage(profileMissing));
+      const query = searchParams.get("edit") === "true" ? "&edit=true" : "";
+      router.push(`/general-information?tab=profile${query}`);
+      return;
+    }
+
+    const ratesMissing = getRatesMissingFields(allData);
+    if (ratesMissing.length > 0) {
+      toast.error(buildMissingFieldsMessage(ratesMissing));
+      const query = searchParams.get("edit") === "true" ? "?edit=true" : "";
+      router.push(`/rates${query}`);
+      return;
+    }
+
     const missingFields = getAvailabilityMissingFields({ dayTimes, selectedDays });
     if (missingFields.length > 0) {
       toast.error(buildMissingFieldsMessage(missingFields));

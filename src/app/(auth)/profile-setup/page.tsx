@@ -1,6 +1,5 @@
-import { ProfileSetupForm } from "@/components/auth/profile-setup-form";
+import { redirect } from "next/navigation";
 
 export default function ProfileSetupPage() {
-  return <ProfileSetupForm />;
+  redirect("/general-information?tab=profile");
 }
-

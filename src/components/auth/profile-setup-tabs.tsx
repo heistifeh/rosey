@@ -5,10 +5,15 @@ import { GeneralInformationFormContent } from "./general-information-form-conten
 import { ProfileSetupFormContent } from "./profile-setup-form-content";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { apiBuilder } from "@/api/builder";
 import { useProfileStore } from "@/hooks/use-profile-store";
 import { Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import {
+  buildMissingFieldsMessage,
+  getGeneralMissingFields,
+  getProfileMissingFields,
+  getRatesMissingFields,
+} from "@/lib/profile-onboarding-validation";
 
 import { useProfile } from "@/hooks/use-profile";
 
@@ -26,7 +31,7 @@ export function ProfileSetupTabs() {
   }, [router, isEditMode]);
 
   const [activeTab, setActiveTab] = useState(tabParam || "general");
-  const { saveData, clearData } = useProfileStore();
+  const { saveData, clearData, getData } = useProfileStore();
 
   useEffect(() => {
     if (!isEditMode) {
@@ -134,8 +139,10 @@ export function ProfileSetupTabs() {
           height: cmToFeet(profile.height_cm),
           ethnicityCategory: toTitleCase(profile.ethnicity_category),
           languages: Array.isArray(profile.languages)
-            ? profile.languages[0]
-            : profile.languages || "",
+            ? profile.languages
+            : profile.languages
+              ? [profile.languages]
+              : [],
           eyeColor: toTitleCase(profile.eye_color),
           bodyType: toTitleCase(profile.body_type),
           hairColor: toTitleCase(profile.hair_color),
@@ -209,10 +216,59 @@ export function ProfileSetupTabs() {
 
   const handleTabChange = (value: string) => {
     const query = isEditMode ? "?edit=true" : "";
+    const generalData = (getData("general") ?? {}) as Record<string, unknown>;
+    const profileData = (getData("profile") ?? {}) as Record<string, unknown>;
+    const ratesData = (getData("rates") ?? {}) as Record<string, unknown>;
+
+    const ensureGeneralComplete = () => {
+      const missing = getGeneralMissingFields(generalData);
+      if (missing.length > 0) {
+        toast.error(buildMissingFieldsMessage(missing));
+        setActiveTab("general");
+        return false;
+      }
+      return true;
+    };
+
+    const ensureProfileComplete = () => {
+      const missing = getProfileMissingFields(profileData);
+      if (missing.length > 0) {
+        toast.error(buildMissingFieldsMessage(missing));
+        setActiveTab("profile");
+        return false;
+      }
+      return true;
+    };
+
+    const ensureRatesComplete = () => {
+      const missing = getRatesMissingFields(ratesData);
+      if (missing.length > 0) {
+        toast.error(buildMissingFieldsMessage(missing));
+        router.push(`/rates${query}`);
+        return false;
+      }
+      return true;
+    };
+
     if (value === "rates") {
+      if (!ensureGeneralComplete() || !ensureProfileComplete()) {
+        return;
+      }
       router.push(`/rates${query}`);
     } else if (value === "availability") {
+      if (
+        !ensureGeneralComplete() ||
+        !ensureProfileComplete() ||
+        !ensureRatesComplete()
+      ) {
+        return;
+      }
       router.push(`/availability${query}`);
+    } else if (value === "profile") {
+      if (!ensureGeneralComplete()) {
+        return;
+      }
+      setActiveTab(value);
     } else {
       setActiveTab(value);
     }
