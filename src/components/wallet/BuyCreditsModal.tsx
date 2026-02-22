@@ -16,7 +16,7 @@ type CreditPackageId = CreditPackage["id"];
 
 const PACKAGES: CreditPackage[] = [
   // priceLabel is display-only, server is the source of truth.
-  { id: "starter", label: "Starter pack", credits: 500, priceLabel: "$100" },
+  { id: "starter", label: "Starter pack", credits: 500, priceLabel: "$1" },
   { id: "medium", label: "Medium", credits: 1200, priceLabel: "$250" },
   { id: "pro", label: "Pro", credits: 3500, priceLabel: "$500" },
 ];
