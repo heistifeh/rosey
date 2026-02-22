@@ -46,10 +46,15 @@ const formatRelativeTime = (value: string) => {
 export default function WalletPage() {
   const [showBalance, setShowBalance] = useState(true);
   const [isBuyOpen, setIsBuyOpen] = useState(false);
+  const [buyModalInitialPackageId, setBuyModalInitialPackageId] = useState<
+    "starter" | "medium" | "pro" | undefined
+  >(undefined);
   const { wallet, activity, isLoading, error, refetch } = useWallet();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [hasRechecked, setHasRechecked] = useState(false);
+  const [hasHandledVerificationIntent, setHasHandledVerificationIntent] =
+    useState(false);
 
   useEffect(() => {
     if (hasRechecked) return;
@@ -108,6 +113,16 @@ export default function WalletPage() {
     };
   }, [activity, refetch]);
 
+  useEffect(() => {
+    if (hasHandledVerificationIntent) return;
+    if (searchParams.get("verification") !== "1") return;
+
+    setHasHandledVerificationIntent(true);
+    setBuyModalInitialPackageId("pro");
+    setIsBuyOpen(true);
+    router.replace("/dashboard/wallet");
+  }, [hasHandledVerificationIntent, router, searchParams]);
+
   return (
     <div className="w-full flex justify-center items-center md:-mx-8 lg:-mx-12 px-4 md:px-[180px] pt-8 bg-primary-bg">
       <div className="max-w-[1200px] mx-auto w-full min-w-0">
@@ -149,7 +164,10 @@ export default function WalletPage() {
               )}
               <Button
                 className="bg-primary hover:bg-primary/90 text-primary-text w-full md:w-auto px-[50px] py-[13px]"
-                onClick={() => setIsBuyOpen(true)}
+                onClick={() => {
+                  setBuyModalInitialPackageId(undefined);
+                  setIsBuyOpen(true);
+                }}
               >
                 Buy Credits
               </Button>
@@ -237,7 +255,14 @@ export default function WalletPage() {
           </div>
         </div>
       </div>
-      <BuyCreditsModal open={isBuyOpen} onClose={() => setIsBuyOpen(false)} />
+      <BuyCreditsModal
+        open={isBuyOpen}
+        initialPackageId={buyModalInitialPackageId}
+        onClose={() => {
+          setIsBuyOpen(false);
+          setBuyModalInitialPackageId(undefined);
+        }}
+      />
     </div>
   );
 }

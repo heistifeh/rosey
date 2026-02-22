@@ -11,6 +11,8 @@ type CreditPackage = {
   priceLabel: string;
 };
 
+type CreditPackageId = CreditPackage["id"];
+
 const PACKAGES: CreditPackage[] = [
   // priceLabel is display-only, server is the source of truth.
   { id: "starter", label: "Starter pack", credits: 500, priceLabel: "$100" },
@@ -21,9 +23,14 @@ const PACKAGES: CreditPackage[] = [
 type BuyCreditsModalProps = {
   open: boolean;
   onClose: () => void;
+  initialPackageId?: CreditPackageId;
 };
 
-export function BuyCreditsModal({ open, onClose }: BuyCreditsModalProps) {
+export function BuyCreditsModal({
+  open,
+  onClose,
+  initialPackageId,
+}: BuyCreditsModalProps) {
   const [selectedId, setSelectedId] = useState<string>(PACKAGES[0]?.id ?? "starter");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<"selecting" | "invoiceReady">("selecting");
@@ -41,13 +48,21 @@ export function BuyCreditsModal({ open, onClose }: BuyCreditsModalProps) {
   );
 
   useEffect(() => {
+    if (open) {
+      const preferredPackage = PACKAGES.find((pkg) => pkg.id === initialPackageId);
+      if (preferredPackage) {
+        setSelectedId(preferredPackage.id);
+      }
+      return;
+    }
+
     if (!open) {
       setStatus("selecting");
       setInvoice(null);
       setRemainingSeconds(0);
       setIsSubmitting(false);
     }
-  }, [open]);
+  }, [initialPackageId, open]);
 
   useEffect(() => {
     if (!invoice) {

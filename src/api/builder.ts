@@ -41,7 +41,7 @@ const humanizeSlug = (value?: string | null) => {
 const PROFILE_SELECT =
   "id,user_id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images(public_url,is_primary), about,pronouns,languages,caters_to,age,height_cm,hair_color,eye_color,gender,gender_presentation,profile_type,trans_status,appear_on_other_profiles,trans_only,temporary_hide_days,onboarding_completed,contact_email,contact_phone,socials";
 const SEARCH_PROFILE_SELECT =
-  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,images!inner(public_url,is_primary)";
+  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,is_fully_verified,images!inner(public_url,is_primary)";
 
 export const apiBuilder = {
   auth: {
@@ -336,6 +336,9 @@ export const apiBuilder = {
         params.append("ads.placement_available_now", "eq.true");
       }
 
+      // Organic discovery should only show unclaimed/scraped profiles.
+      // Claimed/authenticated profiles appear via paid ads instead.
+      params.append("user_id", "is.null");
       params.append("is_active", "eq.true");
       params.append("order", "created_at.desc");
 
@@ -387,6 +390,7 @@ export const apiBuilder = {
       const params = new URLSearchParams();
       params.append("select", PROFILE_SELECT);
       params.append("limit", "24");
+      params.append("user_id", "is.null");
       params.append("is_active", "eq.true");
       params.append("city_slug", `eq.${paramsIn.citySlug}`);
       params.append("country_slug", `eq.${paramsIn.countrySlug}`);
