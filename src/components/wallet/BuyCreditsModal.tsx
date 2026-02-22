@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { apiBuilder } from "@/api/builder";
 
 type CreditPackage = {
   id: string;
@@ -88,13 +89,28 @@ export function BuyCreditsModal({
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/wallet/topup/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ packageId: selectedPackage.id }),
-      });
+      const createInvoice = () =>
+        fetch("/api/wallet/topup/create", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({ packageId: selectedPackage.id }),
+        });
+
+      let response = await createInvoice();
+
+      if (response.status === 401) {
+        try {
+          await apiBuilder.auth.refreshSession();
+          response = await createInvoice();
+        } catch (refreshError) {
+          console.error("Failed to refresh session before top-up:", refreshError);
+          alert("Your session expired. Please log in again and retry.");
+          return;
+        }
+      }
 
       if (!response.ok) {
         const errorPayload = (await response.json().catch(() => null)) as
