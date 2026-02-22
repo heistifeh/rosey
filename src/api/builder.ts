@@ -65,6 +65,20 @@ export const apiBuilder = {
         clearAuthCookie();
       }
     },
+    refreshSession: () => {
+      const current = getAuthData();
+      const refreshToken = current?.refresh_token;
+      if (!refreshToken) {
+        return Promise.reject(new Error("NO_REFRESH_TOKEN"));
+      }
+
+      return LOGINAPI.post("/token?grant_type=refresh_token", {
+        refresh_token: refreshToken,
+      }).then((response) => {
+        setAuthCookie(response.data);
+        return response.data;
+      });
+    },
     getCurrentUser: () => {
       const user = getStoredUser();
       const id = user?.id ?? getUserId();

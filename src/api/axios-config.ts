@@ -166,8 +166,10 @@ API.interceptors.request.use(
 // Add interceptor to LOGINAPI as well for authenticated auth requests
 LOGINAPI.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    const url = typeof config.url === "string" ? config.url : "";
+    const isTokenGrantRequest = url.startsWith("/token?grant_type=");
     const token = getAccessToken();
-    if (token) {
+    if (token && !isTokenGrantRequest) {
       // Ensure we don't send duplicate headers by removing any defaults
       delete config.headers.Authorization;
       delete config.headers.authorization;
