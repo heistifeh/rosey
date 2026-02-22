@@ -27,8 +27,8 @@ const menuLinks: LocalizedLink[] = [
   { labelKey: "common.home", href: "/" },
   { labelKey: "common.allEscorts", href: "/search" },
   { labelKey: "common.locations", href: "/locations" },
-  { labelKey: "common.signUp", href: "/" },
-  { labelKey: "common.login", href: "/" },
+  { labelKey: "common.signUp", href: "/create-account" },
+  { labelKey: "common.login", href: "/login" },
 ];
 
 const resourcesLinks: LocalizedLink[] = [
@@ -38,11 +38,10 @@ const resourcesLinks: LocalizedLink[] = [
 ];
 
 const socialsLinks = [
-  { label: "Twitter", href: "/" },
+  { label: "Twitter @rosey_link", href: "https://x.com/rosey_link" },
+  { label: "Telegram", href: "https://t.me/rosey_link" },
   { label: "Instagram", href: "/" },
   { label: "Tik Tok", href: "/" },
-  { label: "Facebook", href: "/" },
-  { label: "Reddit", href: "/" },
 ];
 
 const supportLinks: LocalizedLink[] = [
@@ -254,6 +253,8 @@ export function FooterSection({
                   <li key={link.labelKey}>
                     <Link
                       href={link.href}
+                      target={link.href.startsWith("http") ? "_blank" : undefined}
+                      rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
                       className="text-sm text-text-gray transition-colors hover:text-primary-text md:text-base"
                     >
                       {t(link.labelKey)}

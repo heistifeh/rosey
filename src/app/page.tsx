@@ -16,7 +16,7 @@ import { CORE_SEO_KEYWORDS, buildPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPageMetadata({
   title: "Rosey | Find Independent Companions",
   description:
-    "Browse verified companion profiles, discover available providers by city, and connect discreetly on Rosey.",
+    "Escorts near me? Find verified independent escorts & companions on Rosey.link – trusted directory with discreet profiles and real availability. Safe connections, browse local listings now. 18+ only.",
   path: "/",
   keywords: [
     ...CORE_SEO_KEYWORDS,

@@ -28,6 +28,7 @@ interface ProfileHeroSectionProps {
   onTabChange: (tab: string) => void;
   tabs: string[];
   onReviewSubmit?: (review: { rating: number; title: string; comment: string }) => Promise<void>;
+  onReviewButtonClick?: () => boolean | void;
 }
 
 export function ProfileHeroSection({
@@ -36,6 +37,7 @@ export function ProfileHeroSection({
   onTabChange,
   tabs,
   onReviewSubmit,
+  onReviewButtonClick,
 }: ProfileHeroSectionProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -56,6 +58,14 @@ export function ProfileHeroSection({
     } catch {
       toast.error("Failed to copy link");
     }
+  };
+
+  const handleReviewClick = () => {
+    const shouldContinue = onReviewButtonClick?.();
+    if (shouldContinue === false) {
+      return;
+    }
+    setIsReviewModalOpen(true);
   };
 
   return (
@@ -144,7 +154,7 @@ export function ProfileHeroSection({
           </div>
           <div className="flex items-center gap-2 md:ml-2">
             <button
-              onClick={() => setIsReviewModalOpen(true)}
+              onClick={handleReviewClick}
               className="p-2 rounded-full bg-primary-bg text-text-gray-opacity hover:bg-input-bg transition-colors"
               title="Write a review"
             >

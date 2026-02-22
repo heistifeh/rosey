@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { BadgeCheck, ShieldAlert } from "lucide-react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useProfile } from "@/hooks/use-profile";
 import { DashboardCardSkeleton } from "@/components/skeletons/dashboard-card-skeleton";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
 import { ProfileVerificationChecklist } from "@/components/profile/profile-verification-checklist";
+
+const VERIFICATION_FEE_USD = 500;
 
 export default function DashboardPage() {
   const { data: profile, isLoading: profileLoading } = useProfile();
@@ -64,6 +67,7 @@ export default function DashboardPage() {
         },
       ]
     : [];
+  const isVerified = Boolean(profile?.is_fully_verified);
 
   return (
     <div className=" flex items-center justify-center mx-auto ">
@@ -124,6 +128,54 @@ export default function DashboardPage() {
                   <p className="mt-1 text-sm text-primary-text">{item.value}</p>
                 </div>
               ))}
+            </div>
+          </section>
+        )}
+
+        {profile && !isVerified && (
+          <section className="mb-8 rounded-2xl border border-primary/40 bg-[#1b1216] p-4 md:p-5">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                  <ShieldAlert className="h-4 w-4" />
+                  Verification Pending
+                </div>
+                <h2 className="text-lg font-semibold text-primary-text md:text-xl">
+                  Pay to get verified
+                </h2>
+                <p className="max-w-2xl text-sm text-text-gray-opacity md:text-base">
+                  Verified profiles build more trust and stand out in listings. The
+                  verification fee is{" "}
+                  <span className="font-semibold text-primary-text">
+                    ${VERIFICATION_FEE_USD}
+                  </span>
+                  .
+                </p>
+              </div>
+              <Link
+                href="/dashboard/wallet?verification=1"
+                className="inline-flex w-full items-center justify-center rounded-[200px] bg-primary px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary/90 md:w-auto"
+              >
+                Pay ${VERIFICATION_FEE_USD} to Get Verified
+              </Link>
+            </div>
+          </section>
+        )}
+
+        {profile && isVerified && (
+          <section className="mb-8 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 md:p-5">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300">
+                <BadgeCheck className="h-5 w-5" />
+              </span>
+              <div>
+                <h2 className="text-base font-semibold text-primary-text md:text-lg">
+                  Your profile is verified
+                </h2>
+                <p className="text-sm text-text-gray-opacity">
+                  Your verified badge is now visible on profile cards and listings.
+                </p>
+              </div>
             </div>
           </section>
         )}

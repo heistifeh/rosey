@@ -31,8 +31,68 @@ const parseAuthCookie = () => {
   try {
     return JSON.parse(raw);
   } catch {
+    // Clear corrupted/truncated auth cookie so the app can recover cleanly.
+    if (typeof document !== "undefined") {
+      document.cookie = `${AUTH_COOKIE_KEY}=; path=/; max-age=0`;
+    }
     return null;
   }
+};
+
+const pickDefined = <T extends Record<string, any>>(obj: T) =>
+  Object.fromEntries(
+    Object.entries(obj).filter(([, value]) => value !== undefined),
+  ) as Partial<T>;
+
+const compactUserMetadata = (metadata: any) => {
+  if (!metadata || typeof metadata !== "object") return undefined;
+  return pickDefined({
+    role: metadata.role,
+    onboarding_step: metadata.onboarding_step,
+    email: metadata.email,
+    name: metadata.name,
+    full_name: metadata.full_name,
+    profile_type: metadata.profile_type,
+  });
+};
+
+const compactAppMetadata = (metadata: any) => {
+  if (!metadata || typeof metadata !== "object") return undefined;
+  return pickDefined({
+    role: metadata.role,
+    provider: metadata.provider,
+    providers: Array.isArray(metadata.providers) ? metadata.providers : undefined,
+  });
+};
+
+const compactUser = (user: any) => {
+  if (!user || typeof user !== "object" || !user.id) return undefined;
+
+  return pickDefined({
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    aud: user.aud,
+    user_metadata: compactUserMetadata(user.user_metadata),
+    app_metadata: compactAppMetadata(user.app_metadata),
+  });
+};
+
+const compactAuthPayload = (data: any) => {
+  const current = parseAuthCookie() ?? {};
+  const sourceUser = data?.user ?? (data?.id ? data : undefined);
+  const compactedUser = compactUser(sourceUser) ?? current.user;
+
+  const compacted = pickDefined({
+    access_token: data?.access_token ?? current.access_token,
+    refresh_token: data?.refresh_token ?? current.refresh_token,
+    token_type: data?.token_type ?? current.token_type,
+    expires_in: data?.expires_in ?? current.expires_in,
+    expires_at: data?.expires_at ?? current.expires_at,
+    user: compactedUser,
+  });
+
+  return compacted;
 };
 
 export const getAccessToken = (): string | null => {
@@ -54,9 +114,10 @@ export const getAuthData = () => parseAuthCookie();
 
 export const setAuthCookie = (data: any) => {
   if (typeof document === "undefined") return;
-  const cookieValue = encodeURIComponent(JSON.stringify(data));
+  const compactPayload = compactAuthPayload(data);
+  const cookieValue = encodeURIComponent(JSON.stringify(compactPayload));
   // Default to 7 days if no expiry provided
-  const maxAge = data.expires_in ? data.expires_in : 604800;
+  const maxAge = compactPayload.expires_in ? compactPayload.expires_in : 604800;
   document.cookie = `${AUTH_COOKIE_KEY}=${cookieValue}; path=/; max-age=${maxAge}; samesite=lax`;
 };
 

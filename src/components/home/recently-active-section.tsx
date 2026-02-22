@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Circle } from "lucide-react";
+import { ArrowRight, BadgeCheck, Circle } from "lucide-react";
 import { SafeImage } from "@/components/ui/safe-image";
 import { TaglineReveal } from "@/components/home/tagline-reveal";
 import { createServiceRoleClient, SERVICE_ROLE_KEY } from "@/server/supabase-client";
@@ -14,6 +14,7 @@ type RecentlyActiveProfile = {
   city: string | null;
   country: string | null;
   tagline: string | null;
+  is_fully_verified?: boolean | null;
   images: { public_url: string; is_primary: boolean }[] | null;
 };
 
@@ -27,7 +28,8 @@ export async function RecentlyActiveSection() {
   const supabase = createServiceRoleClient();
   const { data: profiles = [] } = await supabase
     .from("profiles")
-    .select("id,username,working_name,city,country,tagline,images(public_url,is_primary)")
+    .select("id,username,working_name,city,country,tagline,is_fully_verified,images(public_url,is_primary)")
+    .is("user_id", null)
     .order("created_at", { ascending: false })
     .limit(8);
 
@@ -44,6 +46,7 @@ export async function RecentlyActiveSection() {
       tagline: profile.tagline ?? null,
       image: imageUrl,
       username: profile.username,
+      isVerified: Boolean(profile.is_fully_verified),
     };
   });
 
@@ -79,13 +82,30 @@ export async function RecentlyActiveSection() {
                     sizes="(max-width: 768px) 100vw, 25vw"
                     priority={index < 4}
                   />
+                  {profile.isVerified && (
+                    <div className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-500/20 px-2 py-1 text-[10px] font-semibold text-emerald-200 backdrop-blur-sm">
+                      <BadgeCheck className="h-3.5 w-3.5" />
+                      <span>Verified</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex flex-1 flex-col justify-between gap-1.5 pt-2">
                   <div className="flex  justify-between gap-2 items-center">
-                    <p className="text-sm font-normal text-primary-text md:text-lg">
-                      {profile.name}
-                    </p>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <p className="text-sm font-normal text-primary-text md:text-lg truncate">
+                        {profile.name}
+                      </p>
+                      {profile.isVerified && (
+                        <span
+                          className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300"
+                          aria-label="Verified profile"
+                          title="Verified profile"
+                        >
+                          <BadgeCheck className="h-3.5 w-3.5" />
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <p className="text-xs text-text-gray-opacity md:text-sm">
                     {[profile.city, profile.country].filter(Boolean).join(", ") || t("common.locationNotSet")}

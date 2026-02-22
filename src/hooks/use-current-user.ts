@@ -20,11 +20,25 @@ export function useCurrentUser() {
       return;
     }
 
+    const cookieAppRole =
+      user.user_metadata?.role ??
+      user.app_metadata?.role ??
+      (typeof user.user_metadata?.profile_type === "string"
+        ? user.user_metadata.profile_type.toLowerCase()
+        : undefined);
+    const supabaseRole =
+      typeof user.role === "string" ? user.role.toLowerCase() : undefined;
+    const inferredRole =
+      cookieAppRole ??
+      (supabaseRole && supabaseRole !== "authenticated" && supabaseRole !== "anon"
+        ? supabaseRole
+        : undefined);
+
     setUser({
       id: user.id,
       email: user.email ?? user.user_metadata?.email,
       name: user.user_metadata?.name,
-      role: user.user_metadata?.role,
+      role: inferredRole,
     });
   }, [clearUser, setUser]);
 }
