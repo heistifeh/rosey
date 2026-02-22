@@ -17,6 +17,8 @@ import { toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import {
   buildMissingFieldsMessage,
+  getGeneralMissingFields,
+  getProfileMissingFields,
   getRatesMissingFields,
 } from "@/lib/profile-onboarding-validation";
 
@@ -63,7 +65,7 @@ export function RatesForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get("edit") === "true";
-  const { saveData, getData } = useProfileStore();
+  const { saveData, getData, getAllData } = useProfileStore();
   const [formData, setFormData] = useState({
     baseHourlyRates: "",
     baseCurrency: "",
@@ -94,6 +96,32 @@ export function RatesForm() {
     },
   ];
 
+  const validateRates = () => {
+    const allData = getAllData<Record<string, unknown>>();
+    const generalMissing = getGeneralMissingFields(allData);
+    if (generalMissing.length > 0) {
+      toast.error(buildMissingFieldsMessage(generalMissing));
+      const query = isEditMode ? "&edit=true" : "";
+      router.push(`/general-information?tab=general${query}`);
+      return false;
+    }
+
+    const profileMissing = getProfileMissingFields(allData);
+    if (profileMissing.length > 0) {
+      toast.error(buildMissingFieldsMessage(profileMissing));
+      const query = isEditMode ? "&edit=true" : "";
+      router.push(`/general-information?tab=profile${query}`);
+      return false;
+    }
+
+    const missingFields = getRatesMissingFields(formData);
+    if (missingFields.length > 0) {
+      toast.error(buildMissingFieldsMessage(missingFields));
+      return false;
+    }
+    return true;
+  };
+
   const handleTabClick = (value: string) => {
     const query = isEditMode ? "&edit=true" : "";
     if (value === "general") {
@@ -104,6 +132,10 @@ export function RatesForm() {
       // Already on rates page
       return;
     } else if (value === "availability") {
+      if (!validateRates()) {
+        return;
+      }
+      saveData("rates", formData);
       const q = isEditMode ? "?edit=true" : "";
       router.push(`/availability${q}`);
     }
@@ -117,9 +149,7 @@ export function RatesForm() {
     e.preventDefault();
     if (isSubmitting) return;
 
-    const missingFields = getRatesMissingFields(formData);
-    if (missingFields.length > 0) {
-      toast.error(buildMissingFieldsMessage(missingFields));
+    if (!validateRates()) {
       return;
     }
 

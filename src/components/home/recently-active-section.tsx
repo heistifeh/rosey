@@ -34,7 +34,7 @@ export async function RecentlyActiveSection() {
   const normalizedProfiles = (profiles as RecentlyActiveProfile[]).map((profile) => {
     const images = profile.images ?? [];
     const primaryImage = images.find((img) => img.is_primary) ?? images[0];
-    const imageUrl = primaryImage?.public_url || "/images/girl1.png";
+    const imageUrl = primaryImage?.public_url || "/placeholder.png";
     return {
       id: profile.id,
       name: profile.working_name ?? t("common.provider"),

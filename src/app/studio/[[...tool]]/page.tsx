@@ -7,12 +7,21 @@
  * https://github.com/sanity-io/next-sanity
  */
 
+import type { Metadata } from "next";
 import { NextStudio } from 'next-sanity/studio'
+import { viewport as studioViewport } from "next-sanity/studio";
 import config from '../../../../sanity.config'
+import { buildPageMetadata } from "@/lib/seo";
 
 export const dynamic = 'force-static'
 
-export { metadata, viewport } from 'next-sanity/studio'
+export const viewport = studioViewport;
+export const metadata: Metadata = buildPageMetadata({
+  title: "Studio | Rosey",
+  description: "Internal content studio for Rosey editorial management.",
+  path: "/studio",
+  noIndex: true,
+});
 
 export default function StudioPage() {
   return <NextStudio config={config} />

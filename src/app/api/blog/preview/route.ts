@@ -27,7 +27,7 @@ export async function GET() {
       excerpt: post.excerpt || buildExcerpt(post.body),
       image: post.mainImage
         ? urlFor(post.mainImage).width(800).height(500).url()
-        : "/images/blog1.png",
+        : "/placeholder.png",
       readTime: post.readTime || "5 min read",
     }));
 

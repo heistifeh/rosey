@@ -13,35 +13,26 @@ import {
 import type { Post } from "@/sanity/lib/types";
 import { buildExcerpt } from "@/sanity/lib/serializers";
 import { urlFor } from "@/sanity/lib/image";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://rosey.link";
+import { CORE_SEO_KEYWORDS, SITE_URL, buildPageMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Blog | Rosey",
   description:
-    "Insights, stories, and practical guidance for modern companionship, safety, booking, and provider growth.",
-  alternates: {
-    canonical: `${SITE_URL}/blog`,
-  },
-  openGraph: {
-    title: "Rosey Blog",
-    description:
-      "Insights, stories, and practical guidance for modern companionship, safety, booking, and provider growth.",
-    url: `${SITE_URL}/blog`,
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Rosey Blog",
-    description:
-      "Insights, stories, and practical guidance for modern companionship, safety, booking, and provider growth.",
-  },
-};
+    "Read Rosey insights, stories, and practical guidance on safer bookings, better profile quality, and companion industry trends.",
+  path: "/blog",
+  imagePath: "/placeholder.png",
+  keywords: [
+    ...CORE_SEO_KEYWORDS,
+    "escort blog",
+    "companion safety tips",
+    "provider growth tips",
+  ],
+});
 
 const imageUrl = (image?: Post["mainImage"]) =>
-  image ? urlFor(image).width(1200).height(700).url() : "/images/blog1.png";
+  image ? urlFor(image).width(1200).height(700).url() : "/placeholder.png";
 
 const publishedLabel = (post: Post) => {
   const dateRaw = post.publishedAt || post._createdAt;

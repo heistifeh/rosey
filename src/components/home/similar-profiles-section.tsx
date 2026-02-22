@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { MapPin, Circle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import type { Profile } from "@/types/types";
 import { SafeImage } from "@/components/ui/safe-image";
 
@@ -41,7 +40,7 @@ export function SimilarProfilesSection({
             const images = profile.images ?? [];
             const primaryImage =
               images.find((img) => img.is_primary) ?? images[0];
-            const imageUrl = primaryImage?.public_url || "/images/girl1.png";
+            const imageUrl = primaryImage?.public_url || "/placeholder.png";
             const locationLabel = [profile.city, profile.country]
               .filter(Boolean)
               .join(", ");

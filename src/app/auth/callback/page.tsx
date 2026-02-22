@@ -85,10 +85,18 @@ export default function AuthCallbackPage() {
 
                             // If user is new (no role set), check localStorage for intended role
                             if (!role) {
-                                const intendedRole = localStorage.getItem('oauth_intended_role');
+                                const intendedRoleRaw = localStorage.getItem('oauth_intended_role');
+                                const intendedRole =
+                                    intendedRoleRaw === "escort" || intendedRoleRaw === "client"
+                                        ? intendedRoleRaw
+                                        : null;
+                                localStorage.removeItem("oauth_intended_role");
                                 console.log("🔍 Intended role from localStorage:", intendedRole);
 
                                 if (intendedRole) {
+                                    role = intendedRole;
+                                    onboardingStep = intendedRole === "escort" ? "started" : "completed";
+
                                     // Update user metadata with the intended role
                                     try {
                                         console.log("✅ Updating user metadata with role:", intendedRole);
@@ -96,9 +104,6 @@ export default function AuthCallbackPage() {
                                             role: intendedRole,
                                             onboarding_step: intendedRole === 'escort' ? 'started' : 'completed'
                                         });
-                                        role = intendedRole;
-                                        onboardingStep = intendedRole === 'escort' ? 'started' : 'completed';
-                                        localStorage.removeItem('oauth_intended_role'); // Clean up
                                         console.log("✅ User metadata updated successfully");
                                     } catch (updateError) {
                                         console.error("❌ Failed to update user metadata:", updateError);
@@ -129,7 +134,7 @@ export default function AuthCallbackPage() {
                                 } else {
                                     console.log("✅ Returning escort with incomplete profile");
                                     toast.success("Welcome back! Please complete your profile");
-                                    router.push("/profile-setup");
+                                    router.push("/general-information?tab=profile");
                                 }
                                 return;
                             }

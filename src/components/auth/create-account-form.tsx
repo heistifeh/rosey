@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EmailConfirmationModal } from "@/components/modals/email-confirmation-modal";
 import { RoleSelectionModal } from "@/components/modals/role-selection-modal";
+import { UnclaimedProfileModal } from "@/components/modals/unclaimed-profile-modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiBuilder } from "@/api/builder";
 import { errorMessageHandler, type ErrorType } from "@/utils/error-handler";
+import { getPublicSiteOrigin } from "@/lib/public-site-origin";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -44,6 +46,8 @@ export function CreateAccountForm() {
   const [showModal, setShowModal] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
   const [showRoleModal, setShowRoleModal] = useState(false);
+  const [showUnclaimedModal, setShowUnclaimedModal] = useState(false);
+  const [claimEmail, setClaimEmail] = useState("");
 
   const { mutate, isPending: isLoading } = useMutation({
     mutationFn: (values: CreateAccountValues & { role?: string }) =>
@@ -82,12 +86,51 @@ export function CreateAccountForm() {
     },
   });
 
-  const onSubmit = (values: CreateAccountValues) => {
-    mutate({ ...values, role: "escort" });
+  const routeToClaimProfile = () => {
+    const params = new URLSearchParams();
+    if (claimEmail) {
+      params.set("email", claimEmail);
+    }
+    router.push(`/claim-profile${params.toString() ? `?${params.toString()}` : ""}`);
   };
 
-  const onClientSubmit = (values: CreateAccountValues) => {
-    mutate({ ...values, role: "client" });
+  const checkForUnclaimedProfile = async (email: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) return false;
+
+    try {
+      const profile = await apiBuilder.profiles.verifyProfileContact(
+        normalizedEmail,
+        "",
+        { onlyUnclaimed: true },
+      );
+
+      if (profile) {
+        setClaimEmail(normalizedEmail);
+        setShowUnclaimedModal(true);
+        return true;
+      }
+    } catch (error) {
+      console.error("Failed checking unclaimed profile:", error);
+    }
+
+    return false;
+  };
+
+  const onSubmit = async (values: CreateAccountValues) => {
+    const normalizedEmail = values.email.trim().toLowerCase();
+    const hasUnclaimedProfile = await checkForUnclaimedProfile(normalizedEmail);
+    if (hasUnclaimedProfile) return;
+
+    mutate({ ...values, email: normalizedEmail, role: "escort" });
+  };
+
+  const onClientSubmit = async (values: CreateAccountValues) => {
+    const normalizedEmail = values.email.trim().toLowerCase();
+    const hasUnclaimedProfile = await checkForUnclaimedProfile(normalizedEmail);
+    if (hasUnclaimedProfile) return;
+
+    mutate({ ...values, email: normalizedEmail, role: "client" });
   };
 
   const handleRoleSelect = (role: 'escort' | 'client') => {
@@ -96,7 +139,7 @@ export function CreateAccountForm() {
     setShowRoleModal(false);
 
     // Initiate Google OAuth
-    const redirectUrl = `${window.location.origin}/auth/callback`;
+    const redirectUrl = `${getPublicSiteOrigin()}/auth/callback`;
     apiBuilder.auth.signInWithGoogle(redirectUrl);
   };
 
@@ -117,6 +160,12 @@ export function CreateAccountForm() {
         isOpen={showRoleModal}
         onClose={() => setShowRoleModal(false)}
         onSelectRole={handleRoleSelect}
+      />
+      <UnclaimedProfileModal
+        isOpen={showUnclaimedModal}
+        email={claimEmail}
+        onClose={() => setShowUnclaimedModal(false)}
+        onClaim={routeToClaimProfile}
       />
       <div className="w-full min-h-screen bg-primary-bg flex flex-col lg:flex-row">
         {/* Left Side - Form */}

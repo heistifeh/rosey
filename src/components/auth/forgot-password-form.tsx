@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { errorMessageHandler, type ErrorType } from "@/utils/error-handler";
+import { getPublicSiteOrigin } from "@/lib/public-site-origin";
 import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useState } from "react";
@@ -17,6 +19,8 @@ type ForgotPasswordValues = {
 };
 
 export function ForgotPasswordForm() {
+    const searchParams = useSearchParams();
+    const isExpiredResetLink = searchParams.get("expired") === "1";
     const [emailSent, setEmailSent] = useState(false);
     const {
         register,
@@ -31,7 +35,7 @@ export function ForgotPasswordForm() {
 
     const { mutate, isPending: isLoading } = useMutation({
         mutationFn: (values: ForgotPasswordValues) => {
-            const redirectUrl = `${window.location.origin}/reset-password`;
+            const redirectUrl = `${getPublicSiteOrigin()}/reset-password`;
             return apiBuilder.auth.resetPassword(values.email, redirectUrl);
         },
         mutationKey: ["auth", "resetPassword"],
@@ -108,6 +112,13 @@ export function ForgotPasswordForm() {
                 </div>
 
                 <form className="flex flex-col gap-6" onSubmit={handleSubmit(onSubmit)}>
+                    {isExpiredResetLink && (
+                        <div className="rounded-xl border border-[#FEC84B]/40 bg-[#FEC84B]/10 p-3">
+                            <p className="text-sm text-primary-text">
+                                Your reset link expired or has already been used. Request a fresh link below.
+                            </p>
+                        </div>
+                    )}
                     <div className="flex flex-col gap-2">
                         <Label
                             htmlFor="email"

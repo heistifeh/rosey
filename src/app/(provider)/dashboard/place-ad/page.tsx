@@ -57,7 +57,7 @@ type PlaceAdPayload = {
   cities: SelectedCity[];
 };
 
-const CREDITS_PER_CITY = 15;
+const CREDITS_PER_CITY = 3;
 const PRIORITY_COUNTRY_ISO_CODES = ["US", "CA"] as const;
 const DEFAULT_AD_TITLE = "Featured Campaign";
 

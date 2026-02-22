@@ -4,7 +4,9 @@ import { apiBuilder } from "@/api/builder";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { UnclaimedProfileModal } from "@/components/modals/unclaimed-profile-modal";
 import { errorMessageHandler, type ErrorType } from "@/utils/error-handler";
+import { getPublicSiteOrigin } from "@/lib/public-site-origin";
 import { useMutation } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,6 +23,8 @@ type LoginValues = {
 
 export function LoginForm() {
   const router = useRouter();
+  const [showUnclaimedModal, setShowUnclaimedModal] = useState(false);
+  const [claimEmail, setClaimEmail] = useState("");
   const {
     register,
     handleSubmit,
@@ -46,18 +50,33 @@ export function LoginForm() {
 
       try {
         const user = await apiBuilder.auth.getCurrentUser();
-        const onboardingStep = user?.user_metadata?.onboarding_step;
-        const role = user?.user_metadata?.role;
+        let onboardingStep = user?.user_metadata?.onboarding_step;
+        let role = user?.user_metadata?.role;
 
         const profile = await apiBuilder.profiles.getMyProfile();
 
         // If profile exists...
         if (profile) {
           const profileType = typeof profile?.profile_type === "string" ? profile.profile_type : "";
+          const isEscortProfile = profileType.toLowerCase() === "escort";
+
+          // Repair missing auth metadata for claimed/legacy escort profiles.
+          if (isEscortProfile && (role ?? "").toLowerCase() !== "escort") {
+            try {
+              await apiBuilder.auth.updateUserMetadata({
+                role: "escort",
+                onboarding_step: profile.onboarding_completed ? "completed" : "started",
+              });
+              role = "escort";
+              onboardingStep = profile.onboarding_completed ? "completed" : "started";
+            } catch (metadataError) {
+              console.error("Failed to sync escort role metadata:", metadataError);
+            }
+          }
 
           // Check if onboarding is completed
           if (profile.onboarding_completed) {
-            if (profileType.toLowerCase() === "escort") {
+            if (isEscortProfile) {
               router.push("/dashboard");
             } else {
               router.push("/");
@@ -85,7 +104,7 @@ export function LoginForm() {
           router.push("/");
         }
 
-      } catch (error) {
+      } catch {
         // Fallback
         router.push("/");
       }
@@ -95,15 +114,62 @@ export function LoginForm() {
     },
   });
 
-  const onSubmit = (values: LoginValues) => {
-    mutate(values);
+  const routeToClaimProfile = () => {
+    const params = new URLSearchParams();
+    if (claimEmail) {
+      params.set("email", claimEmail);
+    }
+    router.push(`/claim-profile${params.toString() ? `?${params.toString()}` : ""}`);
+  };
+
+  const checkForUnclaimedProfile = async (email: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) return false;
+
+    try {
+      const profile = await apiBuilder.profiles.verifyProfileContact(
+        normalizedEmail,
+        "",
+        { onlyUnclaimed: true },
+      );
+
+      if (profile) {
+        setClaimEmail(normalizedEmail);
+        setShowUnclaimedModal(true);
+        return true;
+      }
+    } catch (error) {
+      console.error("Failed checking unclaimed profile:", error);
+    }
+
+    return false;
+  };
+
+  const onSubmit = async (values: LoginValues) => {
+    const normalizedEmail = values.email.trim().toLowerCase();
+    const hasUnclaimedProfile = await checkForUnclaimedProfile(normalizedEmail);
+    if (hasUnclaimedProfile) return;
+
+    mutate({ ...values, email: normalizedEmail });
+  };
+
+  const handleGoogleSignIn = () => {
+    const redirectUrl = `${getPublicSiteOrigin()}/auth/callback`;
+    apiBuilder.auth.signInWithGoogle(redirectUrl);
   };
 
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="w-full max-w-md flex flex-col gap-10">
+    <>
+      <UnclaimedProfileModal
+        isOpen={showUnclaimedModal}
+        email={claimEmail}
+        onClose={() => setShowUnclaimedModal(false)}
+        onClaim={routeToClaimProfile}
+      />
+      <div className="flex flex-col items-center justify-center">
+        <div className="w-full max-w-md flex flex-col gap-10">
         <div className="flex flex-col gap-2 text-center">
           <h1 className="text-4xl font-semibold text-primary-text sm:text-4xl">
             Welcome Back
@@ -115,6 +181,35 @@ export function LoginForm() {
 
 
         <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="default"
+              className="w-full justify-center rounded-[200px] bg-input-bg text-sm font-normal h-10"
+              onClick={handleGoogleSignIn}
+            >
+              <Image
+                src="/svg/google.svg"
+                alt="Google"
+                width={18}
+                height={18}
+                className="h-5 w-5 mr-2"
+              />
+              Continue with Google
+            </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border-gray"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="px-2 bg-primary-bg text-text-gray">
+                  or sign in with email
+                </span>
+              </div>
+            </div>
+          </div>
 
           <form className="flex flex-col gap-10" onSubmit={handleSubmit(onSubmit)}>
             <section className=" flex flex-col gap-4">
@@ -210,7 +305,8 @@ export function LoginForm() {
             </Link>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

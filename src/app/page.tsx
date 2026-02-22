@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { Header } from "@/components/layout/header";
 import { RecentlyActiveSection } from "@/components/home/recently-active-section";
@@ -10,6 +11,20 @@ import { AvailableNowSection } from "@/components/home/available-now-section";
 import { HeroShell } from "@/components/home/hero-shell";
 import { SearchShortcutsSection } from "@/components/home/search-shortcuts-section";
 import { AgeGateModal } from "@/components/home/age-gate-modal";
+import { CORE_SEO_KEYWORDS, buildPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Rosey | Find Independent Companions",
+  description:
+    "Browse verified companion profiles, discover available providers by city, and connect discreetly on Rosey.",
+  path: "/",
+  keywords: [
+    ...CORE_SEO_KEYWORDS,
+    "find companions",
+    "escort profiles by city",
+    "available now escorts",
+  ],
+});
 
 export default function Home() {
   return (

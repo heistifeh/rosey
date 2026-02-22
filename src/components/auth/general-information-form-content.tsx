@@ -233,6 +233,7 @@ export function GeneralInformationFormContent({
                 <SelectContent>
                   <SelectItem value="Trans Woman">Yes</SelectItem>
                   <SelectItem value="Trans Man">Yes, post-op</SelectItem>
+                  <SelectItem value="No">No</SelectItem>
 
                   <SelectItem value="Prefer not to say">
                     Prefer not to say

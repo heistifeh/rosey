@@ -161,6 +161,7 @@ export function GeneralInformationForm() {
                     <SelectContent>
                       <SelectItem value="Trans Woman">Trans Woman</SelectItem>
                       <SelectItem value="Trans Man">Trans Man</SelectItem>
+                      <SelectItem value="No">No</SelectItem>
                       <SelectItem value="Non-Binary">Non-Binary</SelectItem>
                       <SelectItem value="Genderfluid">Genderfluid</SelectItem>
                       <SelectItem value="Genderqueer">Genderqueer</SelectItem>
