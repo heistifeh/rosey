@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu, Search } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -8,6 +9,7 @@ import { useState } from "react";
 import { useAuthStore } from "@/stores/auth-store";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useI18n } from "@/lib/i18n/provider";
+import { apiBuilder } from "@/api/builder";
 
 export function Header() {
   const pathname = usePathname();
@@ -18,14 +20,34 @@ export function Header() {
   const clearUser = useAuthStore((state) => state.clearUser);
   const router = useRouter();
   const { t } = useI18n();
-  const isEscort = (user?.role ?? "").toLowerCase() === "escort";
+  const normalizedRole = (user?.role ?? "").toLowerCase();
+  const shouldCheckEscortProfile = Boolean(user?.id) && normalizedRole !== "escort";
+  const { data: myProfileFallback } = useQuery({
+    queryKey: ["header-my-profile-fallback", user?.id],
+    queryFn: async () => {
+      try {
+        return await apiBuilder.profiles.getMyProfile();
+      } catch {
+        return null;
+      }
+    },
+    enabled: shouldCheckEscortProfile,
+    retry: false,
+    staleTime: 60_000,
+  });
+  const isEscortFromProfile =
+    typeof myProfileFallback?.profile_type === "string" &&
+    myProfileFallback.profile_type.toLowerCase() === "escort";
+  const isEscort = normalizedRole === "escort" || isEscortFromProfile;
 
   const isHomeActive = pathname === "/";
   const isBlogActive = pathname.startsWith("/blog");
 
-  const handleAuthAction = () => {
+  const handleAuthAction = async () => {
     if (user) {
       clearUser();
+      setIsMobileMenuOpen(false);
+      await apiBuilder.auth.signOut();
       router.push("/");
       return;
     }

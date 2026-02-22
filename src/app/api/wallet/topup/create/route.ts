@@ -96,10 +96,9 @@ export async function POST(req: Request) {
     const baseUrl = rawBaseUrl.replace(/\/$/, "");
     const storeId = process.env.BTCPAY_STORE_ID ?? "";
     const apiKey = process.env.BTCPAY_API_KEY ?? "";
-    const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      new URL(req.url).origin;
+    const siteUrl = (
+      process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin
+    ).replace(/\/$/, "");
 
     const orderId = crypto.randomUUID();
     const invoicePayload = {

@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-page-custom-font */
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AuthHandler } from "@/components/auth/auth-handler";
@@ -103,6 +104,34 @@ export default async function RootLayout({
           <AuthHandler />
           {children}
         </Providers>
+        <Script id="smartsupp-chat" strategy="afterInteractive">
+          {`
+            var _smartsupp = window._smartsupp || {};
+            _smartsupp.key = 'b58ac1b21861c5a6c49ddc529a61cee15ff800de';
+            window._smartsupp = _smartsupp;
+            window.smartsupp || (function(d) {
+              var s, c, o = window.smartsupp = function() { o._.push(arguments); };
+              o._ = [];
+              s = d.getElementsByTagName('script')[0];
+              c = d.createElement('script');
+              c.type = 'text/javascript';
+              c.charset = 'utf-8';
+              c.async = true;
+              c.src = 'https://www.smartsuppchat.com/loader.js?';
+              s.parentNode.insertBefore(c, s);
+            })(document);
+          `}
+        </Script>
+        <noscript>
+          Powered by{" "}
+          <a
+            href="https://www.smartsupp.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Smartsupp
+          </a>
+        </noscript>
       </body>
     </html>
   );

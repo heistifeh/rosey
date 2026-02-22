@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiBuilder } from "@/api/builder";
-import { Loader2, Star } from "lucide-react";
+import { Loader2, MessageSquarePlus, Star } from "lucide-react";
 import { format } from "date-fns";
+import { ReviewModal } from "@/components/modals/review-modal";
 
 interface Review {
   id: string;
@@ -16,32 +18,75 @@ interface Review {
 
 interface ProfileReviewsSectionProps {
   profileId: string;
+  profileName?: string;
+  onReviewSubmit?: (review: {
+    rating: number;
+    title: string;
+    comment: string;
+  }) => Promise<void>;
+  onReviewButtonClick?: () => boolean | void;
 }
 
-export function ProfileReviewsSection({ profileId }: ProfileReviewsSectionProps) {
+export function ProfileReviewsSection({
+  profileId,
+  profileName = "Profile",
+  onReviewSubmit,
+  onReviewButtonClick,
+}: ProfileReviewsSectionProps) {
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const { data: reviews = [], isLoading } = useQuery<Review[]>({
     queryKey: ["profile-reviews", profileId],
     queryFn: () => apiBuilder.reviews.getReviews(profileId),
     enabled: !!profileId,
   });
 
+  const handleWriteReviewClick = () => {
+    const shouldContinue = onReviewButtonClick?.();
+    if (shouldContinue === false) return;
+    setIsReviewModalOpen(true);
+  };
+
   if (isLoading) {
     return (
       <section className="py-6">
-        <h2 className="text-xl font-semibold text-primary-text mb-4">Reviews</h2>
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-xl font-semibold text-primary-text">Reviews</h2>
+          <button
+            type="button"
+            onClick={handleWriteReviewClick}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90 sm:w-auto"
+          >
+            <MessageSquarePlus className="h-4 w-4" />
+            Write a review
+          </button>
+        </div>
         <div className="flex justify-center items-center h-20">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
+        <ReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          profileName={profileName}
+          onSubmit={onReviewSubmit}
+        />
       </section>
     );
   }
 
   return (
     <section className="py-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-semibold text-primary-text">
           Reviews ({reviews.length})
         </h2>
+        <button
+          type="button"
+          onClick={handleWriteReviewClick}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90 sm:w-auto"
+        >
+          <MessageSquarePlus className="h-4 w-4" />
+          Write a review
+        </button>
       </div>
 
       {reviews.length === 0 ? (
@@ -87,6 +132,12 @@ export function ProfileReviewsSection({ profileId }: ProfileReviewsSectionProps)
           ))}
         </div>
       )}
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        profileName={profileName}
+        onSubmit={onReviewSubmit}
+      />
     </section>
   );
 }

@@ -15,14 +15,50 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuthStore } from "@/stores/auth-store";
 
 type LoginValues = {
   email: string;
   password: string;
 };
 
+const resolveOnboardingRedirect = (params: {
+  role?: string | null;
+  onboardingStep?: string | null;
+  hasProfile: boolean;
+}) => {
+  const role = (params.role ?? "").toLowerCase();
+  const rawStep =
+    typeof params.onboardingStep === "string" ? params.onboardingStep.trim() : "";
+
+  if (!rawStep) {
+    if (role === "escort") {
+      return params.hasProfile ? "/general-information" : "/setup-account";
+    }
+    return "/";
+  }
+
+  const normalizedStep = rawStep.replace(/^\//, "").toLowerCase();
+
+  if (normalizedStep === "completed") {
+    return role === "escort" ? "/dashboard" : "/";
+  }
+
+  if (normalizedStep === "started") {
+    return role === "escort"
+      ? params.hasProfile
+        ? "/general-information"
+        : "/setup-account"
+      : "/";
+  }
+
+  // Stored onboarding steps are internal paths; ensure they remain app-relative.
+  return rawStep.startsWith("/") ? rawStep : `/${rawStep}`;
+};
+
 export function LoginForm() {
   const router = useRouter();
+  const setAuthUser = useAuthStore((state) => state.setUser);
   const [showUnclaimedModal, setShowUnclaimedModal] = useState(false);
   const [claimEmail, setClaimEmail] = useState("");
   const {
@@ -74,6 +110,17 @@ export function LoginForm() {
             }
           }
 
+          setAuthUser({
+            id: user?.id ?? profile.user_id ?? "",
+            email:
+              user?.email ??
+              user?.user_metadata?.email ??
+              profile.contact_email ??
+              "",
+            name: user?.user_metadata?.name,
+            role: isEscortProfile ? "escort" : (role ?? "client"),
+          });
+
           // Check if onboarding is completed
           if (profile.onboarding_completed) {
             if (isEscortProfile) {
@@ -88,18 +135,34 @@ export function LoginForm() {
             // If NOT, and profile exists, the next logical step isn't 'setup-account' (which creates the profile), 
             // but likely 'general-information' or 'verify-identity' depending on flow.
             // Let's assume general-information is safe if they have a profile row but no specific step.
-            console.log("Profile incomplete, resuming to:", onboardingStep);
-            router.push(onboardingStep || "/general-information");
+            const resumeRoute = resolveOnboardingRedirect({
+              role,
+              onboardingStep,
+              hasProfile: true,
+            });
+            console.log("Profile incomplete, resuming to:", resumeRoute);
+            router.push(resumeRoute);
             return;
           }
         }
 
         // If no profile found, check user metadata for role/step
+        if (user?.id) {
+          setAuthUser({
+            id: user.id,
+            email: user.email ?? user.user_metadata?.email ?? "",
+            name: user.user_metadata?.name,
+            role: role ?? "client",
+          });
+        }
         if (role === "escort") {
-          console.log("No profile found, resuming to:", onboardingStep);
-          // If no profile, they definitely need to go to setup-account to create one.
-          // Unless they have a specific step saved that is AFTER setup-account.
-          router.push(onboardingStep || "/setup-account");
+          const resumeRoute = resolveOnboardingRedirect({
+            role,
+            onboardingStep,
+            hasProfile: false,
+          });
+          console.log("No profile found, resuming to:", resumeRoute);
+          router.push(resumeRoute);
         } else {
           router.push("/");
         }

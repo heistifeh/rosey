@@ -2,6 +2,7 @@ import {
   LOGINAPI,
   API,
   setAuthCookie,
+  clearAuthCookie,
   getAccessToken,
   getAuthData,
   getUserId,
@@ -52,6 +53,18 @@ export const apiBuilder = {
       }),
     signUp: (data: SignUpPayload) =>
       LOGINAPI.post("/signup", data).then((response) => response.data),
+    signOut: async () => {
+      try {
+        await LOGINAPI.post("/logout");
+      } catch (error) {
+        // Clear local auth state even if the remote logout request fails/expired.
+        if (!axios.isAxiosError(error) || error.response?.status !== 401) {
+          console.error("Auth logout request failed", error);
+        }
+      } finally {
+        clearAuthCookie();
+      }
+    },
     getCurrentUser: () => {
       const user = getStoredUser();
       const id = user?.id ?? getUserId();

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState, use, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 import type { Profile } from "@/types/types";
 import { apiBuilder } from "@/api/builder";
 import { Header } from "@/components/layout/header";
@@ -795,6 +796,19 @@ export default function ProfilePage({
   ];
 
   const tabs = ["Overview", "Availability", "Photos", "Contact", "Reviews"];
+  const handleReviewButtonClick = () => {
+    if (isOwner) {
+      toast.error("You cannot review your own profile");
+      return false;
+    }
+
+    if (!userData?.id) {
+      toast("Login as a client to write a review.");
+      return false;
+    }
+
+    return true;
+  };
 
   return (
     <section className="flex flex-col min-h-screen bg-primary-bg overflow-x-hidden">
@@ -815,6 +829,7 @@ export default function ProfilePage({
             activeTab={activeTab}
             onTabChange={setActiveTab}
             tabs={tabs}
+            onReviewButtonClick={handleReviewButtonClick}
             onReviewSubmit={isOwner ? undefined : handleReviewSubmit}
           />
 
@@ -827,7 +842,12 @@ export default function ProfilePage({
               />
               <ProfileDetailsSection details={profile.details} />
               <ProfileAvailabilitySection availability={profile.availability} />
-              <ProfileReviewsSection profileId={String(profile.id ?? "")} />
+              <ProfileReviewsSection
+                profileId={String(profile.id ?? "")}
+                profileName={profile.name}
+                onReviewButtonClick={handleReviewButtonClick}
+                onReviewSubmit={isOwner ? undefined : handleReviewSubmit}
+              />
               <ProfileContactSection contact={profile.contact} />
             </div>
           )}
@@ -848,7 +868,12 @@ export default function ProfilePage({
           )}
 
           {activeTab === "Reviews" && (
-            <ProfileReviewsSection profileId={String(profile.id ?? "")} />
+            <ProfileReviewsSection
+              profileId={String(profile.id ?? "")}
+              profileName={profile.name}
+              onReviewButtonClick={handleReviewButtonClick}
+              onReviewSubmit={isOwner ? undefined : handleReviewSubmit}
+            />
           )}
 
           <SimilarProfilesSection

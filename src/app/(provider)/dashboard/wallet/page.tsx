@@ -174,6 +174,125 @@ export default function WalletPage() {
             </div>
           </div>
 
+          <section className="rounded-2xl border border-dark-border bg-input-bg p-4 md:p-6">
+            <div className="flex flex-col gap-5">
+              <div className="space-y-2">
+                <h2 className="text-xl md:text-2xl font-semibold text-primary-text">
+                  How to buy BTC and pay for Rosey credits
+                </h2>
+                <p className="text-sm md:text-base text-text-gray-opacity">
+                  Rosey does not sell Bitcoin directly. To fund your Rosey wallet,
+                  buy BTC from a reputable provider, keep it in a Bitcoin wallet
+                  app (or exchange app with send enabled), then pay your Rosey
+                  top-up invoice using BTC or Lightning.
+                </p>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="rounded-2xl border border-dark-border bg-primary-bg p-4">
+                  <p className="text-sm font-semibold text-primary-text">
+                    1. Set up a Bitcoin wallet/app
+                  </p>
+                  <p className="mt-2 text-sm text-text-gray-opacity">
+                    Use a reputable Bitcoin wallet app or exchange app that
+                    supports sending BTC. Make sure you can scan QR codes or copy
+                    and send payment addresses/invoices before you continue.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-dark-border bg-primary-bg p-4">
+                  <p className="text-sm font-semibold text-primary-text">
+                    2. Buy BTC from a trusted provider
+                  </p>
+                  <p className="mt-2 text-sm text-text-gray-opacity">
+                    Buy enough BTC to cover your Rosey package price plus network
+                    fees. Availability and payment methods vary by country, and
+                    some providers may require identity verification before
+                    purchase.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-dark-border bg-primary-bg p-4">
+                  <p className="text-sm font-semibold text-primary-text">
+                    3. Move BTC into your wallet (if you bought on an exchange)
+                  </p>
+                  <p className="mt-2 text-sm text-text-gray-opacity">
+                    If you purchased BTC on an exchange, withdraw/send it to your
+                    own wallet app first (or confirm your exchange app can pay BTC
+                    invoices directly). Wait for the BTC to arrive before paying
+                    Rosey.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-dark-border bg-primary-bg p-4">
+                  <p className="text-sm font-semibold text-primary-text">
+                    4. Create your Rosey top-up invoice
+                  </p>
+                  <p className="mt-2 text-sm text-text-gray-opacity">
+                    Click <span className="font-medium text-primary-text">Buy Credits</span>,
+                    choose a package, and create the invoice. Keep this page open
+                    so you can copy the payment details or scan the QR code from
+                    your wallet app.
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-dark-border bg-primary-bg p-4 md:col-span-2">
+                  <p className="text-sm font-semibold text-primary-text">
+                    5. Pay the invoice using the correct network, then wait for credits
+                  </p>
+                  <p className="mt-2 text-sm text-text-gray-opacity">
+                    If the Rosey invoice is for{" "}
+                    <span className="font-medium text-primary-text">BTC</span>,
+                    send BTC on the Bitcoin network. If it is for{" "}
+                    <span className="font-medium text-primary-text">Lightning</span>,
+                    use a Lightning-enabled wallet and pay the Lightning invoice.
+                    After payment, return here and your credits will update once
+                    the invoice is confirmed.
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-amber-400/25 bg-amber-400/5 p-4">
+                <h3 className="text-sm font-semibold text-primary-text">
+                  Important payment tips
+                </h3>
+                <ul className="mt-2 space-y-2 text-sm text-text-gray-opacity">
+                  <li>
+                    Send the exact invoice amount before the countdown expires.
+                  </li>
+                  <li>
+                    Do not send funds to an expired invoice. Create a new one if
+                    needed.
+                  </li>
+                  <li>
+                    Crypto transactions are generally irreversible. Double-check
+                    the network and amount before confirming.
+                  </li>
+                  <li>
+                    Send only Bitcoin (BTC) to BTC/Lightning invoices. Do not
+                    send USDT, ETH, SOL, or any other asset.
+                  </li>
+                  <li>
+                    Rosey will never ask you to send BTC directly to a private
+                    wallet address over chat or email.
+                  </li>
+                </ul>
+              </div>
+
+              <p className="text-xs md:text-sm text-text-gray-opacity">
+                Need help? Contact support via live chat or email{" "}
+                <a
+                  href="mailto:support@rosey.link"
+                  className="text-primary hover:text-primary/80 underline"
+                >
+                  support@rosey.link
+                </a>{" "}
+                and include a screenshot of the invoice status (do not share
+                your wallet seed phrase or exchange password).
+              </p>
+            </div>
+          </section>
+
           <div className="flex flex-col gap-4">
             <h2 className="text-xl md:text-2xl font-semibold text-primary-text">
               Recent Activity
