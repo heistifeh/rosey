@@ -9,6 +9,7 @@ import { getServerLocale } from "@/lib/i18n/server";
 import {
   DEFAULT_DESCRIPTION,
   SITE_NAME,
+  SITE_TWITTER_HANDLE,
   SITE_URL,
   absoluteUrl,
 } from "@/lib/seo";
@@ -27,6 +28,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: `${SITE_NAME} | Independent Companion Directory`,
   description: DEFAULT_DESCRIPTION,
+  alternates: {
+    canonical: "/",
+  },
   applicationName: SITE_NAME,
   referrer: "origin-when-cross-origin",
   category: "adult companionship directory",
@@ -57,6 +61,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${SITE_NAME} | Independent Companion Directory`,
     description: DEFAULT_DESCRIPTION,
+    site: SITE_TWITTER_HANDLE,
+    creator: SITE_TWITTER_HANDLE,
     images: [absoluteUrl("/images/hero-bg.png")],
   },
   robots: {
@@ -81,6 +87,36 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getServerLocale();
+  const siteSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${SITE_URL}/#organization`,
+        name: SITE_NAME,
+        url: SITE_URL,
+        logo: {
+          "@type": "ImageObject",
+          url: absoluteUrl("/images/rose.png"),
+        },
+        sameAs: ["https://x.com/rosey_link", "https://t.me/rosey_link"],
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        url: SITE_URL,
+        name: SITE_NAME,
+        publisher: {
+          "@id": `${SITE_URL}/#organization`,
+        },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${SITE_URL}/search?city={search_term_string}`,
+          "query-input": "required name=search_term_string",
+        },
+      },
+    ],
+  };
 
   return (
     <html lang={locale}>
@@ -104,6 +140,10 @@ export default async function RootLayout({
           <AuthHandler />
           {children}
         </Providers>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteSchema) }}
+        />
         <Script id="smartsupp-chat" strategy="afterInteractive">
           {`
             var _smartsupp = window._smartsupp || {};

@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { permanentRedirect } from "next/navigation";
 import { City, Country, State } from "country-state-city";
 import { CityPageClient } from "./city-page-client";
-import { CORE_SEO_KEYWORDS, buildPageMetadata } from "@/lib/seo";
+import {
+  CORE_SEO_KEYWORDS,
+  SITE_URL,
+  absoluteUrl,
+  buildPageMetadata,
+} from "@/lib/seo";
 
 type CityPageParams = {
   countrySlug: string;
@@ -156,7 +161,13 @@ const toLocationParams = (
   };
 };
 
-const humanizeSlug = (value: string) => value.replace(/-/g, " ");
+const humanizeSlug = (value: string) =>
+  value
+    .replace(/-/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 
 export async function generateMetadata({
   params,
@@ -192,7 +203,7 @@ export async function generateMetadata({
 
   const cityLine = [
     humanizeSlug(parsed.citySlug),
-    parsed.stateSlug ? humanizeSlug(parsed.stateSlug) : null,
+    preferredStateSlug ? humanizeSlug(preferredStateSlug) : null,
     humanizeSlug(parsed.countrySlug),
   ]
     .filter(Boolean)
@@ -205,7 +216,7 @@ export async function generateMetadata({
     keywords: [
       ...CORE_SEO_KEYWORDS,
       `${humanizeSlug(parsed.citySlug)} escorts`,
-      parsed.stateSlug ? `${humanizeSlug(parsed.stateSlug)} escorts` : "",
+      preferredStateSlug ? `${humanizeSlug(preferredStateSlug)} escorts` : "",
       `${humanizeSlug(parsed.countrySlug)} escorts`,
     ].filter(Boolean),
   });
@@ -246,13 +257,103 @@ export default async function CityPage({
     permanentRedirect(queryString ? `${destination}?${queryString}` : destination);
   }
 
+  const canonicalPath = buildEscortsPath(
+    parsed.countrySlug,
+    parsed.citySlug,
+    preferredStateSlug,
+  );
+  const canonicalUrl = absoluteUrl(canonicalPath);
+  const cityName = parsed.citySlug ? humanizeSlug(parsed.citySlug) : undefined;
+  const stateName = preferredStateSlug ? humanizeSlug(preferredStateSlug) : undefined;
+  const countryName = humanizeSlug(parsed.countrySlug);
+  const cityLine = [cityName, stateName, countryName].filter(Boolean).join(", ");
+  const cityPageJsonLd =
+    parsed.citySlug && parsed.valid
+      ? {
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "CollectionPage",
+              "@id": `${canonicalUrl}#webpage`,
+              url: canonicalUrl,
+              name: `Escorts in ${cityLine} | Rosey`,
+              description: `Browse independent companion profiles in ${cityLine} with rates, availability, and location-based discovery on Rosey.`,
+              isPartOf: {
+                "@id": `${SITE_URL}/#website`,
+              },
+              breadcrumb: {
+                "@id": `${canonicalUrl}#breadcrumb`,
+              },
+              about: {
+                "@type": "Place",
+                name: cityLine,
+                address: {
+                  "@type": "PostalAddress",
+                  addressLocality: cityName,
+                  addressRegion: stateName,
+                  addressCountry: countryName,
+                },
+              },
+            },
+            {
+              "@type": "BreadcrumbList",
+              "@id": `${canonicalUrl}#breadcrumb`,
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Home",
+                  item: SITE_URL,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "Locations",
+                  item: `${SITE_URL}/locations`,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 3,
+                  name: countryName,
+                  item: absoluteUrl(`/escorts/${parsed.countrySlug}`),
+                },
+                ...(preferredStateSlug
+                  ? [
+                      {
+                        "@type": "ListItem",
+                        position: 4,
+                        name: stateName,
+                        item: absoluteUrl(`/escorts/${parsed.countrySlug}/${preferredStateSlug}`),
+                      },
+                    ]
+                  : []),
+                {
+                  "@type": "ListItem",
+                  position: preferredStateSlug ? 5 : 4,
+                  name: cityName,
+                  item: canonicalUrl,
+                },
+              ],
+            },
+          ],
+        }
+      : null;
+
   return (
-    <CityPageClient
-      params={{
-        countrySlug: parsed.countrySlug,
-        citySlug: parsed.citySlug,
-        stateSlug: parsed.stateSlug,
-      }}
-    />
+    <>
+      <CityPageClient
+        params={{
+          countrySlug: parsed.countrySlug,
+          citySlug: parsed.citySlug,
+          stateSlug: parsed.stateSlug,
+        }}
+      />
+      {cityPageJsonLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(cityPageJsonLd) }}
+        />
+      ) : null}
+    </>
   );
 }

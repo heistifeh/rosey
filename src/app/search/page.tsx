@@ -80,7 +80,7 @@ export async function generateMetadata({
     ? `Find ${filters.join(" ")} on Rosey with flexible filters for rate, availability, and preferences.`
     : "Browse companion profiles on Rosey using filters for city, rates, availability, gender, and preferences.";
 
-  return buildPageMetadata({
+  const metadata = buildPageMetadata({
     title,
     description,
     path: "/search",
@@ -92,6 +92,21 @@ export async function generateMetadata({
       "city companion search",
     ],
   });
+
+  return {
+    ...metadata,
+    robots: {
+      index: false,
+      follow: true,
+      nocache: true,
+      googleBot: {
+        index: false,
+        follow: true,
+        noimageindex: true,
+        "max-snippet": 0,
+      },
+    },
+  };
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {

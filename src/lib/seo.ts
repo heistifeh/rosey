@@ -6,6 +6,7 @@ export const SITE_NAME = "Rosey";
 export const SITE_URL = trimTrailingSlash(
   process.env.NEXT_PUBLIC_SITE_URL || "https://rosey.link",
 );
+export const SITE_TWITTER_HANDLE = "@rosey_link";
 export const DEFAULT_OG_IMAGE_PATH = "/images/hero-bg.png";
 export const DEFAULT_DESCRIPTION =
   "Discover independent adult companions with detailed profiles, real-time availability, and location-based search on Rosey.";
@@ -31,6 +32,18 @@ const resolveImageUrl = (path?: string) => {
   return absoluteUrl(path);
 };
 
+const normalizeMetaDescription = (value: string) => {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= 170) {
+    return normalized;
+  }
+
+  const sliced = normalized.slice(0, 167);
+  const lastSpace = sliced.lastIndexOf(" ");
+  const safe = lastSpace > 120 ? sliced.slice(0, lastSpace) : sliced;
+  return `${safe.trimEnd()}...`;
+};
+
 type PageMetadataOptions = {
   title: string;
   description: string;
@@ -52,17 +65,18 @@ export const buildPageMetadata = ({
 }: PageMetadataOptions): Metadata => {
   const canonical = absoluteUrl(path);
   const image = resolveImageUrl(imagePath);
+  const safeDescription = normalizeMetaDescription(description);
 
   return {
     title,
-    description,
+    description: safeDescription,
     keywords: keywords && keywords.length > 0 ? keywords : CORE_SEO_KEYWORDS,
     alternates: {
       canonical,
     },
     openGraph: {
       title,
-      description,
+      description: safeDescription,
       url: canonical,
       siteName: SITE_NAME,
       locale: "en_US",
@@ -79,7 +93,7 @@ export const buildPageMetadata = ({
     twitter: {
       card: "summary_large_image",
       title,
-      description,
+      description: safeDescription,
       images: [image],
     },
     robots: noIndex

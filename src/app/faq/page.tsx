@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { InfoPageShell } from "@/components/static/info-page-shell";
-import { CORE_SEO_KEYWORDS, buildPageMetadata } from "@/lib/seo";
+import { CORE_SEO_KEYWORDS, SITE_URL, buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "FAQ | Rosey",
@@ -155,51 +155,76 @@ const faqGroups: FaqGroup[] = [
 ];
 
 export default function FAQPage() {
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqGroups.flatMap((group) =>
+      group.items.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
+        },
+      })),
+    ),
+    isPartOf: {
+      "@id": `${SITE_URL}/#website`,
+    },
+    url: `${SITE_URL}/faq`,
+  };
+
   return (
-    <InfoPageShell
-      title="Rosey.link FAQ"
-      subtitle="Frequently asked questions for clients and independent providers."
-    >
-      <p>
-        This FAQ covers common questions about using Rosey.link, an
-        independent escort directory focused on quality, discretion, and
-        respectful connections.
-      </p>
-      <p>
-        Launched in late 2025 and growing in cities like Los Angeles, Chicago,
-        St. Louis, Minneapolis, Louisville, and beyond.
-      </p>
-      <p>
-        Rosey.link is built for better experiences in the independent escort
-        space: quality over quantity. Stay safe, respectful, and informed.
-      </p>
+    <>
+      <InfoPageShell
+        title="Rosey.link FAQ"
+        subtitle="Frequently asked questions for clients and independent providers."
+      >
+        <p>
+          This FAQ covers common questions about using Rosey.link, an
+          independent escort directory focused on quality, discretion, and
+          respectful connections.
+        </p>
+        <p>
+          Launched in late 2025 and growing in cities like Los Angeles, Chicago,
+          St. Louis, Minneapolis, Louisville, and beyond.
+        </p>
+        <p>
+          Rosey.link is built for better experiences in the independent escort
+          space: quality over quantity. Stay safe, respectful, and informed.
+        </p>
 
-      {faqGroups.map((group) => (
-        <section key={group.title}>
-          <h2 className="text-xl font-semibold text-primary-text md:text-2xl">
-            {group.title}
-          </h2>
-          <div className="mt-4 space-y-4">
-            {group.items.map((item) => (
-              <article
-                key={`${group.title}-${item.question}`}
-                className="rounded-2xl border border-dark-border bg-input-bg/70 p-4"
-              >
-                <h3 className="text-base font-semibold text-primary-text md:text-lg">
-                  {item.question}
-                </h3>
-                <p className="mt-2 text-sm leading-7 text-text-gray md:text-base">
-                  {item.answer}
-                </p>
-              </article>
-            ))}
-          </div>
-        </section>
-      ))}
+        {faqGroups.map((group) => (
+          <section key={group.title}>
+            <h2 className="text-xl font-semibold text-primary-text md:text-2xl">
+              {group.title}
+            </h2>
+            <div className="mt-4 space-y-4">
+              {group.items.map((item) => (
+                <article
+                  key={`${group.title}-${item.question}`}
+                  className="rounded-2xl border border-dark-border bg-input-bg/70 p-4"
+                >
+                  <h3 className="text-base font-semibold text-primary-text md:text-lg">
+                    {item.question}
+                  </h3>
+                  <p className="mt-2 text-sm leading-7 text-text-gray md:text-base">
+                    {item.answer}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
+        ))}
 
-      <p className="text-xs text-text-gray-opacity md:text-sm">
-        Last updated: February 2026
-      </p>
-    </InfoPageShell>
+        <p className="text-xs text-text-gray-opacity md:text-sm">
+          Last updated: February 2026
+        </p>
+      </InfoPageShell>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+    </>
   );
 }

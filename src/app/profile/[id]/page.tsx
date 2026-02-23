@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import ProfilePageClient from "./profile-page-client";
-import { CORE_SEO_KEYWORDS, buildPageMetadata } from "@/lib/seo";
+import {
+  CORE_SEO_KEYWORDS,
+  SITE_URL,
+  absoluteUrl,
+  buildPageMetadata,
+} from "@/lib/seo";
 
 type ProfileRouteProps = {
   params: Promise<{ id: string }>;
@@ -14,6 +19,11 @@ type ProfileSeoData = {
   city?: string;
   state?: string;
   country?: string;
+  city_slug?: string;
+  state_slug?: string;
+  country_slug?: string;
+  approval_status?: string;
+  onboarding_completed?: boolean;
   images?: { public_url?: string; is_primary?: boolean }[];
 };
 
@@ -52,8 +62,10 @@ const fetchProfileSeoData = async (
 
   const params = new URLSearchParams({
     select:
-      "username,working_name,tagline,about,city,state,country,images(public_url,is_primary)",
+      "username,working_name,tagline,about,city,state,country,city_slug,state_slug,country_slug,approval_status,onboarding_completed,images(public_url,is_primary)",
     username: `eq.${username}`,
+    approval_status: "eq.approved",
+    onboarding_completed: "eq.true",
     limit: "1",
   });
 
@@ -139,6 +151,97 @@ export async function generateMetadata({
   });
 }
 
-export default function ProfilePage({ params }: ProfileRouteProps) {
-  return <ProfilePageClient params={params} />;
+export default async function ProfilePage({ params }: ProfileRouteProps) {
+  const { id } = await params;
+  const normalizedUsername = normalizeUsername(id);
+  const profile = await fetchProfileSeoData(normalizedUsername);
+  const displayName = profile?.working_name || profile?.username || "Provider";
+  const profileUsername = profile?.username || normalizedUsername || id;
+  const profileUrl = absoluteUrl(`/profile/${encodeURIComponent(profileUsername)}`);
+  const profileImage = primaryImageUrl(profile?.images) || absoluteUrl("/placeholder.png");
+  const locationLabel = [profile?.city, profile?.state, profile?.country]
+    .filter(Boolean)
+    .join(", ");
+  const locationPagePath =
+    profile?.country_slug && profile?.city_slug
+      ? `/escorts/${profile.country_slug}${
+          profile.state_slug ? `/${profile.state_slug}` : ""
+        }/${profile.city_slug}`
+      : undefined;
+  const profileJsonLd = profile
+    ? {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "ProfilePage",
+            "@id": `${profileUrl}#webpage`,
+            url: profileUrl,
+            name: `${displayName} | Rosey`,
+            isPartOf: {
+              "@id": `${SITE_URL}/#website`,
+            },
+            mainEntity: {
+              "@id": `${profileUrl}#person`,
+            },
+            breadcrumb: {
+              "@id": `${profileUrl}#breadcrumb`,
+            },
+          },
+          {
+            "@type": "Person",
+            "@id": `${profileUrl}#person`,
+            name: displayName,
+            description: profile.tagline || profile.about || undefined,
+            image: [profileImage],
+            url: profileUrl,
+            homeLocation: locationLabel
+              ? {
+                  "@type": "Place",
+                  name: locationLabel,
+                }
+              : undefined,
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": `${profileUrl}#breadcrumb`,
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: SITE_URL,
+              },
+              ...(locationPagePath
+                ? [
+                    {
+                      "@type": "ListItem",
+                      position: 2,
+                      name: "City Listings",
+                      item: absoluteUrl(locationPagePath),
+                    },
+                  ]
+                : []),
+              {
+                "@type": "ListItem",
+                position: locationPagePath ? 3 : 2,
+                name: displayName,
+                item: profileUrl,
+              },
+            ],
+          },
+        ],
+      }
+    : null;
+
+  return (
+    <>
+      <ProfilePageClient params={Promise.resolve({ id })} />
+      {profileJsonLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(profileJsonLd) }}
+        />
+      ) : null}
+    </>
+  );
 }
