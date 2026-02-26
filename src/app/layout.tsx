@@ -26,14 +26,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: `${SITE_NAME} | Independent Companion Directory`,
+  title: `${SITE_NAME} | Independent Escort Directory`,
   description: DEFAULT_DESCRIPTION,
   alternates: {
     canonical: "/",
   },
   applicationName: SITE_NAME,
   referrer: "origin-when-cross-origin",
-  category: "adult companionship directory",
+  category: "adult escort directory",
   publisher: SITE_NAME,
   creator: SITE_NAME,
   formatDetection: {
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     address: false,
   },
   openGraph: {
-    title: `${SITE_NAME} | Independent Companion Directory`,
+    title: `${SITE_NAME} | Independent Escort Directory`,
     description: DEFAULT_DESCRIPTION,
     type: "website",
     url: SITE_URL,
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} | Independent Companion Directory`,
+    title: `${SITE_NAME} | Independent Escort Directory`,
     description: DEFAULT_DESCRIPTION,
     site: SITE_TWITTER_HANDLE,
     creator: SITE_TWITTER_HANDLE,

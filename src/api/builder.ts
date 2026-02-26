@@ -16,6 +16,7 @@ import {
   Account,
   AvailableNowItem,
 } from "@/types/types";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const DEFAULT_SUPABASE_URL = "https://axhkwqaxbnsguxzrfsfj.supabase.co";
 
@@ -157,16 +158,20 @@ export const apiBuilder = {
       });
     },
 
-    signInWithGoogle: (redirectTo?: string) => {
-      // Construct the OAuth URL
-      const baseUrl = LOGINAPI.defaults.baseURL;
-      const params = new URLSearchParams({
-        provider: 'google',
-        ...(redirectTo && { redirect_to: redirectTo })
+    signInWithGoogle: async (redirectTo?: string) => {
+      const supabase = getSupabaseBrowserClient();
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          ...(redirectTo ? { redirectTo } : {}),
+        },
       });
 
-      // Redirect to Supabase OAuth endpoint
-      window.location.href = `${baseUrl}/authorize?${params.toString()}`;
+      if (error) {
+        throw error;
+      }
+
+      return data;
     },
 
     updateUserMetadata: (data: Record<string, any>) => {

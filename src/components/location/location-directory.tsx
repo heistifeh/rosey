@@ -336,16 +336,16 @@ export function LocationDirectory() {
       <div className="relative mx-auto flex w-full max-w-[1600px] flex-col gap-10 px-4 md:px-[60px]">
         <header className="rounded-[28px] border border-dark-border bg-primary-bg/70 p-5 md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary/80">
-            Location Directory
+            Escort Location Directory
           </p>
           <h1 className="mt-2 text-2xl font-semibold text-primary-text md:text-4xl">
-            Browse Cities By Country
+            Browse Escort Cities by Country
           </h1>
           <p className="mt-2 max-w-4xl text-sm text-text-gray-opacity md:text-base">
             United States and Canada are prioritized, and every country in our
-            ad placement directory is listed. Open any country to explore states
-            and city previews, then expand a state when you want to see every
-            city we support there.
+            escort directory is listed. Open any country to explore states and
+            city previews, then expand a state when you want to see every city
+            where we support escort listings.
           </p>
           <div className="mt-5 space-y-3">
             <div className="flex flex-col gap-2 md:max-w-[460px]">

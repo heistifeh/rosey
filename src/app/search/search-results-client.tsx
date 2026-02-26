@@ -15,6 +15,7 @@ import { City, Country, State } from "country-state-city";
 import { apiBuilder } from "@/api/builder";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
 import { ProfileCard } from "@/components/profile-card";
+import { LocationListingSeoAccordion } from "@/components/seo/location-listing-seo-accordion";
 import type { Profile } from "@/types/types";
 import { FooterSection } from "@/components/home/footer-section";
 import { useLocationAutocomplete } from "@/hooks/use-location-autocomplete";
@@ -927,7 +928,7 @@ export function SearchResultsClient({
                   ? `${formatLocationLabel(params.stateSlug, params.countrySlug)} escorts`
                 : params.countrySlug
                   ? `${formatSlug(params.countrySlug)} escorts`
-                  : "All Profiles"}
+                  : "All Escorts"}
             </h2>
             <span className="text-sm text-text-gray-opacity">
               Listing {finalProfiles.length} profile
@@ -1002,6 +1003,17 @@ export function SearchResultsClient({
             </button>
           </div>
         )}
+
+        <LocationListingSeoAccordion
+          location={{
+            citySlug: params.citySlug,
+            stateSlug: params.stateSlug,
+            countrySlug: params.countrySlug,
+            profileCount: finalProfiles.length,
+            source: "search",
+          }}
+          className="mt-2"
+        />
 
       </div>
       <FooterSection

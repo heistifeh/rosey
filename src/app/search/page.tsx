@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { SearchResultsClient } from "./search-results-client";
-import { CORE_SEO_KEYWORDS, buildPageMetadata } from "@/lib/seo";
+import {
+  CORE_SEO_KEYWORDS,
+  buildPageMetadata,
+  humanizeLocationSlug,
+} from "@/lib/seo";
 
 type SearchPageProps = {
   searchParams: Promise<{
@@ -40,17 +44,12 @@ const parseCatersToParam = (value?: string | string[]) => {
   return parts;
 };
 
-const humanizeSlug = (value?: string) =>
-  value
-    ? value
-        .split("-")
-        .filter(Boolean)
-        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-        .join(" ")
-    : undefined;
-
 const buildLocationLabel = (countrySlug?: string, stateSlug?: string, citySlug?: string) =>
-  [humanizeSlug(citySlug), humanizeSlug(stateSlug), humanizeSlug(countrySlug)]
+  [
+    humanizeLocationSlug(citySlug),
+    humanizeLocationSlug(stateSlug),
+    humanizeLocationSlug(countrySlug),
+  ]
     .filter(Boolean)
     .join(", ");
 
@@ -65,20 +64,22 @@ export async function generateMetadata({
   const gender = toSingleValue(params?.gender);
   const locationLabel = buildLocationLabel(countrySlug, stateSlug, citySlug);
 
-  const filters: string[] = [];
-  if (ethnicity) filters.push(`${ethnicity} profiles`);
-  if (gender && gender !== "All") filters.push(`${gender.toLowerCase()} companions`);
-  if (locationLabel) filters.push(`in ${locationLabel}`);
+  const escortDescriptors: string[] = [];
+  if (ethnicity) escortDescriptors.push(`${ethnicity} escorts`);
+  if (gender && gender !== "All") escortDescriptors.push(`${gender.toLowerCase()} escorts`);
+  const locationSuffix = locationLabel ? ` in ${locationLabel}` : "";
 
   const title = locationLabel
-    ? `Search Companions in ${locationLabel} | Rosey`
+    ? `Search Escorts in ${locationLabel} | Rosey`
     : ethnicity
-      ? `Search ${ethnicity} Companions | Rosey`
-      : "Search Companions | Rosey";
+      ? `Search ${ethnicity} Escorts | Rosey`
+      : "Search Escorts | Rosey";
 
-  const description = filters.length
-    ? `Find ${filters.join(" ")} on Rosey with flexible filters for rate, availability, and preferences.`
-    : "Browse companion profiles on Rosey using filters for city, rates, availability, gender, and preferences.";
+  const description = escortDescriptors.length || locationSuffix
+    ? `Find ${
+        escortDescriptors.length > 0 ? escortDescriptors.join(" and ") : "escorts"
+      }${locationSuffix} on Rosey with flexible filters for rate, availability, and preferences.`
+    : "Browse escort profiles on Rosey using filters for city, rates, availability, gender, and preferences.";
 
   const metadata = buildPageMetadata({
     title,
@@ -87,9 +88,9 @@ export async function generateMetadata({
     noIndex: true,
     keywords: [
       ...CORE_SEO_KEYWORDS,
-      "companion search",
+      "escort search",
       "escort search filters",
-      "city companion search",
+      "city escort search",
     ],
   });
 

@@ -216,9 +216,14 @@ export function LoginForm() {
     mutate({ ...values, email: normalizedEmail });
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     const redirectUrl = `${getPublicSiteOrigin()}/auth/callback`;
-    apiBuilder.auth.signInWithGoogle(redirectUrl);
+    try {
+      await apiBuilder.auth.signInWithGoogle(redirectUrl);
+    } catch (error) {
+      console.error("Google sign-in failed:", error);
+      toast.error("Unable to continue with Google. Please try again.");
+    }
   };
 
   const [showPassword, setShowPassword] = useState(false);

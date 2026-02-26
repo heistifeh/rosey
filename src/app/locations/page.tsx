@@ -7,9 +7,9 @@ import { slugifyLocation } from "@/lib/google-places";
 import { CORE_SEO_KEYWORDS, SITE_URL, buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Locations Directory | Rosey",
+  title: "Escort Locations Directory | Rosey",
   description:
-    "Explore Rosey locations by country, state, and city to find companion profiles in your preferred area.",
+    "Explore Rosey locations by country, state, and city to find escort profiles in your preferred area.",
   path: "/locations",
   keywords: [
     ...CORE_SEO_KEYWORDS,
@@ -39,9 +39,9 @@ export default function LocationsPage() {
         "@type": "CollectionPage",
         "@id": `${SITE_URL}/locations#webpage`,
         url: `${SITE_URL}/locations`,
-        name: "Locations Directory | Rosey",
+        name: "Escort Locations Directory | Rosey",
         description:
-          "Explore Rosey locations by country, state, and city to find companion profiles in your preferred area.",
+          "Explore Rosey locations by country, state, and city to find escort profiles in your preferred area.",
         isPartOf: {
           "@id": `${SITE_URL}/#website`,
         },

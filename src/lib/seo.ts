@@ -9,21 +9,40 @@ export const SITE_URL = trimTrailingSlash(
 export const SITE_TWITTER_HANDLE = "@rosey_link";
 export const DEFAULT_OG_IMAGE_PATH = "/images/hero-bg.png";
 export const DEFAULT_DESCRIPTION =
-  "Discover independent adult companions with detailed profiles, real-time availability, and location-based search on Rosey.";
+  "Discover independent escorts with detailed profiles, real-time availability, and location-based search on Rosey.";
 
 export const CORE_SEO_KEYWORDS = [
-  "independent companions",
+  "independent escorts",
   "escort directory",
-  "adult companions",
+  "adult escort listings",
   "city escort listings",
-  "verified profiles",
-  "available now companions",
-  "discreet bookings",
+  "verified escort profiles",
+  "available now escorts",
+  "discreet escort listings",
 ];
 
 export const absoluteUrl = (path: string) => {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   return new URL(normalizedPath, SITE_URL).toString();
+};
+
+const UPPERCASE_LOCATION_TOKENS = new Set(["us", "usa", "uk", "uae", "nz", "dc"]);
+
+export const humanizeLocationSlug = (value?: string | null) => {
+  if (!value) return undefined;
+
+  return value
+    .split("-")
+    .filter(Boolean)
+    .map((segment) => {
+      const normalized = segment.toLowerCase();
+      if (UPPERCASE_LOCATION_TOKENS.has(normalized)) {
+        return normalized.toUpperCase();
+      }
+
+      return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+    })
+    .join(" ");
 };
 
 const resolveImageUrl = (path?: string) => {

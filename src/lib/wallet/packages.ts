@@ -2,22 +2,22 @@ export type CreditPackageId = "starter" | "medium" | "pro";
 
 export const CREDIT_PACKAGES = {
   starter: {
-    credits: 500,
-    amount: 1,
+    credits: 100,
+    amount: 100,
     currency: "USD",
-    description: "500 credits",
+    description: "100 credits",
   },
   medium: {
-    credits: 1200,
+    credits: 250,
     amount: 250,
     currency: "USD",
-    description: "1200 credits",
+    description: "250 credits",
   },
   pro: {
-    credits: 3500,
+    credits: 500,
     amount: 500,
     currency: "USD",
-    description: "3500 credits",
+    description: "500 credits",
   },
 } as const;
 

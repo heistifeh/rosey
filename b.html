@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <title>Notice of Account Deactivation</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f6f8;font-family:Arial, Helvetica, sans-serif;line-height:1.5;">
+
+  <!-- Preheader (hidden) -->
+  <div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
+    Your account has been temporarily deactivated due to outstanding subscription payment.
+  </div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f6f8;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+          style="width:100%;max-width:600px;background:#ffffff;border-radius:8px;overflow:hidden;">
+
+          <tr>
+            <td style="padding:30px;">
+
+              <h2 style="margin:0 0 12px 0;color:#1a1a1a;font-size:22px;line-height:1.25;">
+                Notice of Account Deactivation
+              </h2>
+
+              <p style="margin:0 0 12px 0;color:#333333;font-size:14px;">
+                Dear <strong>{{client_name}}</strong>,
+              </p>
+
+              <p style="margin:0 0 12px 0;color:#333333;font-size:14px;">
+                We previously notified you regarding the outstanding subscription payment for your <strong>{{plan_name}}</strong> account.
+              </p>
+
+              <p style="margin:0 0 16px 0;color:#333333;font-size:14px;">
+                As of today, we have not received wallet funding or payment confirmation. In accordance with our billing policy, your account has now been <strong>temporarily deactivated</strong>.
+              </p>
+
+              <!-- Account Summary Box -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="border:1px solid #e6e6e6;border-radius:8px;overflow:hidden;margin:0 0 16px 0;">
+                <tr>
+                  <td style="padding:14px 14px;background:#fff7f7;">
+                    <p style="margin:0 0 10px 0;color:#1a1a1a;font-size:14px;">
+                      <strong>Account Summary</strong>
+                    </p>
+
+                    <p style="margin:0 0 6px 0;color:#333333;font-size:14px;">
+                      <strong>Outstanding Amount:</strong> {{outstanding_amount}}
+                    </p>
+                    <p style="margin:0 0 6px 0;color:#333333;font-size:14px;">
+                      <strong>Original Due Date:</strong> {{due_date}}
+                    </p>
+                    <p style="margin:0 0 6px 0;color:#333333;font-size:14px;">
+                      <strong>Grace Period Provided:</strong> {{grace_period_days}}
+                    </p>
+                    <p style="margin:0;color:#333333;font-size:14px;">
+                      <strong>Current Status:</strong> Deactivated
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <h3 style="margin:0 0 10px 0;color:#1a1a1a;font-size:16px;line-height:1.25;">
+                🔄 How to Reactivate Your Account
+              </h3>
+
+              <p style="margin:0 0 16px 0;color:#333333;font-size:14px;">
+                To restore full access to your platform:<br />
+                1. Fund your logistics wallet with the outstanding balance<br />
+                2. Notify our billing team (if required)<br />
+                3. The system will automatically reactivate once payment is confirmed
+              </p>
+
+              <!-- Warning Box -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                style="border:1px solid #e6e6e6;border-radius:8px;overflow:hidden;margin:0 0 16px 0;">
+                <tr>
+                  <td style="padding:14px 14px;background:#fffdf2;">
+                    <p style="margin:0;color:#333333;font-size:14px;">
+                      <strong>Please note:</strong> Prolonged non-payment may result in permanent account closure.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 12px 0;color:#333333;font-size:14px;">
+                We value our partnership and would be happy to reactivate your services once payment is received.
+              </p>
+
+              <p style="margin:0 0 18px 0;color:#333333;font-size:14px;">
+                If you are experiencing payment difficulties, kindly contact us immediately so we can discuss possible arrangements.
+              </p>
+
+              <!-- CTA Button -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 14px auto;">
+                <tr>
+                  <td align="center" style="border-radius:6px;" bgcolor="#0bbf5e">
+                    <a href="mailto:{{billing_email}}" target="_blank" rel="noopener"
+                      style="display:inline-block;background:#0bbf5e;color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:6px;font-size:14px;font-weight:bold;">
+                      Contact Billing
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0;color:#333333;font-size:14px;">
+                Sincerely,<br />
+                <strong>Insta Delivery Billing Team</strong><br />
+                Accounts &amp; Billing, Insta Delivery
+              </p>
+
+              <p style="margin:10px 0 0 0;color:#666666;font-size:13px;">
+                <strong>Contact:</strong>
+                <a href="mailto:{{billing_email}}" style="color:#0bbf5e;text-decoration:none;">{{billing_email}}</a>
+                {{contact_phone_optional}}
+              </p>
+
+            </td>
+          </tr>
+        </table>
+
+        <p style="margin:14px 0 0 0;font-size:12px;color:#888888;">
+          © {{year}} Insta-Delivery. All rights reserved.
+        </p>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

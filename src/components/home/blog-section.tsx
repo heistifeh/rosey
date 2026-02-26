@@ -59,9 +59,9 @@ export function BlogSection() {
   return (
     <section className="flex flex-col gap-6 bg-primary-bg items-center pt-10 pb-10 px-4 md:gap-10 md:pt-20 md:pb-[47px] md:px-[60px]">
       <div className="flex flex-col gap-3 items-center text-center md:gap-6">
-        <p className="text-xl font-semibold text-primary-text md:text-2xl lg:text-3xl">
+        <h2 className="text-xl font-semibold text-primary-text md:text-2xl lg:text-3xl">
           {t("blogSection.title")}
-        </p>
+        </h2>
         <p className="text-xs font-normal text-text-gray md:text-sm">
           {t("blogSection.subtitle")}
         </p>

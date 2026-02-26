@@ -133,14 +133,19 @@ export function CreateAccountForm() {
     mutate({ ...values, email: normalizedEmail, role: "client" });
   };
 
-  const handleRoleSelect = (role: 'escort' | 'client') => {
+  const handleRoleSelect = async (role: 'escort' | 'client') => {
     // Store the selected role in localStorage
     localStorage.setItem('oauth_intended_role', role);
     setShowRoleModal(false);
 
     // Initiate Google OAuth
     const redirectUrl = `${getPublicSiteOrigin()}/auth/callback`;
-    apiBuilder.auth.signInWithGoogle(redirectUrl);
+    try {
+      await apiBuilder.auth.signInWithGoogle(redirectUrl);
+    } catch (error) {
+      console.error("Google sign-up failed:", error);
+      toast.error("Unable to continue with Google. Please try again.");
+    }
   };
 
   const [showPassword, setShowPassword] = useState(false);

@@ -7,6 +7,7 @@ import {
   SITE_URL,
   absoluteUrl,
   buildPageMetadata,
+  humanizeLocationSlug,
 } from "@/lib/seo";
 
 type CityPageParams = {
@@ -161,14 +162,6 @@ const toLocationParams = (
   };
 };
 
-const humanizeSlug = (value: string) =>
-  value
-    .replace(/-/g, " ")
-    .split(" ")
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-
 export async function generateMetadata({
   params,
   searchParams,
@@ -194,7 +187,7 @@ export async function generateMetadata({
     return buildPageMetadata({
       title: "Escorts by Location | Rosey",
       description:
-        "Browse verified companion profiles on Rosey by country, state, and city.",
+        "Browse verified escort profiles on Rosey by country, state, and city.",
       path: buildEscortsPath(parsed.countrySlug),
       noIndex: true,
       keywords: [...CORE_SEO_KEYWORDS, "escorts by location", "city escorts"],
@@ -202,9 +195,9 @@ export async function generateMetadata({
   }
 
   const cityLine = [
-    humanizeSlug(parsed.citySlug),
-    preferredStateSlug ? humanizeSlug(preferredStateSlug) : null,
-    humanizeSlug(parsed.countrySlug),
+    humanizeLocationSlug(parsed.citySlug),
+    preferredStateSlug ? humanizeLocationSlug(preferredStateSlug) : null,
+    humanizeLocationSlug(parsed.countrySlug),
   ]
     .filter(Boolean)
     .join(", ");
@@ -215,9 +208,9 @@ export async function generateMetadata({
     path: canonicalPath,
     keywords: [
       ...CORE_SEO_KEYWORDS,
-      `${humanizeSlug(parsed.citySlug)} escorts`,
-      preferredStateSlug ? `${humanizeSlug(preferredStateSlug)} escorts` : "",
-      `${humanizeSlug(parsed.countrySlug)} escorts`,
+      `${humanizeLocationSlug(parsed.citySlug)} escorts`,
+      preferredStateSlug ? `${humanizeLocationSlug(preferredStateSlug)} escorts` : "",
+      `${humanizeLocationSlug(parsed.countrySlug)} escorts`,
     ].filter(Boolean),
   });
 }
@@ -263,9 +256,9 @@ export default async function CityPage({
     preferredStateSlug,
   );
   const canonicalUrl = absoluteUrl(canonicalPath);
-  const cityName = parsed.citySlug ? humanizeSlug(parsed.citySlug) : undefined;
-  const stateName = preferredStateSlug ? humanizeSlug(preferredStateSlug) : undefined;
-  const countryName = humanizeSlug(parsed.countrySlug);
+  const cityName = parsed.citySlug ? humanizeLocationSlug(parsed.citySlug) : undefined;
+  const stateName = preferredStateSlug ? humanizeLocationSlug(preferredStateSlug) : undefined;
+  const countryName = humanizeLocationSlug(parsed.countrySlug);
   const cityLine = [cityName, stateName, countryName].filter(Boolean).join(", ");
   const cityPageJsonLd =
     parsed.citySlug && parsed.valid
@@ -277,7 +270,7 @@ export default async function CityPage({
               "@id": `${canonicalUrl}#webpage`,
               url: canonicalUrl,
               name: `Escorts in ${cityLine} | Rosey`,
-              description: `Browse independent companion profiles in ${cityLine} with rates, availability, and location-based discovery on Rosey.`,
+              description: `Browse independent escort profiles in ${cityLine} with rates, availability, and location-based discovery on Rosey.`,
               isPartOf: {
                 "@id": `${SITE_URL}/#website`,
               },

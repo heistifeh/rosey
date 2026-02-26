@@ -19,13 +19,13 @@ import {
 } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Rosey | Find Independent Companions",
+  title: "Rosey | Find Independent Escorts",
   description:
-    "Escorts near me? Find verified independent escorts & companions on Rosey.link – trusted directory with discreet profiles and real availability. Safe connections, browse local listings now. 18+ only.",
+    "Find verified independent escorts on Rosey.link. Browse local escort listings by city, rates, and real-time availability. Discreet profiles and direct contact options. 18+ only.",
   path: "/",
   keywords: [
     ...CORE_SEO_KEYWORDS,
-    "find companions",
+    "find escorts",
     "escort profiles by city",
     "available now escorts",
   ],
@@ -39,7 +39,7 @@ export default function Home() {
         "@type": "WebPage",
         "@id": `${SITE_URL}/#homepage`,
         url: SITE_URL,
-        name: "Rosey | Find Independent Companions",
+        name: "Rosey | Find Independent Escorts",
         description: metadata.description,
         isPartOf: {
           "@id": `${SITE_URL}/#website`,

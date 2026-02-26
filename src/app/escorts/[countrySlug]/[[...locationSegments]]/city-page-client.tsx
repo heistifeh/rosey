@@ -9,6 +9,7 @@ import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
 import { FooterSection } from "@/components/home/footer-section";
 import { Header } from "@/components/layout/header";
 import { ProfileCard } from "@/components/profile-card";
+import { LocationListingSeoAccordion } from "@/components/seo/location-listing-seo-accordion";
 import type { Profile } from "@/types/types";
 import { slugifyLocation } from "@/lib/google-places";
 
@@ -452,6 +453,16 @@ export function CityPageClient({ params }: CityPageClientProps) {
             </div>
           )}
         </div>
+
+        <LocationListingSeoAccordion
+          location={{
+            citySlug,
+            stateSlug,
+            countrySlug,
+            profileCount: finalProfiles.length,
+            source: "city",
+          }}
+        />
 
       </div>
       <FooterSection
