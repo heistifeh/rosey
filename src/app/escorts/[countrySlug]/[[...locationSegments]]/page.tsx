@@ -17,11 +17,19 @@ type CityPageParams = {
 
 type CityPageSearchParams = {
   state?: string | string[];
+  page?: string | string[];
   [key: string]: string | string[] | undefined;
 };
 
 const toSingleValue = (value?: string | string[]) =>
   Array.isArray(value) ? value[0] : value;
+
+const parsePageParam = (value?: string) => {
+  if (!value) return 1;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 1) return 1;
+  return Math.floor(parsed);
+};
 
 const slugifyValue = (value: string) =>
   value
@@ -228,6 +236,7 @@ export default async function CityPage({
     resolvedParams,
     toSingleValue(resolvedSearchParams?.state),
   );
+  const initialPage = parsePageParam(toSingleValue(resolvedSearchParams?.page));
   const preferredStateSlug =
     parsed.stateSlug ?? inferStateSlugFromCity(parsed.countrySlug, parsed.citySlug);
 
@@ -340,6 +349,7 @@ export default async function CityPage({
           citySlug: parsed.citySlug,
           stateSlug: parsed.stateSlug,
         }}
+        initialPage={initialPage}
       />
       {cityPageJsonLd ? (
         <script

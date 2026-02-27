@@ -8,6 +8,12 @@ import { getServerTranslator } from "@/lib/i18n/server";
 
 export const revalidate = 30;
 
+const HOMEPAGE_FEATURED_COUNTRY_SLUG = "united-states";
+const HOMEPAGE_FEATURED_STATE_SLUG = "california";
+const HOMEPAGE_FEATURED_CITY_SLUG = "los-angeles";
+const LOS_ANGELES_AVAILABLE_NOW_SEARCH_HREF =
+  "/search?country=united-states&state=california&city=los-angeles&availableNow=true";
+
 type NormalizedAvailableNowItem = {
   type: "profile" | "ad";
   profileId: string;
@@ -32,18 +38,21 @@ export async function AvailableNowSection() {
     .from("profiles")
     .select("id,working_name,username,city,country,tagline,is_fully_verified,created_at,images(public_url,is_primary)")
     .is("user_id", null)
-    .order("created_at", { ascending: false })
+    .eq("country_slug", HOMEPAGE_FEATURED_COUNTRY_SLUG)
+    .eq("state_slug", HOMEPAGE_FEATURED_STATE_SLUG)
+    .eq("city_slug", HOMEPAGE_FEATURED_CITY_SLUG)
+    .order("working_name", { ascending: true })
     .limit(10);
 
   const { data: ads = [] } = await supabase
     .from("ads")
     .select(
-      "id,created_at,profile:profiles(id,working_name,username,city,country,tagline,is_fully_verified,images(public_url,is_primary))"
+      "id,created_at,profile:profiles(id,working_name,username,city,country,city_slug,state_slug,country_slug,tagline,is_fully_verified,images(public_url,is_primary))"
     )
     .eq("status", "active")
     .eq("placement_available_now", true)
     .order("created_at", { ascending: false })
-    .limit(1);
+    .limit(12);
 
   const normalizedProfiles: NormalizedAvailableNowItem[] = (profiles ?? []).map(
     (profile) => {
@@ -64,7 +73,19 @@ export async function AvailableNowSection() {
       }
   );
 
-  const adProfileRaw = ads?.[0]?.profile ?? null;
+  const laAd = (ads ?? []).find((ad) => {
+    const profileRaw = ad?.profile ?? null;
+    const profile = Array.isArray(profileRaw) ? profileRaw[0] : profileRaw;
+    if (!profile) return false;
+
+    return (
+      profile.city_slug === HOMEPAGE_FEATURED_CITY_SLUG &&
+      profile.state_slug === HOMEPAGE_FEATURED_STATE_SLUG &&
+      profile.country_slug === HOMEPAGE_FEATURED_COUNTRY_SLUG
+    );
+  });
+
+  const adProfileRaw = laAd?.profile ?? null;
   const adProfile = Array.isArray(adProfileRaw) ? adProfileRaw[0] : adProfileRaw;
   const adItem: NormalizedAvailableNowItem | null = adProfile
     ? {
@@ -99,7 +120,7 @@ export async function AvailableNowSection() {
 
           {normalizedProfiles.length >= 12 ? (
             <Link
-              href="/search?availableNow=true"
+              href={LOS_ANGELES_AVAILABLE_NOW_SEARCH_HREF}
               className="ml-auto inline-flex items-center gap-1 md:gap-2 rounded-full bg-primary px-3 py-1.5 md:px-[42px] md:py-[13px] text-xs font-semibold text-primary-text cursor-pointer hover:bg-primary/90 transition-colors"
             >
               {t("availableNow.seeAll")}

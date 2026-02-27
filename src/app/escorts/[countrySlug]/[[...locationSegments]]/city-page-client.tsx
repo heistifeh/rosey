@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { City, Country, State } from "country-state-city";
 import { apiBuilder } from "@/api/builder";
@@ -12,6 +13,7 @@ import { ProfileCard } from "@/components/profile-card";
 import { LocationListingSeoAccordion } from "@/components/seo/location-listing-seo-accordion";
 import type { Profile } from "@/types/types";
 import { slugifyLocation } from "@/lib/google-places";
+import { cn } from "@/lib/utils";
 
 export type CityPageClientProps = {
   params?: {
@@ -19,7 +21,9 @@ export type CityPageClientProps = {
     citySlug?: string;
     stateSlug?: string;
   };
+  initialPage?: number;
 };
+const PROFILES_PER_PAGE = 20;
 const RELATED_LOCATIONS_LIMIT = 20;
 
 const FALLBACK_CITIES_BY_COUNTRY: Record<string, string[]> = {
@@ -199,8 +203,17 @@ const formatLocationLabel = (...parts: Array<string | undefined>) =>
     .map((part) => formatSlug(part))
     .join(", ");
 
-export function CityPageClient({ params }: CityPageClientProps) {
+export function CityPageClient({
+  params,
+  initialPage = 1,
+}: CityPageClientProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { countrySlug, citySlug, stateSlug } = params || {};
+  const [currentPage, setCurrentPage] = useState(
+    Number.isFinite(initialPage) && initialPage > 0 ? initialPage : 1,
+  );
 
   const invalidParams = !citySlug || !countrySlug;
   const cityLine = formatLocationLabel(citySlug, stateSlug, countrySlug);
@@ -237,12 +250,53 @@ export function CityPageClient({ params }: CityPageClientProps) {
     enabled: !invalidParams,
   });
 
-  const sponsoredIds = new Set(sponsoredProfiles.map((profile) => profile.id));
-  const organicWithoutSponsored = organicProfiles.filter(
-    (profile) => !sponsoredIds.has(profile.id)
+  const sponsoredIds = useMemo(
+    () => new Set(sponsoredProfiles.map((profile) => profile.id)),
+    [sponsoredProfiles],
   );
-  const finalProfiles = [...sponsoredProfiles, ...organicWithoutSponsored];
+  const organicWithoutSponsored = useMemo(
+    () => organicProfiles.filter((profile) => !sponsoredIds.has(profile.id)),
+    [organicProfiles, sponsoredIds],
+  );
+  const finalProfiles = useMemo(
+    () => [...sponsoredProfiles, ...organicWithoutSponsored],
+    [organicWithoutSponsored, sponsoredProfiles],
+  );
   const isLoading = loadingOrganic || loadingSponsored;
+  const totalPages = Math.max(1, Math.ceil(finalProfiles.length / PROFILES_PER_PAGE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedProfiles = useMemo(() => {
+    const start = (safeCurrentPage - 1) * PROFILES_PER_PAGE;
+    return finalProfiles.slice(start, start + PROFILES_PER_PAGE);
+  }, [finalProfiles, safeCurrentPage]);
+
+  useEffect(() => {
+    setCurrentPage(
+      Number.isFinite(initialPage) && initialPage > 0 ? Math.floor(initialPage) : 1,
+    );
+  }, [initialPage]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const handlePageChange = (page: number) => {
+    const nextPage = Math.min(Math.max(page, 1), totalPages);
+    if (nextPage === safeCurrentPage) return;
+
+    setCurrentPage(nextPage);
+    const nextQuery = new URLSearchParams(searchParams.toString());
+    if (nextPage > 1) {
+      nextQuery.set("page", String(nextPage));
+    } else {
+      nextQuery.delete("page");
+    }
+
+    const queryString = nextQuery.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname);
+  };
 
   const relatedCities = useMemo(() => {
     if (invalidParams) return [];
@@ -439,7 +493,7 @@ export function CityPageClient({ params }: CityPageClientProps) {
             ? Array.from({ length: 8 }).map((_, index) => (
               <BaseCardSkeleton key={index} />
             ))
-            : finalProfiles.map((profile) => (
+            : paginatedProfiles.map((profile) => (
               <ProfileCard
                 key={profile.id}
                 profile={profile}
@@ -453,6 +507,54 @@ export function CityPageClient({ params }: CityPageClientProps) {
             </div>
           )}
         </div>
+
+        {!isLoading && totalPages > 1 && (
+          <div className="mt-2 flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => handlePageChange(safeCurrentPage - 1)}
+              disabled={safeCurrentPage <= 1}
+              className="rounded-[10px] border border-dark-border bg-primary-bg px-3 py-2 text-xs text-primary-text disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Prev
+            </button>
+            {Array.from({ length: totalPages }, (_, idx) => idx + 1)
+              .filter((page) =>
+                Math.abs(page - safeCurrentPage) <= 1 ||
+                page === 1 ||
+                page === totalPages
+              )
+              .map((page, idx, pages) => {
+                const prev = pages[idx - 1];
+                const showGap = prev && page - prev > 1;
+                return (
+                  <div key={`page-wrap-${page}`} className="flex items-center gap-2">
+                    {showGap && <span className="text-xs text-text-gray-opacity">…</span>}
+                    <button
+                      type="button"
+                      onClick={() => handlePageChange(page)}
+                      className={cn(
+                        "rounded-[10px] border px-3 py-2 text-xs",
+                        page === safeCurrentPage
+                          ? "border-primary bg-primary text-primary-text"
+                          : "border-dark-border bg-primary-bg text-primary-text",
+                      )}
+                    >
+                      {page}
+                    </button>
+                  </div>
+                );
+              })}
+            <button
+              type="button"
+              onClick={() => handlePageChange(safeCurrentPage + 1)}
+              disabled={safeCurrentPage >= totalPages}
+              className="rounded-[10px] border border-dark-border bg-primary-bg px-3 py-2 text-xs text-primary-text disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
 
         <LocationListingSeoAccordion
           location={{

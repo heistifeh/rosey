@@ -7,6 +7,12 @@ import { getServerTranslator } from "@/lib/i18n/server";
 
 export const revalidate = 30;
 
+const HOMEPAGE_FEATURED_COUNTRY_SLUG = "united-states";
+const HOMEPAGE_FEATURED_STATE_SLUG = "california";
+const HOMEPAGE_FEATURED_CITY_SLUG = "los-angeles";
+const LOS_ANGELES_SEARCH_HREF =
+  "/search?country=united-states&state=california&city=los-angeles";
+
 type RecentlyActiveProfile = {
   id: string;
   username: string | null;
@@ -30,7 +36,10 @@ export async function RecentlyActiveSection() {
     .from("profiles")
     .select("id,username,working_name,city,country,tagline,is_fully_verified,images(public_url,is_primary)")
     .is("user_id", null)
-    .order("created_at", { ascending: false })
+    .eq("country_slug", HOMEPAGE_FEATURED_COUNTRY_SLUG)
+    .eq("state_slug", HOMEPAGE_FEATURED_STATE_SLUG)
+    .eq("city_slug", HOMEPAGE_FEATURED_CITY_SLUG)
+    .order("working_name", { ascending: true })
     .limit(8);
 
   const normalizedProfiles = (profiles as RecentlyActiveProfile[]).map((profile) => {
@@ -60,7 +69,7 @@ export async function RecentlyActiveSection() {
             {t("recentlyActive.title")}
           </h2>
 
-          <Link href="/search" className="ml-auto inline-flex items-center gap-1 md:gap-2 rounded-full bg-primary px-3 py-1.5 md:px-[42px] md:py-[13px] text-xs font-semibold text-primary-text cursor-pointer hover:bg-primary/90 transition-colors">
+          <Link href={LOS_ANGELES_SEARCH_HREF} className="ml-auto inline-flex items-center gap-1 md:gap-2 rounded-full bg-primary px-3 py-1.5 md:px-[42px] md:py-[13px] text-xs font-semibold text-primary-text cursor-pointer hover:bg-primary/90 transition-colors">
             {t("recentlyActive.seeAll")}
             <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
           </Link>
