@@ -1,3 +1,19 @@
+export type HomepageProfile = {
+  id: string;
+  user_id: string | null;
+  working_name: string | null;
+  username: string | null;
+  city: string | null;
+  country: string | null;
+  tagline: string | null;
+  is_fully_verified: boolean | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  source_url: string | null;
+  created_at: string;
+  images: { public_url: string; is_primary: boolean }[] | null;
+};
+
 type ProfileIdentityShape = {
   id?: string | null;
   user_id?: string | null;
@@ -27,22 +43,31 @@ const normalizeSourceUrl = (value?: string | null) => {
     .toLowerCase();
 };
 
-export const getProfileIdentityKey = (profile: ProfileIdentityShape) => {
-  if (profile.user_id) return `user:${profile.user_id}`;
+// Returns ALL applicable identity keys for a profile.
+// Two profiles sharing ANY key are considered duplicates.
+export const getProfileIdentityKeys = (profile: ProfileIdentityShape): string[] => {
+  const keys: string[] = [];
+
+  if (profile.user_id) keys.push(`user:${profile.user_id}`);
 
   const email = normalizeEmail(profile.contact_email);
-  if (email) return `email:${email}`;
+  if (email) keys.push(`email:${email}`);
 
   const phone = normalizePhone(profile.contact_phone);
-  if (phone) return `phone:${phone}`;
+  if (phone) keys.push(`phone:${phone}`);
 
   const sourceUrl = normalizeSourceUrl(profile.source_url);
-  if (sourceUrl) return `source:${sourceUrl}`;
+  if (sourceUrl) keys.push(`source:${sourceUrl}`);
 
-  if (profile.username) return `username:${profile.username.trim().toLowerCase()}`;
-  if (profile.id) return `profile:${profile.id}`;
+  if (profile.username) keys.push(`username:${profile.username.trim().toLowerCase()}`);
+  if (profile.id) keys.push(`profile:${profile.id}`);
 
-  return "profile:unknown";
+  return keys.length > 0 ? keys : ["profile:unknown"];
+};
+
+// Returns a single primary key (backward compat).
+export const getProfileIdentityKey = (profile: ProfileIdentityShape) => {
+  return getProfileIdentityKeys(profile)[0];
 };
 
 export const dedupeProfilesByIdentity = <T extends ProfileIdentityShape>(
@@ -52,9 +77,9 @@ export const dedupeProfilesByIdentity = <T extends ProfileIdentityShape>(
   const deduped: T[] = [];
 
   (profiles ?? []).forEach((profile) => {
-    const identityKey = getProfileIdentityKey(profile);
-    if (seen.has(identityKey)) return;
-    seen.add(identityKey);
+    const keys = getProfileIdentityKeys(profile);
+    if (keys.some((k) => seen.has(k))) return;
+    keys.forEach((k) => seen.add(k));
     deduped.push(profile);
   });
 

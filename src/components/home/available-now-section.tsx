@@ -5,18 +5,17 @@ import { SafeImage } from "@/components/ui/safe-image";
 import { TaglineReveal } from "@/components/home/tagline-reveal";
 import { createServiceRoleClient, SERVICE_ROLE_KEY } from "@/server/supabase-client";
 import { getServerTranslator } from "@/lib/i18n/server";
-import { getProfileIdentityKey } from "@/lib/profile-identity";
+import { getProfileIdentityKeys, type HomepageProfile } from "@/lib/profile-identity";
 
 export const revalidate = 30;
 
 const AVAILABLE_NOW_SEARCH_HREF = "/search?availableNow=true";
 const AVAILABLE_NOW_RENDER_LIMIT = 12;
-const AVAILABLE_NOW_QUERY_LIMIT = 96;
 
 type NormalizedAvailableNowItem = {
   type: "profile" | "ad";
   profileId: string;
-  identityKey: string;
+  identityKeys: string[];
   username: string | null;
   workingName: string;
   city?: string | null;
@@ -26,7 +25,7 @@ type NormalizedAvailableNowItem = {
   isVerified: boolean;
 };
 
-export async function AvailableNowSection() {
+export async function AvailableNowSection({ profiles: rawProfiles = [] }: { profiles: HomepageProfile[] }) {
   const { t } = await getServerTranslator();
 
   if (!SERVICE_ROLE_KEY) {
@@ -34,13 +33,6 @@ export async function AvailableNowSection() {
   }
 
   const supabase = createServiceRoleClient();
-  const { data: rawProfiles = [] } = await supabase
-    .from("profiles")
-    .select("id,user_id,working_name,username,city,country,tagline,is_fully_verified,contact_email,contact_phone,created_at,images(public_url,is_primary)")
-    .is("user_id", null)
-    .order("created_at", { ascending: false })
-    .limit(AVAILABLE_NOW_QUERY_LIMIT);
-
   const { data: ads = [] } = await supabase
     .from("ads")
     .select(
@@ -55,26 +47,26 @@ export async function AvailableNowSection() {
   const seenIdentityKeys = new Set<string>();
 
   (rawProfiles ?? []).forEach((profile) => {
-      const identityKey = getProfileIdentityKey(profile);
-      if (seenIdentityKeys.has(identityKey)) return;
-      seenIdentityKeys.add(identityKey);
+    const keys = getProfileIdentityKeys(profile);
+    if (keys.some((k) => seenIdentityKeys.has(k))) return;
+    keys.forEach((k) => seenIdentityKeys.add(k));
 
-      const images = profile.images ?? [];
-      const primary = images.find((img) => img.is_primary) ?? images[0];
-      const imageUrl = primary?.public_url || "/placeholder.png";
-      normalizedProfiles.push({
-        type: "profile",
-        profileId: profile.id,
-        identityKey,
-        username: profile.username ?? null,
-        workingName: profile.working_name ?? t("common.provider"),
-        city: profile.city ?? null,
-        country: profile.country ?? null,
-        tagline: profile.tagline ?? null,
-        imageUrl,
-        isVerified: Boolean(profile.is_fully_verified),
-      });
+    const images = profile.images ?? [];
+    const primary = images.find((img) => img.is_primary) ?? images[0];
+    const imageUrl = primary?.public_url || "/placeholder.png";
+    normalizedProfiles.push({
+      type: "profile",
+      profileId: profile.id,
+      identityKeys: keys,
+      username: profile.username ?? null,
+      workingName: profile.working_name ?? t("common.provider"),
+      city: profile.city ?? null,
+      country: profile.country ?? null,
+      tagline: profile.tagline ?? null,
+      imageUrl,
+      isVerified: Boolean(profile.is_fully_verified),
     });
+  });
 
   const availableNowAd = (ads ?? []).find((ad) => {
     const profileRaw = ad?.profile ?? null;
@@ -84,12 +76,12 @@ export async function AvailableNowSection() {
 
   const adProfileRaw = availableNowAd?.profile ?? null;
   const adProfile = Array.isArray(adProfileRaw) ? adProfileRaw[0] : adProfileRaw;
-  const adIdentityKey = adProfile ? getProfileIdentityKey(adProfile) : null;
+  const adIdentityKeys = adProfile ? getProfileIdentityKeys(adProfile) : [];
   const adItem: NormalizedAvailableNowItem | null = adProfile
     ? {
         type: "ad",
         profileId: adProfile.id,
-        identityKey: adIdentityKey || `profile:${adProfile.id}`,
+        identityKeys: adIdentityKeys,
         username: adProfile.username ?? null,
         workingName: adProfile.working_name ?? t("common.provider"),
         city: adProfile.city ?? null,
@@ -105,7 +97,7 @@ export async function AvailableNowSection() {
 
   const AD_INDEX = 4;
   let finalItems = normalizedProfiles.slice(0, AVAILABLE_NOW_RENDER_LIMIT);
-  if (adItem && !seenIdentityKeys.has(adItem.identityKey)) {
+  if (adItem && !adItem.identityKeys.some((k) => seenIdentityKeys.has(k))) {
     finalItems.splice(Math.min(AD_INDEX, finalItems.length), 0, adItem);
   }
   if (finalItems.length > AVAILABLE_NOW_RENDER_LIMIT) {

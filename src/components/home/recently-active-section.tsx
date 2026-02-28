@@ -2,82 +2,30 @@ import Link from "next/link";
 import { ArrowRight, BadgeCheck, Circle } from "lucide-react";
 import { SafeImage } from "@/components/ui/safe-image";
 import { TaglineReveal } from "@/components/home/tagline-reveal";
-import { createServiceRoleClient, SERVICE_ROLE_KEY } from "@/server/supabase-client";
 import { getServerTranslator } from "@/lib/i18n/server";
-import { getProfileIdentityKey } from "@/lib/profile-identity";
-
-export const revalidate = 30;
+import { type HomepageProfile } from "@/lib/profile-identity";
 
 const RECENTLY_ACTIVE_SEARCH_HREF = "/search";
-const RECENTLY_ACTIVE_RENDER_LIMIT = 8;
-const RECENTLY_ACTIVE_QUERY_LIMIT = 64;
+const RECENTLY_ACTIVE_RENDER_LIMIT = 12;
 
-type RecentlyActiveProfile = {
-  id: string;
-  user_id: string | null;
-  username: string | null;
-  working_name: string | null;
-  city: string | null;
-  country: string | null;
-  tagline: string | null;
-  contact_email: string | null;
-  contact_phone: string | null;
-  is_fully_verified?: boolean | null;
-  images: { public_url: string; is_primary: boolean }[] | null;
-};
-
-export async function RecentlyActiveSection() {
+export async function RecentlyActiveSection({ profiles = [] }: { profiles: HomepageProfile[] }) {
   const { t } = await getServerTranslator();
 
-  if (!SERVICE_ROLE_KEY) {
-    return null;
-  }
-
-  const supabase = createServiceRoleClient();
-  const { data: profiles = [] } = await supabase
-    .from("profiles")
-    .select(
-      "id,user_id,username,working_name,city,country,tagline,contact_email,contact_phone,is_fully_verified,created_at,images(public_url,is_primary)"
-    )
-    .is("user_id", null)
-    .order("created_at", { ascending: false })
-    .limit(RECENTLY_ACTIVE_QUERY_LIMIT);
-
-  const normalizedProfiles: {
-    id: string;
-    name: string;
-    status: string;
-    city: string | null;
-    country: string | null;
-    tagline: string | null;
-    image: string;
-    username: string | null;
-    isVerified: boolean;
-  }[] = [];
-  const seenIdentityKeys = new Set<string>();
-
-  (profiles as RecentlyActiveProfile[]).forEach((profile) => {
-    const identityKey = getProfileIdentityKey(profile);
-    if (seenIdentityKeys.has(identityKey)) return;
-    seenIdentityKeys.add(identityKey);
-
+  const itemsToRender = profiles.slice(0, RECENTLY_ACTIVE_RENDER_LIMIT).map((profile) => {
     const images = profile.images ?? [];
     const primaryImage = images.find((img) => img.is_primary) ?? images[0];
-    const imageUrl = primaryImage?.public_url || "/placeholder.png";
-    normalizedProfiles.push({
+    return {
       id: profile.id,
       name: profile.working_name ?? t("common.provider"),
       status: t("recentlyActive.status"),
       city: profile.city ?? null,
       country: profile.country ?? null,
       tagline: profile.tagline ?? null,
-      image: imageUrl,
+      image: primaryImage?.public_url || "/placeholder.png",
       username: profile.username,
       isVerified: Boolean(profile.is_fully_verified),
-    });
+    };
   });
-
-  const itemsToRender = normalizedProfiles.slice(0, RECENTLY_ACTIVE_RENDER_LIMIT);
 
   return (
     <section className="relative z-10 w-full bg-primary-bg px-4 pb-12 pt-10 md:pb-16 md:pt-20">

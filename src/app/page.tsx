@@ -17,6 +17,8 @@ import {
   SITE_URL,
   buildPageMetadata,
 } from "@/lib/seo";
+import { createServiceRoleClient, SERVICE_ROLE_KEY } from "@/server/supabase-client";
+import { dedupeProfilesByIdentity, type HomepageProfile } from "@/lib/profile-identity";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Rosey | Find Independent Escorts",
@@ -31,7 +33,37 @@ export const metadata: Metadata = buildPageMetadata({
   ],
 });
 
-export default function Home() {
+export const revalidate = 30;
+
+// Fetch enough to fill both sections (12 cards each) after deduplication.
+const TOTAL_FETCH = 300;
+
+export default async function Home() {
+  let availableNowProfiles: HomepageProfile[] = [];
+  let recentlyActiveProfiles: HomepageProfile[] = [];
+
+  if (SERVICE_ROLE_KEY) {
+    const supabase = createServiceRoleClient();
+    const { data } = await supabase
+      .from("profiles")
+      .select(
+        "id,user_id,working_name,username,city,country,tagline,is_fully_verified,contact_email,contact_phone,source_url,created_at,images(public_url,is_primary)"
+      )
+      .is("user_id", null)
+      .order("created_at", { ascending: false })
+      .limit(TOTAL_FETCH);
+
+    const deduped = dedupeProfilesByIdentity(
+      (data ?? []) as HomepageProfile[]
+    );
+
+    // Split at midpoint so both sections always have profiles
+    // regardless of total DB count.
+    const mid = Math.ceil(deduped.length / 2);
+    availableNowProfiles = deduped.slice(0, mid);
+    recentlyActiveProfiles = deduped.slice(mid);
+  }
+
   const homeJsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -97,8 +129,8 @@ export default function Home() {
           <HeroShell />
         </div>
       </main>
-      <AvailableNowSection />
-      <RecentlyActiveSection />
+      <AvailableNowSection profiles={availableNowProfiles} />
+      <RecentlyActiveSection profiles={recentlyActiveProfiles} />
       <TestimonialsSection />
       <BookingGuideSection />
       <SearchShortcutsSection />
