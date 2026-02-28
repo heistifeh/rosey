@@ -6,6 +6,7 @@ import {
   absoluteUrl,
   buildPageMetadata,
 } from "@/lib/seo";
+import { canonicalizeCountrySlug } from "@/lib/location-slugs";
 
 type ProfileRouteProps = {
   params: Promise<{ id: string }>;
@@ -162,9 +163,10 @@ export default async function ProfilePage({ params }: ProfileRouteProps) {
   const locationLabel = [profile?.city, profile?.state, profile?.country]
     .filter(Boolean)
     .join(", ");
+  const canonicalCountrySlug = canonicalizeCountrySlug(profile?.country_slug);
   const locationPagePath =
-    profile?.country_slug && profile?.city_slug
-      ? `/escorts/${profile.country_slug}${
+    canonicalCountrySlug && profile?.city_slug
+      ? `/escorts/${canonicalCountrySlug}${
           profile.state_slug ? `/${profile.state_slug}` : ""
         }/${profile.city_slug}`
       : undefined;

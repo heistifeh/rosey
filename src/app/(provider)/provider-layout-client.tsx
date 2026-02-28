@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/sheet";
 import dynamic from "next/dynamic";
 
+import { apiBuilder } from "@/api/builder";
 import { useProfile } from "@/hooks/use-profile";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { LocationFilter } from "@/components/location-filter";
@@ -45,6 +46,8 @@ export default function ProviderLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [showNotification, setShowNotification] = useState(true);
+  const [isCheckingPasswordSetup, setIsCheckingPasswordSetup] = useState(true);
+  const [requiresPasswordSetup, setRequiresPasswordSetup] = useState(false);
   useCurrentUser();
   const { data: profile, isLoading: profileLoading, isFetching } = useProfile();
   const { data: profileImages = [] } = useProfileImages(profile?.id);
@@ -58,7 +61,43 @@ export default function ProviderLayout({
   const isEscort = profileType.toLowerCase() === "escort";
 
   useEffect(() => {
+    let active = true;
 
+    const verifyPasswordSetup = async () => {
+      try {
+        const user = await apiBuilder.auth.getCurrentUser();
+        const pendingPasswordSetup = Boolean(
+          user?.user_metadata?.password_setup_required,
+        );
+        if (!active) return;
+
+        setRequiresPasswordSetup(pendingPasswordSetup);
+        if (pendingPasswordSetup) {
+          const nextPath =
+            pathname && pathname.startsWith("/")
+              ? pathname
+              : "/dashboard";
+          router.replace(`/set-password?next=${encodeURIComponent(nextPath)}`);
+        }
+      } catch {
+        if (!active) return;
+        setRequiresPasswordSetup(false);
+      } finally {
+        if (active) {
+          setIsCheckingPasswordSetup(false);
+        }
+      }
+    };
+
+    verifyPasswordSetup();
+
+    return () => {
+      active = false;
+    };
+  }, [pathname, router]);
+
+  useEffect(() => {
+    if (isCheckingPasswordSetup || requiresPasswordSetup) return;
     if (profileLoading || (isFetching && !profile)) return;
 
     if (!profile) {
@@ -69,7 +108,15 @@ export default function ProviderLayout({
     if (!isEscort) {
       router.replace("/");
     }
-  }, [profileLoading, isFetching, profile, isEscort, router]);
+  }, [
+    profileLoading,
+    isFetching,
+    profile,
+    isEscort,
+    router,
+    isCheckingPasswordSetup,
+    requiresPasswordSetup,
+  ]);
 
   useEffect(() => {
     if (!showNotification) return;
@@ -92,7 +139,14 @@ export default function ProviderLayout({
     { label: "Wallet", href: "/dashboard/wallet", icon: Wallet },
   ];
 
-  if (profileLoading || (isFetching && !profile) || !profile || !isEscort) {
+  if (
+    isCheckingPasswordSetup ||
+    requiresPasswordSetup ||
+    profileLoading ||
+    (isFetching && !profile) ||
+    !profile ||
+    !isEscort
+  ) {
     return (
       <div className="min-h-screen bg-primary-bg flex items-center justify-center">
         <p className="text-primary-text text-sm">Checking your access…</p>

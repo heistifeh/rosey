@@ -2,16 +2,24 @@
 
 import Link from "next/link";
 import { BadgeCheck, ShieldAlert } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useProfile } from "@/hooks/use-profile";
+import { useWallet } from "@/hooks/use-wallet";
 import { DashboardCardSkeleton } from "@/components/skeletons/dashboard-card-skeleton";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
 import { ProfileVerificationChecklist } from "@/components/profile/profile-verification-checklist";
 
 const VERIFICATION_FEE_USD = 500;
+const VERIFICATION_FEE_CREDITS = 500;
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [isPayingVerification, setIsPayingVerification] = useState(false);
   const { data: profile, isLoading: profileLoading } = useProfile();
+  const { wallet, refetch: refetchWallet, isLoading: walletLoading } = useWallet();
   useCurrentUser();
   if (profileLoading) {
     return (
@@ -68,6 +76,70 @@ export default function DashboardPage() {
       ]
     : [];
   const isVerified = Boolean(profile?.is_fully_verified);
+  const availableCredits = wallet?.balance_credits ?? 0;
+  const hasEnoughCreditsForVerification = availableCredits >= VERIFICATION_FEE_CREDITS;
+
+  const routeToBuyCredits = () => {
+    router.push("/dashboard/wallet?verification=1");
+  };
+
+  const handlePayForVerification = async () => {
+    if (isPayingVerification) return;
+    if (walletLoading) {
+      toast("Checking wallet balance...");
+      return;
+    }
+
+    if (!hasEnoughCreditsForVerification) {
+      toast("You need more credits to pay verification fee.");
+      routeToBuyCredits();
+      return;
+    }
+
+    setIsPayingVerification(true);
+    try {
+      const response = await fetch("/api/verification/pay", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+      const payload = (await response.json().catch(() => null)) as
+        | {
+            ok?: boolean;
+            error?: string;
+            alreadyPaid?: boolean;
+            required?: number;
+            available?: number;
+          }
+        | null;
+
+      if (!response.ok || !payload?.ok) {
+        if (payload?.error === "NOT_ENOUGH_CREDITS") {
+          routeToBuyCredits();
+          return;
+        }
+
+        if (payload?.error === "ALREADY_VERIFIED") {
+          toast("Your profile is already verified.");
+          return;
+        }
+
+        toast.error(payload?.error || "Unable to process verification payment.");
+        return;
+      }
+
+      if (payload.alreadyPaid) {
+        toast.success("Verification fee already paid.");
+      } else {
+        toast.success("Verification fee paid successfully.");
+      }
+      refetchWallet();
+    } catch (error) {
+      console.error("Verification payment failed", error);
+      toast.error("Unable to process verification payment.");
+    } finally {
+      setIsPayingVerification(false);
+    }
+  };
 
   return (
     <div className=" flex items-center justify-center mx-auto ">
@@ -152,12 +224,16 @@ export default function DashboardPage() {
                   .
                 </p>
               </div>
-              <Link
-                href="/dashboard/wallet?verification=1"
-                className="inline-flex w-full items-center justify-center rounded-[200px] bg-primary px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary/90 md:w-auto"
+              <button
+                type="button"
+                onClick={handlePayForVerification}
+                disabled={isPayingVerification}
+                className="inline-flex w-full items-center justify-center rounded-[200px] bg-primary px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70 md:w-auto"
               >
-                Pay ${VERIFICATION_FEE_USD} to Get Verified
-              </Link>
+                {isPayingVerification
+                  ? "Processing..."
+                  : `Pay $${VERIFICATION_FEE_USD} to Get Verified`}
+              </button>
             </div>
           </section>
         )}

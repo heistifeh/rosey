@@ -39,13 +39,13 @@ export const messages = {
       },
     },
     availableNow: {
-      title: "Los Angeles Escorts Available Now",
+      title: "Escorts Available Now",
       seeAll: "See All",
       badge: "Available Now",
       empty: "No providers are currently marked as Available Now.",
     },
     recentlyActive: {
-      title: "Los Angeles Escorts",
+      title: "Recently Active Escorts",
       seeAll: "See All",
       status: "Available",
     },

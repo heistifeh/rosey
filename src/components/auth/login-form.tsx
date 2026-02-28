@@ -22,6 +22,37 @@ type LoginValues = {
   password: string;
 };
 
+const isInvalidLoginError = (error: unknown) => {
+  const payload = error as {
+    response?: {
+      status?: number;
+      data?: {
+        message?: string;
+        msg?: string;
+        error?: string;
+        error_description?: string;
+      };
+    };
+    message?: string;
+  };
+
+  const status = payload?.response?.status;
+  if (status !== 400 && status !== 401) return false;
+
+  const text = [
+    payload?.message,
+    payload?.response?.data?.message,
+    payload?.response?.data?.msg,
+    payload?.response?.data?.error,
+    payload?.response?.data?.error_description,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return text.includes("invalid") || text.includes("credential");
+};
+
 const resolveOnboardingRedirect = (params: {
   role?: string | null;
   onboardingStep?: string | null;
@@ -86,6 +117,16 @@ export function LoginForm() {
 
       try {
         const user = await apiBuilder.auth.getCurrentUser();
+        const roleFromMetadata = (user?.user_metadata?.role ?? "").toLowerCase();
+        const requiresPasswordSetup = Boolean(
+          user?.user_metadata?.password_setup_required,
+        );
+        if (requiresPasswordSetup) {
+          const nextPath = roleFromMetadata === "escort" ? "/dashboard" : "/";
+          router.push(`/set-password?next=${encodeURIComponent(nextPath)}`);
+          return;
+        }
+
         let onboardingStep = user?.user_metadata?.onboarding_step;
         let role = user?.user_metadata?.role;
 
@@ -172,7 +213,16 @@ export function LoginForm() {
         router.push("/");
       }
     },
-    onError: (error) => {
+    onError: async (error, variables) => {
+      const attemptedEmail = variables?.email?.trim().toLowerCase() ?? "";
+
+      // Only suggest profile claiming when login credentials are invalid.
+      // Successful/valid accounts should never be interrupted by claim prompts.
+      if (attemptedEmail && isInvalidLoginError(error)) {
+        const hasUnclaimedProfile = await checkForUnclaimedProfile(attemptedEmail);
+        if (hasUnclaimedProfile) return;
+      }
+
       errorMessageHandler(error as ErrorType);
     },
   });
@@ -210,9 +260,6 @@ export function LoginForm() {
 
   const onSubmit = async (values: LoginValues) => {
     const normalizedEmail = values.email.trim().toLowerCase();
-    const hasUnclaimedProfile = await checkForUnclaimedProfile(normalizedEmail);
-    if (hasUnclaimedProfile) return;
-
     mutate({ ...values, email: normalizedEmail });
   };
 

@@ -21,6 +21,7 @@ import { FooterSection } from "@/components/home/footer-section";
 import { useLocationAutocomplete } from "@/hooks/use-location-autocomplete";
 import { cn } from "@/lib/utils";
 import { slugifyLocation } from "@/lib/google-places";
+import { dedupeProfilesByIdentity, getProfileIdentityKey } from "@/lib/profile-identity";
 
 const formatSlug = (slug: string) =>
   slug
@@ -360,16 +361,19 @@ export function SearchResultsClient({
     enabled,
   });
 
-  const sponsoredIds = useMemo(
-    () => new Set(sponsoredProfiles.map((profile) => profile.id)),
+  const sponsoredIdentityKeys = useMemo(
+    () => new Set(sponsoredProfiles.map((profile) => getProfileIdentityKey(profile))),
     [sponsoredProfiles],
   );
   const organicWithoutSponsored = useMemo(
-    () => organicProfiles.filter((profile) => !sponsoredIds.has(profile.id)),
-    [organicProfiles, sponsoredIds],
+    () =>
+      organicProfiles.filter(
+        (profile) => !sponsoredIdentityKeys.has(getProfileIdentityKey(profile)),
+      ),
+    [organicProfiles, sponsoredIdentityKeys],
   );
   const finalProfiles = useMemo(
-    () => [...sponsoredProfiles, ...organicWithoutSponsored],
+    () => dedupeProfilesByIdentity([...sponsoredProfiles, ...organicWithoutSponsored]),
     [organicWithoutSponsored, sponsoredProfiles],
   );
   const totalPages = Math.max(
@@ -946,7 +950,7 @@ export function SearchResultsClient({
               <ProfileCard
                 key={profile.id}
                 profile={profile}
-                isSponsored={sponsoredIds.has(profile.id)}
+                isSponsored={sponsoredIdentityKeys.has(getProfileIdentityKey(profile))}
               />
             ))}
 

@@ -9,6 +9,7 @@ import {
   buildPageMetadata,
   humanizeLocationSlug,
 } from "@/lib/seo";
+import { canonicalizeCountrySlug } from "@/lib/location-slugs";
 
 type CityPageParams = {
   countrySlug: string;
@@ -140,12 +141,15 @@ const toLocationParams = (
   params: CityPageParams,
   stateFromQuery?: string,
 ) => {
+  const canonicalCountrySlug =
+    canonicalizeCountrySlug(params.countrySlug) ?? params.countrySlug;
   const segments = params.locationSegments ?? [];
 
   if (segments.length === 1) {
     const [citySlug] = segments;
     return {
-      countrySlug: params.countrySlug,
+      rawCountrySlug: params.countrySlug,
+      countrySlug: canonicalCountrySlug,
       citySlug,
       stateSlug: stateFromQuery,
       valid: Boolean(citySlug),
@@ -155,7 +159,8 @@ const toLocationParams = (
   if (segments.length === 2) {
     const [stateSlug, citySlug] = segments;
     return {
-      countrySlug: params.countrySlug,
+      rawCountrySlug: params.countrySlug,
+      countrySlug: canonicalCountrySlug,
       citySlug,
       stateSlug,
       valid: Boolean(stateSlug && citySlug),
@@ -163,7 +168,8 @@ const toLocationParams = (
   }
 
   return {
-    countrySlug: params.countrySlug,
+    rawCountrySlug: params.countrySlug,
+    countrySlug: canonicalCountrySlug,
     citySlug: undefined,
     stateSlug: undefined,
     valid: false,
@@ -239,11 +245,15 @@ export default async function CityPage({
   const initialPage = parsePageParam(toSingleValue(resolvedSearchParams?.page));
   const preferredStateSlug =
     parsed.stateSlug ?? inferStateSlugFromCity(parsed.countrySlug, parsed.citySlug);
+  const shouldCanonicalizeCountry =
+    parsed.rawCountrySlug.toLowerCase() !== parsed.countrySlug.toLowerCase();
+  const shouldInsertPreferredState =
+    Boolean(parsed.citySlug && !resolvedParams.locationSegments?.[1] && preferredStateSlug);
 
-  if (parsed.citySlug && !resolvedParams.locationSegments?.[1] && preferredStateSlug) {
+  if (shouldCanonicalizeCountry || shouldInsertPreferredState) {
     const query = new URLSearchParams();
     Object.entries(resolvedSearchParams).forEach(([key, value]) => {
-      if (key === "state") return;
+      if (key === "state" && shouldInsertPreferredState) return;
       const single = toSingleValue(value);
       if (single) {
         query.set(key, single);
@@ -253,7 +263,7 @@ export default async function CityPage({
     const destination = buildEscortsPath(
       parsed.countrySlug,
       parsed.citySlug,
-      preferredStateSlug,
+      shouldInsertPreferredState ? preferredStateSlug : parsed.stateSlug,
     );
     const queryString = query.toString();
     permanentRedirect(queryString ? `${destination}?${queryString}` : destination);

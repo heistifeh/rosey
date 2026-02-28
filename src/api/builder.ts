@@ -17,6 +17,10 @@ import {
   AvailableNowItem,
 } from "@/types/types";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  dedupeProfilesByIdentity,
+  getProfileIdentityKey,
+} from "@/lib/profile-identity";
 
 const DEFAULT_SUPABASE_URL = "https://axhkwqaxbnsguxzrfsfj.supabase.co";
 
@@ -41,9 +45,9 @@ const humanizeSlug = (value?: string | null) => {
 };
 
 const PROFILE_SELECT =
-  "id,user_id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images(public_url,is_primary), about,pronouns,languages,caters_to,age,height_cm,hair_color,eye_color,gender,gender_presentation,profile_type,trans_status,appear_on_other_profiles,trans_only,temporary_hide_days,onboarding_completed,contact_email,contact_phone,socials";
+  "id,user_id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,verification_photo_verified,id_verified,min_photos_verified,profile_fields_verified,verified_at,verification_notes,is_fully_verified,images(public_url,is_primary), about,pronouns,languages,caters_to,age,height_cm,hair_color,eye_color,gender,gender_presentation,profile_type,trans_status,appear_on_other_profiles,trans_only,temporary_hide_days,onboarding_completed,contact_email,contact_phone,source_url,socials";
 const SEARCH_PROFILE_SELECT =
-  "id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,is_fully_verified,images!inner(public_url,is_primary)";
+  "id,user_id,working_name,username,tagline,base_hourly_rate,base_currency,body_type,ethnicity_category,available_days,city,state,country,city_slug,country_slug,approval_status,is_fully_verified,contact_email,contact_phone,source_url,images!inner(public_url,is_primary)";
 
 export const apiBuilder = {
   auth: {
@@ -329,7 +333,7 @@ export const apiBuilder = {
       }
 
       return API.get<Profile[]>("/profiles", { params }).then(
-        (response) => response.data,
+        (response) => dedupeProfilesByIdentity(response.data ?? []),
       );
     },
     searchProfiles: (paramsIn: {
@@ -411,7 +415,7 @@ export const apiBuilder = {
       }
 
       return API.get<Profile[]>("/profiles", { params }).then(
-        (response) => response.data ?? [],
+        (response) => dedupeProfilesByIdentity(response.data ?? []),
       );
     },
     getCityProfiles: (paramsIn: {
@@ -433,7 +437,7 @@ export const apiBuilder = {
       }
 
       return API.get<Profile[]>("/profiles", { params }).then(
-        (response) => response.data ?? [],
+        (response) => dedupeProfilesByIdentity(response.data ?? []),
       );
     },
     getProfileByUsername: (username: string) => {
@@ -702,13 +706,15 @@ export const apiBuilder = {
 
         rows.forEach((row) => {
           const profile = row?.profile;
-          if (profile?.id && !unique.has(profile.id)) {
+          if (!profile) return;
+          const identityKey = getProfileIdentityKey(profile);
+          if (!unique.has(identityKey)) {
             const target = row.ad_city_targets?.[0];
             const citySlug = target?.city_slug ?? paramsIn.citySlug;
             const stateSlug = target?.state_slug ?? paramsIn.stateSlug ?? null;
             const countrySlug = target?.country_slug ?? paramsIn.countrySlug;
 
-            unique.set(profile.id, {
+            unique.set(identityKey, {
               ...profile,
               city_slug: citySlug || profile.city_slug,
               ...(stateSlug ? { state_slug: stateSlug } : {}),

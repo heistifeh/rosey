@@ -34,6 +34,7 @@ export default function robots(): MetadataRoute.Robots {
           "/enter-otp",
           "/forgot-password",
           "/reset-password",
+          "/set-password",
           "/auth",
           "/auth/*",
           "/studio",

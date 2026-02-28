@@ -4,22 +4,24 @@ import { SafeImage } from "@/components/ui/safe-image";
 import { TaglineReveal } from "@/components/home/tagline-reveal";
 import { createServiceRoleClient, SERVICE_ROLE_KEY } from "@/server/supabase-client";
 import { getServerTranslator } from "@/lib/i18n/server";
+import { getProfileIdentityKey } from "@/lib/profile-identity";
 
 export const revalidate = 30;
 
-const HOMEPAGE_FEATURED_COUNTRY_SLUG = "united-states";
-const HOMEPAGE_FEATURED_STATE_SLUG = "california";
-const HOMEPAGE_FEATURED_CITY_SLUG = "los-angeles";
-const LOS_ANGELES_SEARCH_HREF =
-  "/search?country=united-states&state=california&city=los-angeles";
+const RECENTLY_ACTIVE_SEARCH_HREF = "/search";
+const RECENTLY_ACTIVE_RENDER_LIMIT = 8;
+const RECENTLY_ACTIVE_QUERY_LIMIT = 64;
 
 type RecentlyActiveProfile = {
   id: string;
+  user_id: string | null;
   username: string | null;
   working_name: string | null;
   city: string | null;
   country: string | null;
   tagline: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
   is_fully_verified?: boolean | null;
   images: { public_url: string; is_primary: boolean }[] | null;
 };
@@ -34,19 +36,35 @@ export async function RecentlyActiveSection() {
   const supabase = createServiceRoleClient();
   const { data: profiles = [] } = await supabase
     .from("profiles")
-    .select("id,username,working_name,city,country,tagline,is_fully_verified,images(public_url,is_primary)")
+    .select(
+      "id,user_id,username,working_name,city,country,tagline,contact_email,contact_phone,is_fully_verified,created_at,images(public_url,is_primary)"
+    )
     .is("user_id", null)
-    .eq("country_slug", HOMEPAGE_FEATURED_COUNTRY_SLUG)
-    .eq("state_slug", HOMEPAGE_FEATURED_STATE_SLUG)
-    .eq("city_slug", HOMEPAGE_FEATURED_CITY_SLUG)
-    .order("working_name", { ascending: true })
-    .limit(8);
+    .order("created_at", { ascending: false })
+    .limit(RECENTLY_ACTIVE_QUERY_LIMIT);
 
-  const normalizedProfiles = (profiles as RecentlyActiveProfile[]).map((profile) => {
+  const normalizedProfiles: {
+    id: string;
+    name: string;
+    status: string;
+    city: string | null;
+    country: string | null;
+    tagline: string | null;
+    image: string;
+    username: string | null;
+    isVerified: boolean;
+  }[] = [];
+  const seenIdentityKeys = new Set<string>();
+
+  (profiles as RecentlyActiveProfile[]).forEach((profile) => {
+    const identityKey = getProfileIdentityKey(profile);
+    if (seenIdentityKeys.has(identityKey)) return;
+    seenIdentityKeys.add(identityKey);
+
     const images = profile.images ?? [];
     const primaryImage = images.find((img) => img.is_primary) ?? images[0];
     const imageUrl = primaryImage?.public_url || "/placeholder.png";
-    return {
+    normalizedProfiles.push({
       id: profile.id,
       name: profile.working_name ?? t("common.provider"),
       status: t("recentlyActive.status"),
@@ -56,10 +74,10 @@ export async function RecentlyActiveSection() {
       image: imageUrl,
       username: profile.username,
       isVerified: Boolean(profile.is_fully_verified),
-    };
+    });
   });
 
-  const itemsToRender = normalizedProfiles;
+  const itemsToRender = normalizedProfiles.slice(0, RECENTLY_ACTIVE_RENDER_LIMIT);
 
   return (
     <section className="relative z-10 w-full bg-primary-bg px-4 pb-12 pt-10 md:pb-16 md:pt-20">
@@ -69,7 +87,7 @@ export async function RecentlyActiveSection() {
             {t("recentlyActive.title")}
           </h2>
 
-          <Link href={LOS_ANGELES_SEARCH_HREF} className="ml-auto inline-flex items-center gap-1 md:gap-2 rounded-full bg-primary px-3 py-1.5 md:px-[42px] md:py-[13px] text-xs font-semibold text-primary-text cursor-pointer hover:bg-primary/90 transition-colors">
+          <Link href={RECENTLY_ACTIVE_SEARCH_HREF} className="ml-auto inline-flex items-center gap-1 md:gap-2 rounded-full bg-primary px-3 py-1.5 md:px-[42px] md:py-[13px] text-xs font-semibold text-primary-text cursor-pointer hover:bg-primary/90 transition-colors">
             {t("recentlyActive.seeAll")}
             <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
           </Link>

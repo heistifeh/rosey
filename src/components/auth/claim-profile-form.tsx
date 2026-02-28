@@ -149,12 +149,13 @@ export function ClaimProfileForm() {
           await apiBuilder.auth.updateUserMetadata({
             role: "escort",
             onboarding_step: "completed",
+            password_setup_required: true,
           });
         } catch (metadataError) {
           console.error("Failed to sync claimed profile metadata:", metadataError);
         }
 
-        toast.success("Profile claimed successfully!", { id: "verify-otp" });
+        toast.success("Profile claimed successfully! Set your password to continue.", { id: "verify-otp" });
 
         if (!getAccessToken()) {
           toast.error("Session creation failed. You may need to login manually.");
@@ -162,12 +163,12 @@ export function ClaimProfileForm() {
         }
 
         setTimeout(() => {
-          window.location.href = "/dashboard";
+          window.location.href = "/set-password?next=%2Fdashboard&force=1";
         }, 1500);
       } else {
         toast.success("Verified successfully! Redirecting...", { id: "verify-otp" });
         setTimeout(() => {
-          window.location.href = "/dashboard";
+          window.location.href = "/set-password?next=%2Fdashboard&force=1";
         }, 1500);
       }
     } catch (error: unknown) {

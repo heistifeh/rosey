@@ -5,18 +5,18 @@ import { SafeImage } from "@/components/ui/safe-image";
 import { TaglineReveal } from "@/components/home/tagline-reveal";
 import { createServiceRoleClient, SERVICE_ROLE_KEY } from "@/server/supabase-client";
 import { getServerTranslator } from "@/lib/i18n/server";
+import { getProfileIdentityKey } from "@/lib/profile-identity";
 
 export const revalidate = 30;
 
-const HOMEPAGE_FEATURED_COUNTRY_SLUG = "united-states";
-const HOMEPAGE_FEATURED_STATE_SLUG = "california";
-const HOMEPAGE_FEATURED_CITY_SLUG = "los-angeles";
-const LOS_ANGELES_AVAILABLE_NOW_SEARCH_HREF =
-  "/search?country=united-states&state=california&city=los-angeles&availableNow=true";
+const AVAILABLE_NOW_SEARCH_HREF = "/search?availableNow=true";
+const AVAILABLE_NOW_RENDER_LIMIT = 12;
+const AVAILABLE_NOW_QUERY_LIMIT = 96;
 
 type NormalizedAvailableNowItem = {
   type: "profile" | "ad";
   profileId: string;
+  identityKey: string;
   username: string | null;
   workingName: string;
   city?: string | null;
@@ -34,63 +34,62 @@ export async function AvailableNowSection() {
   }
 
   const supabase = createServiceRoleClient();
-  const { data: profiles = [] } = await supabase
+  const { data: rawProfiles = [] } = await supabase
     .from("profiles")
-    .select("id,working_name,username,city,country,tagline,is_fully_verified,created_at,images(public_url,is_primary)")
+    .select("id,user_id,working_name,username,city,country,tagline,is_fully_verified,contact_email,contact_phone,created_at,images(public_url,is_primary)")
     .is("user_id", null)
-    .eq("country_slug", HOMEPAGE_FEATURED_COUNTRY_SLUG)
-    .eq("state_slug", HOMEPAGE_FEATURED_STATE_SLUG)
-    .eq("city_slug", HOMEPAGE_FEATURED_CITY_SLUG)
-    .order("working_name", { ascending: true })
-    .limit(10);
+    .order("created_at", { ascending: false })
+    .limit(AVAILABLE_NOW_QUERY_LIMIT);
 
   const { data: ads = [] } = await supabase
     .from("ads")
     .select(
-      "id,created_at,profile:profiles(id,working_name,username,city,country,city_slug,state_slug,country_slug,tagline,is_fully_verified,images(public_url,is_primary))"
+      "id,created_at,profile:profiles(id,user_id,working_name,username,city,country,city_slug,state_slug,country_slug,tagline,is_fully_verified,contact_email,contact_phone,images(public_url,is_primary))"
     )
     .eq("status", "active")
     .eq("placement_available_now", true)
     .order("created_at", { ascending: false })
     .limit(12);
 
-  const normalizedProfiles: NormalizedAvailableNowItem[] = (profiles ?? []).map(
-    (profile) => {
+  const normalizedProfiles: NormalizedAvailableNowItem[] = [];
+  const seenIdentityKeys = new Set<string>();
+
+  (rawProfiles ?? []).forEach((profile) => {
+      const identityKey = getProfileIdentityKey(profile);
+      if (seenIdentityKeys.has(identityKey)) return;
+      seenIdentityKeys.add(identityKey);
+
       const images = profile.images ?? [];
       const primary = images.find((img) => img.is_primary) ?? images[0];
       const imageUrl = primary?.public_url || "/placeholder.png";
-      return {
+      normalizedProfiles.push({
         type: "profile",
         profileId: profile.id,
+        identityKey,
         username: profile.username ?? null,
         workingName: profile.working_name ?? t("common.provider"),
         city: profile.city ?? null,
         country: profile.country ?? null,
-          tagline: profile.tagline ?? null,
-          imageUrl,
-          isVerified: Boolean(profile.is_fully_verified),
-        };
-      }
-  );
+        tagline: profile.tagline ?? null,
+        imageUrl,
+        isVerified: Boolean(profile.is_fully_verified),
+      });
+    });
 
-  const laAd = (ads ?? []).find((ad) => {
+  const availableNowAd = (ads ?? []).find((ad) => {
     const profileRaw = ad?.profile ?? null;
     const profile = Array.isArray(profileRaw) ? profileRaw[0] : profileRaw;
-    if (!profile) return false;
-
-    return (
-      profile.city_slug === HOMEPAGE_FEATURED_CITY_SLUG &&
-      profile.state_slug === HOMEPAGE_FEATURED_STATE_SLUG &&
-      profile.country_slug === HOMEPAGE_FEATURED_COUNTRY_SLUG
-    );
+    return Boolean(profile);
   });
 
-  const adProfileRaw = laAd?.profile ?? null;
+  const adProfileRaw = availableNowAd?.profile ?? null;
   const adProfile = Array.isArray(adProfileRaw) ? adProfileRaw[0] : adProfileRaw;
+  const adIdentityKey = adProfile ? getProfileIdentityKey(adProfile) : null;
   const adItem: NormalizedAvailableNowItem | null = adProfile
     ? {
         type: "ad",
         profileId: adProfile.id,
+        identityKey: adIdentityKey || `profile:${adProfile.id}`,
         username: adProfile.username ?? null,
         workingName: adProfile.working_name ?? t("common.provider"),
         city: adProfile.city ?? null,
@@ -105,9 +104,12 @@ export async function AvailableNowSection() {
     : null;
 
   const AD_INDEX = 4;
-  const finalItems = [...normalizedProfiles];
-  if (adItem) {
-    finalItems.splice(AD_INDEX, 0, adItem);
+  let finalItems = normalizedProfiles.slice(0, AVAILABLE_NOW_RENDER_LIMIT);
+  if (adItem && !seenIdentityKeys.has(adItem.identityKey)) {
+    finalItems.splice(Math.min(AD_INDEX, finalItems.length), 0, adItem);
+  }
+  if (finalItems.length > AVAILABLE_NOW_RENDER_LIMIT) {
+    finalItems = finalItems.slice(0, AVAILABLE_NOW_RENDER_LIMIT);
   }
 
   return (
@@ -118,9 +120,9 @@ export async function AvailableNowSection() {
             {t("availableNow.title")}
           </h2>
 
-          {normalizedProfiles.length >= 12 ? (
+          {normalizedProfiles.length >= AVAILABLE_NOW_RENDER_LIMIT ? (
             <Link
-              href={LOS_ANGELES_AVAILABLE_NOW_SEARCH_HREF}
+              href={AVAILABLE_NOW_SEARCH_HREF}
               className="ml-auto inline-flex items-center gap-1 md:gap-2 rounded-full bg-primary px-3 py-1.5 md:px-[42px] md:py-[13px] text-xs font-semibold text-primary-text cursor-pointer hover:bg-primary/90 transition-colors"
             >
               {t("availableNow.seeAll")}

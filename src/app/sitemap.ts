@@ -3,6 +3,7 @@ import { client } from "@/sanity/lib/client";
 import { postsQuery } from "@/sanity/lib/queries";
 import type { Post } from "@/sanity/lib/types";
 import { absoluteUrl } from "@/lib/seo";
+import { canonicalizeCountrySlug } from "@/lib/location-slugs";
 
 type SitemapProfileRow = {
   username?: string | null;
@@ -151,7 +152,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         });
       }
 
-      const countrySlug = row.country_slug?.trim();
+      const countrySlug = canonicalizeCountrySlug(row.country_slug);
       const citySlug = row.city_slug?.trim();
       const stateSlug = row.state_slug?.trim() || undefined;
 

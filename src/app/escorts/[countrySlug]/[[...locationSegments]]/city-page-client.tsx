@@ -13,6 +13,7 @@ import { ProfileCard } from "@/components/profile-card";
 import { LocationListingSeoAccordion } from "@/components/seo/location-listing-seo-accordion";
 import type { Profile } from "@/types/types";
 import { slugifyLocation } from "@/lib/google-places";
+import { dedupeProfilesByIdentity, getProfileIdentityKey } from "@/lib/profile-identity";
 import { cn } from "@/lib/utils";
 
 export type CityPageClientProps = {
@@ -250,16 +251,19 @@ export function CityPageClient({
     enabled: !invalidParams,
   });
 
-  const sponsoredIds = useMemo(
-    () => new Set(sponsoredProfiles.map((profile) => profile.id)),
+  const sponsoredIdentityKeys = useMemo(
+    () => new Set(sponsoredProfiles.map((profile) => getProfileIdentityKey(profile))),
     [sponsoredProfiles],
   );
   const organicWithoutSponsored = useMemo(
-    () => organicProfiles.filter((profile) => !sponsoredIds.has(profile.id)),
-    [organicProfiles, sponsoredIds],
+    () =>
+      organicProfiles.filter(
+        (profile) => !sponsoredIdentityKeys.has(getProfileIdentityKey(profile)),
+      ),
+    [organicProfiles, sponsoredIdentityKeys],
   );
   const finalProfiles = useMemo(
-    () => [...sponsoredProfiles, ...organicWithoutSponsored],
+    () => dedupeProfilesByIdentity([...sponsoredProfiles, ...organicWithoutSponsored]),
     [organicWithoutSponsored, sponsoredProfiles],
   );
   const isLoading = loadingOrganic || loadingSponsored;
@@ -497,7 +501,7 @@ export function CityPageClient({
               <ProfileCard
                 key={profile.id}
                 profile={profile}
-                isSponsored={sponsoredIds.has(profile.id)}
+                isSponsored={sponsoredIdentityKeys.has(getProfileIdentityKey(profile))}
               />
             ))}
 
