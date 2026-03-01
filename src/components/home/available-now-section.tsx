@@ -9,7 +9,7 @@ import { getProfileIdentityKeys, type HomepageProfile } from "@/lib/profile-iden
 
 export const revalidate = 30;
 
-const AVAILABLE_NOW_SEARCH_HREF = "/search?availableNow=true";
+const AVAILABLE_NOW_SEARCH_HREF = "/search";
 const AVAILABLE_NOW_RENDER_LIMIT = 12;
 
 type NormalizedAvailableNowItem = {
