@@ -135,20 +135,20 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className=" flex items-center justify-center mx-auto ">
-      <div className="mb-8 md:pt-10 w-full max-w-4xl">
-        <div className="mb-6 flex justify-between items-center">
-          <h1 className="text-2xl font-semibold text-primary-text mb-[33px] text-center">
+    <div className="flex justify-center mx-auto">
+      <div className="mb-8 pt-4 md:pt-10 w-full max-w-4xl">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-xl font-semibold text-primary-text sm:text-2xl">
             Welcome to Rosey
           </h1>
           <Link
             href="/"
-            className="rounded-full border border-[#E5E5EA] px-4 py-2 text-sm font-medium text-primary-text hover:bg-primary-bg transition-colors"
+            className="self-start rounded-full border border-[#E5E5EA] px-4 py-2 text-sm font-medium text-primary-text hover:bg-primary-bg transition-colors sm:self-auto shrink-0"
           >
             Back to home
           </Link>
         </div>
-        <p className="text-base text-text-gray-opacity mb-6 max-w-3xl">
+        <p className="text-sm md:text-base text-text-gray-opacity mb-6 max-w-3xl">
           Before we publish your profile, our team needs to verify a few things.
           Use these links to get started:
         </p>

@@ -27,6 +27,7 @@ const PUBLIC_STATIC_ROUTES = [
   "/",
   "/locations",
   "/blog",
+  "/advertisement",
   "/faq",
   "/help-support",
   "/escort-terms",

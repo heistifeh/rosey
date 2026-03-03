@@ -443,37 +443,44 @@ export default function PlaceAdPage() {
           </p>
         </div>
 
-        <div className="mt-6 flex flex-col items-center justify-center gap-3 md:mt-10 md:flex-row md:gap-24">
-          <div className="w-full rounded-2xl border border-dark-border bg-tag-bg px-4 py-4 text-center text-sm text-primary-text md:w-auto md:rounded-full md:py-2 md:text-base">
-            <span className="block md:inline">
-              Cities Selected: {citiesSelected}
-            </span>
-            <span className="hidden md:inline">
-              &nbsp;&nbsp;&middot;&nbsp;&nbsp;Credit Used: {creditsUsed.toLocaleString()}
-              &nbsp;&nbsp;&middot;&nbsp;&nbsp;Available Credit:{" "}
-              {availableCredits.toLocaleString()}
-            </span>
-            <span className="mt-2 block md:hidden">
-              Credit Used: {creditsUsed.toLocaleString()}
-            </span>
-            <span className="mt-1 block md:hidden">
-              Available Credit: {availableCredits.toLocaleString()}
-            </span>
+        <div className="mt-6 flex flex-col items-center gap-3 md:mt-10 md:flex-row md:justify-center md:gap-8">
+          <div className="w-full rounded-2xl border border-dark-border bg-tag-bg px-4 py-3 md:w-auto md:rounded-full md:px-6 md:py-2">
+            <div className="grid grid-cols-3 divide-x divide-dark-border text-center md:flex md:items-center md:divide-x-0">
+              <div className="px-2 md:px-0">
+                <p className="text-[10px] uppercase tracking-wide text-text-gray-opacity md:hidden">Cities</p>
+                <p className="text-sm font-medium text-primary-text md:text-base">
+                  <span className="hidden md:inline">Cities Selected:&nbsp;</span>
+                  {citiesSelected}
+                </p>
+              </div>
+              <div className="px-2 md:px-0">
+                <p className="text-[10px] uppercase tracking-wide text-text-gray-opacity md:hidden">Used</p>
+                <p className="text-sm font-medium text-primary-text md:text-base">
+                  <span className="hidden md:inline">&nbsp;&nbsp;·&nbsp;&nbsp;Credits Used:&nbsp;</span>
+                  {creditsUsed.toLocaleString()}
+                </p>
+              </div>
+              <div className="px-2 md:px-0">
+                <p className="text-[10px] uppercase tracking-wide text-text-gray-opacity md:hidden">Balance</p>
+                <p className="text-sm font-medium text-primary-text md:text-base">
+                  <span className="hidden md:inline">&nbsp;&nbsp;·&nbsp;&nbsp;Available:&nbsp;</span>
+                  {availableCredits.toLocaleString()}
+                </p>
+              </div>
+            </div>
           </div>
           <button
             type="button"
             onClick={toggleAllCities}
             disabled={!selectedCountry || stateOptions.length === 0}
-            className="flex items-center gap-2 text-sm text-primary-text transition-colors hover:text-primary disabled:cursor-not-allowed disabled:text-text-gray-opacity"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dark-border bg-tag-bg px-4 py-2.5 text-sm text-primary-text transition-colors hover:text-primary disabled:cursor-not-allowed disabled:text-text-gray-opacity md:w-auto md:rounded-none md:border-0 md:bg-transparent md:px-0 md:py-0"
           >
-            <span className="w-4 h-4">
-              <input
-                type="checkbox"
-                checked={isAllSelected}
-                readOnly
-                className="h-4 w-4 rounded border-dark-border bg-primary-bg text-primary"
-              />
-            </span>
+            <input
+              type="checkbox"
+              checked={isAllSelected}
+              readOnly
+              className="h-4 w-4 rounded border-dark-border bg-primary-bg text-primary"
+            />
             <span>
               {isAllSelected
                 ? "Deselect all shown"
@@ -530,7 +537,7 @@ export default function PlaceAdPage() {
                     <SelectTrigger className="h-12 rounded-[12px] border border-dark-border bg-input-bg px-4 py-3 text-sm text-primary-text focus:ring-1 focus:ring-primary md:h-auto md:rounded-[10px]">
                       <SelectValue placeholder={`${state.name}, ${state.country_name}`} />
                     </SelectTrigger>
-                    <SelectContent className="border-dark-border bg-input-bg p-0">
+                    <SelectContent className="w-[min(calc(100vw-2rem),420px)] border-dark-border bg-input-bg p-0">
                       <div className="px-4 py-3">
                         <div className="mb-3">
                           <input
@@ -547,8 +554,8 @@ export default function PlaceAdPage() {
                             className="h-9 w-full rounded-md border border-dark-border bg-primary-bg px-3 text-sm text-primary-text placeholder:text-text-gray-opacity focus:outline-none focus:ring-1 focus:ring-primary"
                           />
                         </div>
-                        <div className="max-h-72 overflow-y-auto pr-4 [scrollbar-gutter:stable]">
-                          <ul className="space-y-4 text-sm text-text-gray-opacity md:text-base">
+                        <div className="max-h-[35vh] overflow-y-auto pr-4 md:max-h-64 [scrollbar-gutter:stable]">
+                          <ul className="space-y-3 text-sm text-text-gray-opacity">
                             {filteredCities.map((city) => {
                               const key = makeCityKey(
                                 state.country_slug,
@@ -578,11 +585,11 @@ export default function PlaceAdPage() {
                             </p>
                           )}
                         </div>
-                        <div className="mt-6 flex items-center justify-between gap-4 text-sm font-semibold text-primary-text md:text-base">
-                          <span>
+                        <div className="mt-3 flex items-center justify-between gap-3 border-t border-dark-border pt-3 text-sm font-semibold text-primary-text md:mt-4 md:pt-4">
+                          <span className="truncate">
                             {isStateFullySelected
-                              ? "Selected all cities"
-                              : `Select all cities in ${state.name} (${stateCost} Credits)`}
+                              ? "All selected"
+                              : `${state.name} (${stateCost} cr)`}
                           </span>
                           <div className="flex items-center gap-2">
                             <button
@@ -615,14 +622,14 @@ export default function PlaceAdPage() {
           )}
         </div>
 
-        <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link href="/dashboard/ad-management">
+        <div className="mt-8 flex items-center justify-center gap-3">
+          <Link href="/dashboard/ad-management" className="shrink-0">
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-dark-border bg-primary-bg text-text-gray-opacity"
-              aria-label="Back"
+              className="flex h-10 items-center justify-center gap-1.5 rounded-full border border-dark-border bg-primary-bg px-4 text-sm text-text-gray-opacity transition-colors hover:text-primary-text"
             >
-              <span className="text-lg">‹</span>
+              <span className="text-base leading-none">‹</span>
+              <span>Back</span>
             </button>
           </Link>
           <Button
