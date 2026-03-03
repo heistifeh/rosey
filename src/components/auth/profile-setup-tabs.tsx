@@ -182,7 +182,6 @@ export function ProfileSetupTabs() {
           selectedDays: Object.keys(dayTimes)
         };
 
-        console.log("ProfileSetupTabs: Saving data to store:", { generalData, profileSetupData, ratesData, availabilityData });
         saveData("general", generalData);
         saveData("profile", profileSetupData);
         saveData("rates", ratesData);
@@ -274,7 +273,7 @@ export function ProfileSetupTabs() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || (isEditMode && !hasHydrated)) {
     return (
       <div className="flex h-[50vh] w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

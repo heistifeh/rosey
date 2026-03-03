@@ -43,9 +43,9 @@ export async function POST(req: Request) {
 
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("id,is_fully_verified")
+      .select("id,is_fully_verified,is_verified")
       .eq("user_id", userId)
-      .maybeSingle<{ id: string; is_fully_verified: boolean | null }>();
+      .maybeSingle<{ id: string; is_fully_verified: boolean | null; is_verified: boolean | null }>();
     if (profileError || !profile?.id) {
       return NextResponse.json(
         { ok: false, error: "PROFILE_NOT_FOUND" },
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (profile.is_fully_verified) {
+    if (profile.is_fully_verified || profile.is_verified) {
       return NextResponse.json(
         { ok: false, error: "ALREADY_VERIFIED" },
         { status: 400 },
@@ -112,6 +112,26 @@ export async function POST(req: Request) {
     }
 
     if (existingPayment?.id) {
+      // Payment exists but profile may not have been marked verified (e.g. paid before this logic existed).
+      // Re-apply verification flags so the profile is corrected.
+      const { error: retroError } = await supabase
+        .from("profiles")
+        .update({
+          is_verified: true,
+          verification_photo_verified: true,
+          id_verified: true,
+          min_photos_verified: true,
+          profile_fields_verified: true,
+          is_fully_verified: true,
+
+          verified_at: new Date().toISOString(),
+          approval_status: "approved",
+        })
+        .eq("id", profile.id);
+      if (retroError) {
+        console.error("Retro verification update failed:", retroError);
+      }
+
       return NextResponse.json({
         ok: true,
         alreadyPaid: true,
@@ -149,7 +169,7 @@ export async function POST(req: Request) {
       .from("wallet_transactions")
       .insert({
         wallet_id: walletId,
-        type: "adjustment",
+        type: "verification_fee",
         direction: "debit",
         amount: VERIFICATION_FEE_CREDITS,
         reference,
@@ -163,6 +183,23 @@ export async function POST(req: Request) {
         { ok: false, error: "TRANSACTION_FAILED" },
         { status: 500 },
       );
+    }
+
+    const { error: verifyError } = await supabase
+      .from("profiles")
+      .update({
+        is_verified: true,
+        verification_photo_verified: true,
+        id_verified: true,
+        min_photos_verified: true,
+        profile_fields_verified: true,
+        is_fully_verified: true,
+        verified_at: new Date().toISOString(),
+        approval_status: "approved",
+      })
+      .eq("id", profile.id);
+    if (verifyError) {
+      console.error("Profile verification update failed:", verifyError);
     }
 
     await createNotification(supabase, {

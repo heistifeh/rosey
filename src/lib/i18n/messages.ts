@@ -3,6 +3,7 @@ export const messages = {
     common: {
       home: "Home",
       blog: "Blog",
+      advertise: "Advertise",
       allEscorts: "All Escorts",
       locations: "Locations",
       signUp: "Sign Up",
@@ -143,6 +144,7 @@ export const messages = {
     common: {
       home: "Inicio",
       blog: "Blog",
+      advertise: "Publicidad",
       allEscorts: "Todos los escorts",
       locations: "Ubicaciones",
       signUp: "Registrarse",
@@ -286,6 +288,7 @@ export const messages = {
     common: {
       home: "Accueil",
       blog: "Blog",
+      advertise: "Publicité",
       allEscorts: "Toutes les escorts",
       locations: "Lieux",
       signUp: "S'inscrire",

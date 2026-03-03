@@ -15,6 +15,8 @@ const typeLabelMap: Record<string, string> = {
   topup: "Top up",
   ad_spend: "Ad spend",
   referral_bonus: "Referral bonus",
+  verification_fee: "Verification fee",
+  adjustment: "Adjustment",
 };
 
 const formatRelativeTime = (value: string) => {

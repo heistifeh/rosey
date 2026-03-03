@@ -1,16 +1,18 @@
 "use client";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-} from "recharts";
+
+const AdViewsChart = dynamic(
+  () => import("./AdViewsChart").then((m) => m.AdViewsChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[320px] rounded-2xl bg-slate-900/50 animate-pulse" />
+    ),
+  }
+);
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -383,30 +385,7 @@ export default function AdManagementPage() {
                     No stats available for this ad.
                   </p>
                 ) : (
-                  <ResponsiveContainer width="100%" height={320}>
-                    <LineChart data={chartPoints}>
-                      <CartesianGrid stroke="#1A1A1E" opacity={0.2} />
-                      <XAxis dataKey="day" stroke="#A1A1B3" />
-                      <YAxis
-                        stroke="#A1A1B3"
-                        tickFormatter={(value) => `${value}`}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: "#0D0D0F",
-                          borderColor: "#282828",
-                        }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="views"
-                        stroke="#F63D68"
-                        strokeWidth={3}
-                        dot={{ r: 4 }}
-                        activeDot={{ r: 6 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <AdViewsChart points={chartPoints} />
                 )}
               </div>
             </section>

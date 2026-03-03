@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import ProfilePageClient from "./profile-page-client";
 import {
@@ -56,7 +57,7 @@ const normalizeUsername = (raw: string) => {
     .replace(/^-+|-+$/g, "");
 };
 
-const fetchProfileSeoData = async (
+const fetchProfileSeoData = cache(async (
   username: string,
 ): Promise<ProfileSeoData | null> => {
   if (!username) return null;
@@ -95,7 +96,7 @@ const fetchProfileSeoData = async (
   } catch {
     return null;
   }
-};
+});
 
 const primaryImageUrl = (images?: { public_url?: string; is_primary?: boolean }[]) => {
   if (!images || images.length === 0) return undefined;

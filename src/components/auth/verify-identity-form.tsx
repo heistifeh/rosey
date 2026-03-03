@@ -51,7 +51,9 @@ export function VerifyIdentityForm() {
             Verify Your Identity
           </h1>
           <p className="text-text-gray text-sm sm:text-base font-normal max-w-2xl">
-            To ensure the safety and security of our platform, we require all escorts to verify their identity. This process is quick, secure, and completely confidential.
+            To ensure the safety and security of our platform, we require all
+            escorts to verify their identity. This process is quick, secure, and
+            completely confidential.
           </p>
         </div>
 
@@ -66,7 +68,9 @@ export function VerifyIdentityForm() {
                 Why do we verify?
               </h3>
               <p className="text-text-gray text-xs sm:text-sm leading-relaxed">
-                Identity verification helps us maintain a safe, trusted community. It protects both escorts and clients, prevents fraud, and ensures everyone on the platform is who they say they are.
+                Identity verification helps us maintain a safe, trusted
+                community. It protects both escorts and clients, prevents fraud,
+                and ensures everyone on the platform is who they say they are.
               </p>
             </div>
           </div>
@@ -88,11 +92,15 @@ export function VerifyIdentityForm() {
                 >
                   {/* Step Number */}
                   <div className="absolute -top-2 -left-2 sm:-top-3 sm:-left-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center">
-                    <span className="text-white text-xs sm:text-sm font-bold">{index + 1}</span>
+                    <span className="text-white text-xs sm:text-sm font-bold">
+                      {index + 1}
+                    </span>
                   </div>
 
                   <div className="flex flex-col items-center text-center gap-3 sm:gap-4">
-                    <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full ${step.bgColor} flex items-center justify-center`}>
+                    <div
+                      className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full ${step.bgColor} flex items-center justify-center`}
+                    >
                       <Icon className={`w-6 h-6 sm:w-8 sm:h-8 ${step.color}`} />
                     </div>
                     <div>
@@ -123,7 +131,9 @@ export function VerifyIdentityForm() {
             </li>
             <li className="flex items-start gap-2 sm:gap-3">
               <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 shrink-0 mt-0.5" />
-              <span>Your personal information is never shared with third parties</span>
+              <span>
+                Your personal information is never shared with third parties
+              </span>
             </li>
             <li className="flex items-start gap-2 sm:gap-3">
               <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 shrink-0 mt-0.5" />
@@ -152,10 +162,11 @@ export function VerifyIdentityForm() {
             onClick={handleSkipVerification}
             className="w-full rounded-[200px] border-border-gray bg-transparent text-primary-text font-semibold text-sm sm:text-base h-11 sm:h-12 lg:h-14 hover:bg-input-bg"
           >
-            Skip verification for now
+            Start Ads without Verification
           </Button>
           <p className="text-text-gray text-xs text-center">
-            By continuing, you agree to our verification process and privacy policy
+            By continuing, you agree to our verification process and privacy
+            policy
           </p>
         </div>
       </div>

@@ -33,6 +33,7 @@ const menuLinks: LocalizedLink[] = [
 
 const resourcesLinks: LocalizedLink[] = [
   { labelKey: "common.blog", href: "/blog" },
+  { labelKey: "common.advertise", href: "/advertisement" },
   { labelKey: "footer.resourceEscortTerms", href: "/escort-terms" },
   { labelKey: "footer.resourceFaqs", href: "/faq" },
 ];

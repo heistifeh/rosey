@@ -1,10 +1,9 @@
-/* eslint-disable @next/next/no-page-custom-font */
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
+import { Geist, Geist_Mono, Manrope, Petemoss } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AuthHandler } from "@/components/auth/auth-handler";
+import { SmartSuppScript } from "@/components/smartsupp-script";
 import { getServerLocale } from "@/lib/i18n/server";
 import {
   DEFAULT_DESCRIPTION,
@@ -22,6 +21,19 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const petemoss = Petemoss({
+  variable: "--font-petemoss",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -123,21 +135,9 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin=""
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Petemoss&display=swap"
-          rel="stylesheet"
-        />
-      </head>
       <body
         suppressHydrationWarning
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} ${petemoss.variable} antialiased`}
       >
         <Providers initialLocale={locale}>
           <AuthHandler />
@@ -147,34 +147,7 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(siteSchema) }}
         />
-        <Script id="smartsupp-chat" strategy="afterInteractive">
-          {`
-            var _smartsupp = window._smartsupp || {};
-            _smartsupp.key = 'b58ac1b21861c5a6c49ddc529a61cee15ff800de';
-            window._smartsupp = _smartsupp;
-            window.smartsupp || (function(d) {
-              var s, c, o = window.smartsupp = function() { o._.push(arguments); };
-              o._ = [];
-              s = d.getElementsByTagName('script')[0];
-              c = d.createElement('script');
-              c.type = 'text/javascript';
-              c.charset = 'utf-8';
-              c.async = true;
-              c.src = 'https://www.smartsuppchat.com/loader.js?';
-              s.parentNode.insertBefore(c, s);
-            })(document);
-          `}
-        </Script>
-        <noscript>
-          Powered by{" "}
-          <a
-            href="https://www.smartsupp.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Smartsupp
-          </a>
-        </noscript>
+        <SmartSuppScript />
       </body>
     </html>
   );

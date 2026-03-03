@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { BadgeCheck, ShieldAlert } from "lucide-react";
+import { BadgeCheck, ShieldAlert, Upload, Zap } from "lucide-react";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -10,13 +11,14 @@ import { useProfile } from "@/hooks/use-profile";
 import { useWallet } from "@/hooks/use-wallet";
 import { DashboardCardSkeleton } from "@/components/skeletons/dashboard-card-skeleton";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
-import { ProfileVerificationChecklist } from "@/components/profile/profile-verification-checklist";
+
 
 const VERIFICATION_FEE_USD = 500;
 const VERIFICATION_FEE_CREDITS = 500;
 
 export default function DashboardPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isPayingVerification, setIsPayingVerification] = useState(false);
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { wallet, refetch: refetchWallet, isLoading: walletLoading } = useWallet();
@@ -85,16 +87,6 @@ export default function DashboardPage() {
 
   const handlePayForVerification = async () => {
     if (isPayingVerification) return;
-    if (walletLoading) {
-      toast("Checking wallet balance...");
-      return;
-    }
-
-    if (!hasEnoughCreditsForVerification) {
-      toast("You need more credits to pay verification fee.");
-      routeToBuyCredits();
-      return;
-    }
 
     setIsPayingVerification(true);
     try {
@@ -133,6 +125,7 @@ export default function DashboardPage() {
         toast.success("Verification fee paid successfully.");
       }
       refetchWallet();
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     } catch (error) {
       console.error("Verification payment failed", error);
       toast.error("Unable to process verification payment.");
@@ -205,35 +198,106 @@ export default function DashboardPage() {
         )}
 
         {profile && !isVerified && (
-          <section className="mb-8 rounded-2xl border border-primary/40 bg-[#1b1216] p-4 md:p-5">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                  <ShieldAlert className="h-4 w-4" />
-                  Verification Pending
-                </div>
-                <h2 className="text-lg font-semibold text-primary-text md:text-xl">
-                  Pay to get verified
-                </h2>
-                <p className="max-w-2xl text-sm text-text-gray-opacity md:text-base">
-                  Verified profiles build more trust and stand out in listings. The
-                  verification fee is{" "}
-                  <span className="font-semibold text-primary-text">
-                    ${VERIFICATION_FEE_USD}
+          <section className="mb-8 rounded-2xl border border-primary/40 bg-[#1b1216] p-4 md:p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <ShieldAlert className="h-4 w-4 text-primary" />
+              <span className="text-xs font-semibold text-primary uppercase tracking-wide">
+                Verification Pending
+              </span>
+            </div>
+            <h2 className="text-lg font-semibold text-primary-text md:text-xl mb-1">
+              Get Verified to Publish Your Profile
+            </h2>
+            <p className="text-sm text-text-gray-opacity mb-6 max-w-2xl">
+              Verified profiles build trust and stand out in listings. Choose the
+              path that works best for you.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Free path */}
+              <div className="flex flex-col gap-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 md:p-5">
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-400">
+                    ✓ Free — Recommended
                   </span>
-                  .
-                </p>
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-primary-text mb-1">
+                    Standard Verification
+                  </h3>
+                  <p className="text-xs text-text-gray-opacity mb-3">
+                    Submit the required documents and we'll review within 24–72 hours.
+                  </p>
+                  <ul className="flex flex-col gap-1.5 text-xs text-text-gray-opacity">
+                    <li className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
+                      Verification photo (selfie meeting our guidelines)
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
+                      Valid government-issued ID (passport, license, or national ID)
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
+                      At least 3 approved profile photos
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
+                      All required profile fields completed
+                    </li>
+                  </ul>
+                </div>
+                <Link
+                  href="/verify-identity"
+                  className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-[200px] bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-600"
+                >
+                  <Upload className="h-4 w-4" />
+                  Upload Documents to Verify for Free
+                </Link>
               </div>
-              <button
-                type="button"
-                onClick={handlePayForVerification}
-                disabled={isPayingVerification}
-                className="inline-flex w-full items-center justify-center rounded-[200px] bg-primary px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70 md:w-auto"
-              >
-                {isPayingVerification
-                  ? "Processing..."
-                  : `Pay $${VERIFICATION_FEE_USD} to Get Verified`}
-              </button>
+
+              {/* Paid fast-track */}
+              <div className="flex flex-col gap-4 rounded-xl border border-dark-border bg-primary-bg p-4 md:p-5">
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                    ⚡ Fast-Track — ${VERIFICATION_FEE_USD} one-time
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-primary-text mb-1">
+                    Paid Verification (No ID Required)
+                  </h3>
+                  <p className="text-xs text-text-gray-opacity mb-3">
+                    Can't submit a government ID? This option skips the ID requirement
+                    using enhanced profile review and priority processing.
+                  </p>
+                  <ul className="flex flex-col gap-1.5 text-xs text-text-gray-opacity">
+                    <li className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                      No ID submission required
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                      Same-day or next-day approval
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                      One-time payment via your Wallet
+                    </li>
+                  </ul>
+                </div>
+                <button
+                  type="button"
+                  onClick={handlePayForVerification}
+                  disabled={isPayingVerification}
+                  className="mt-auto inline-flex w-full items-center justify-center gap-2 rounded-[200px] border border-primary/50 bg-primary/10 px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  <Zap className="h-4 w-4" />
+                  {isPayingVerification
+                    ? "Processing..."
+                    : `Pay $${VERIFICATION_FEE_USD} for Fast-Track (No ID Needed)`}
+                </button>
+              </div>
             </div>
           </section>
         )}
@@ -256,13 +320,6 @@ export default function DashboardPage() {
           </section>
         )}
 
-        <div className="space-y-4">
-          {profile ? (
-            <ProfileVerificationChecklist profile={profile} />
-          ) : (
-            <p className="text-sm text-text-gray-opacity">Loading checklist…</p>
-          )}
-        </div>
       </div>
     </div>
   );

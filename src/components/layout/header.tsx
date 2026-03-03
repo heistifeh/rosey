@@ -42,6 +42,7 @@ export function Header() {
 
   const isHomeActive = pathname === "/";
   const isBlogActive = pathname.startsWith("/blog");
+  const isAdvertiseActive = pathname.startsWith("/advertisement");
 
   const handleAuthAction = async () => {
     if (user) {
@@ -89,6 +90,13 @@ export function Header() {
                 className="rounded-[200px] bg-tag-bg px-4 py-2 text-sm font-medium text-primary-text"
               >
                 {t("common.blog")}
+              </Link>
+              <Link
+                href="/advertisement"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="rounded-[200px] bg-tag-bg px-4 py-2 text-sm font-medium text-primary-text"
+              >
+                {t("common.advertise")}
               </Link>
               <div className="flex items-center gap-2 rounded-[200px] border border-[#E5E5EA] px-3 py-3">
                 <Search size={16} color="#8E8E93" />
@@ -148,6 +156,16 @@ export function Header() {
             }`}
           >
             {t("common.blog")}
+          </Link>
+          <Link
+            href="/advertisement"
+            className={`whitespace-nowrap text-sm font-medium transition-colors lg:text-base ${
+              isAdvertiseActive
+                ? "rounded-[200px] bg-primary px-4 py-2 text-primary-text lg:px-[33px]"
+                : "text-[#8E8E93] hover:text-primary-text"
+            }`}
+          >
+            {t("common.advertise")}
           </Link>
         </div>
 

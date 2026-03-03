@@ -53,13 +53,13 @@ input[type="reset"]:disabled {
 }
 
 .manrope {
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-manrope), sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
 }
 
 .petemoss {
-  font-family: "Petemoss", cursive;
+  font-family: var(--font-petemoss), cursive;
   font-weight: 400;
   font-style: normal;
 }
