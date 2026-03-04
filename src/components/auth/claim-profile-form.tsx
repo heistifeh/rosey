@@ -84,7 +84,7 @@ export function ClaimProfileForm() {
         if (emailToCheck) {
           await apiBuilder.auth.sendOtp({
             email: emailToCheck,
-            type: "signup",
+            type: "magiclink",
             create_user: true,
           } as any);
         } else if (phoneToCheck) {
@@ -120,7 +120,7 @@ export function ClaimProfileForm() {
         authResponse = await apiBuilder.auth.verifyOtp({
           email: cleanEmail,
           token: code,
-          type: "signup",
+          type: "magiclink",
         });
       } else if (contactInfo.phone) {
         authResponse = await apiBuilder.auth.verifyOtp({
@@ -185,7 +185,7 @@ export function ClaimProfileForm() {
         if (contactInfo.email) {
           await apiBuilder.auth.sendOtp({
             email: contactInfo.email,
-            type: "signup",
+            type: "magiclink",
             create_user: true,
           } as any);
         } else {
