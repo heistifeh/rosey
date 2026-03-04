@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  AddressComponent,
-  getAddressComponentValue,
-  loadGooglePlacesScript,
-  slugifyLocation,
-} from "@/lib/google-places";
+import { slugifyLocation } from "@/lib/google-places";
 import { apiBuilder } from "@/api/builder";
 
 export interface LocationSuggestion {
@@ -41,50 +36,44 @@ const POPULAR_CITY_FALLBACK: Array<{ city: string; country: string }> = [
   { city: "Abuja", country: "Nigeria" },
 ];
 
-const getApiKey = () =>
-  process.env.NEXT_PUBLIC_GOOGLEMAP_API_KEY ||
-  process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
-  process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY;
+const getApiKey = () => process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
 const buildLocationLabel = (city: string, country: string, state?: string) =>
   [city, state, country].filter(Boolean).join(", ");
 
-const normalizePredictionFallback = (prediction: any): LocationSuggestion | null => {
-  const terms = prediction?.terms as Array<{ value?: string }> | undefined;
-  const secondaryParts =
-    prediction?.structured_formatting?.secondary_text
-      ?.split(",")
-      .map((part: string) => part.trim())
-      .filter(Boolean) ?? [];
-  const city =
-    prediction?.structured_formatting?.main_text ??
-    terms?.[0]?.value ??
-    "";
-  const state =
-    terms && terms.length > 2 && terms[terms.length - 2]?.value
-      ? terms[terms.length - 2].value
-      : secondaryParts.length > 1
-        ? secondaryParts[0]
-        : "";
-  const country =
-    terms?.length && terms[terms.length - 1]?.value
-      ? terms[terms.length - 1].value
-      : secondaryParts.at(-1) ?? "";
+interface MapboxContext {
+  id: string;
+  text: string;
+}
 
-  if (!city || !country) {
-    return null;
-  }
+interface MapboxFeature {
+  id: string;
+  text: string;
+  place_name: string;
+  context?: MapboxContext[];
+}
+
+const normalizeMapboxFeature = (feature: MapboxFeature): LocationSuggestion | null => {
+  const city = feature.text?.trim();
+  const context = feature.context ?? [];
+
+  const regionEntry = context.find((c) => c.id.startsWith("region."));
+  const countryEntry = context.find((c) => c.id.startsWith("country."));
+
+  const state = regionEntry?.text?.trim() ?? undefined;
+  const country = countryEntry?.text?.trim() ?? "";
+
+  if (!city || !country) return null;
 
   return {
-    placeId: prediction.place_id,
+    placeId: feature.id,
     city,
-    state: state || undefined,
+    state,
     state_slug: state ? slugifyLocation(state) : undefined,
     country,
     city_slug: slugifyLocation(city),
     country_slug: slugifyLocation(country),
-    fullLabel:
-      prediction.description ?? buildLocationLabel(city, country, state || undefined),
+    fullLabel: feature.place_name ?? buildLocationLabel(city, country, state),
   };
 };
 
@@ -137,9 +126,7 @@ export function useLocationAutocomplete(
   }, [initialQuery]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
+    if (typeof window === "undefined") return;
 
     const apiKey = getApiKey();
     if (!apiKey) {
@@ -162,176 +149,48 @@ export function useLocationAutocomplete(
     }
 
     let active = true;
-    let placesService: any = null;
-    let autocompleteService: any = null;
-
     setIsLoading(true);
     setError(null);
 
-    loadGooglePlacesScript(apiKey)
-      .then(() => {
+    const params = new URLSearchParams({
+      access_token: apiKey,
+      types: "place",
+      limit: String(MAX_SUGGESTIONS),
+    });
+
+    if (options?.country) {
+      params.set("country", options.country);
+    }
+
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?${params.toString()}`;
+
+    fetch(url)
+      .then((res) => res.json())
+      .then((data: { features?: MapboxFeature[] }) => {
         if (!active) return;
-        const google = (window as typeof window & { google?: any }).google;
-        const places = google?.maps?.places;
-        if (!places) {
-          loadFallbackSuggestions(query)
-            .catch(() => {
-              setResults([]);
-              setError("Google Places unavailable");
-            })
-            .finally(() => setIsLoading(false));
-          return;
+        const normalized = (data.features ?? [])
+          .map(normalizeMapboxFeature)
+          .filter((item): item is LocationSuggestion => Boolean(item));
+
+        if (normalized.length > 0) {
+          setResults(normalized);
+        } else {
+          return loadFallbackSuggestions(query).catch(() => setResults([]));
         }
-
-        autocompleteService = new places.AutocompleteService();
-        placesService = new places.PlacesService(
-          document.createElement("div")
-        );
-
-        const request: any = {
-          input: query,
-          types: ["(cities)"],
-        };
-
-        if (options?.country) {
-          request.componentRestrictions = {
-            country: options.country,
-          };
-        }
-
-        autocompleteService.getPlacePredictions(
-          request,
-          (predictions: any, status: any) => {
-            if (!active) return;
-            if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
-              setResults([]);
-              setIsLoading(false);
-              return;
-            }
-            if (
-              status !== google.maps.places.PlacesServiceStatus.OK ||
-              !predictions
-            ) {
-              loadFallbackSuggestions(query)
-                .catch(() => {
-                  setResults([]);
-                  setError(`Location lookup failed (${status})`);
-                })
-                .finally(() => {
-                  if (active) {
-                    setIsLoading(false);
-                  }
-                });
-              return;
-            }
-
-          const limited = predictions.slice(0, MAX_SUGGESTIONS);
-          Promise.all(
-            limited.map(
-              (prediction: any) =>
-                new Promise<LocationSuggestion | null>((resolve) => {
-                  placesService?.getDetails(
-                    {
-                      placeId: prediction.place_id,
-                      fields: [
-                          "address_components",
-                          "formatted_address",
-                          "name",
-                        ],
-                      },
-                      (details: any, detailStatus: any) => {
-                        if (!active) {
-                          resolve(null);
-                          return;
-                        }
-                        if (
-                          detailStatus !==
-                          google.maps.places.PlacesServiceStatus.OK ||
-                          !details
-                        ) {
-                          resolve(normalizePredictionFallback(prediction));
-                          return;
-                        }
-
-                        const components =
-                          details.address_components as
-                          | AddressComponent[]
-                          | undefined;
-                        const city =
-                          getAddressComponentValue(components, [
-                            "locality",
-                            "postal_town",
-                            "administrative_area_level_2",
-                            "administrative_area_level_3",
-                          ]) ??
-                          details.name ??
-                          prediction.description;
-                        const state =
-                          getAddressComponentValue(components, [
-                            "administrative_area_level_1",
-                          ]) ?? null;
-                        const country =
-                          getAddressComponentValue(components, [
-                            "country",
-                          ]) ?? prediction.structured_formatting?.secondary_text ?? "";
-
-                        if (!city || !country) {
-                          resolve(normalizePredictionFallback(prediction));
-                          return;
-                        }
-
-                        resolve({
-                          placeId: prediction.place_id,
-                          city,
-                          state: state ?? undefined,
-                          state_slug: state ? slugifyLocation(state) : undefined,
-                          country,
-                          city_slug: slugifyLocation(city),
-                          country_slug: slugifyLocation(country),
-                          fullLabel:
-                            details.formatted_address ??
-                            prediction.description ??
-                            buildLocationLabel(city, country, state ?? undefined),
-                        });
-                      }
-                    );
-                  })
-              )
-            )
-              .then((items) => {
-                if (!active) return;
-                const normalized = items.filter(
-                  (item): item is LocationSuggestion => Boolean(item)
-                );
-                if (normalized.length > 0) {
-                  setResults(normalized);
-                  return;
-                }
-
-                const predictionFallback = limited
-                  .map((prediction: any) => normalizePredictionFallback(prediction))
-                  .filter(
-                    (item: LocationSuggestion | null): item is LocationSuggestion =>
-                      Boolean(item)
-                  );
-                setResults(predictionFallback);
-              })
-              .finally(() => {
-                if (active) {
-                  setIsLoading(false);
-                }
-              });
-          }
-        );
       })
-      .catch((err) => {
+      .catch(() => {
         if (!active) return;
         loadFallbackSuggestions(query)
           .catch(() => {
             setResults([]);
-            setError(err instanceof Error ? err.message : String(err));
+            setError("Location suggestions unavailable");
           })
-          .finally(() => setIsLoading(false));
+          .finally(() => {
+            if (active) setIsLoading(false);
+          });
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
       });
 
     return () => {

@@ -515,8 +515,7 @@ export function GeneralInformationFormContent({
                 required
               />
               <p className="text-[12px] font-normal text-text-gray-opacity">
-                Start typing to pull suggestions from Google Places; select the
-                result that matches your home city or region.
+                Start typing to search for your home city or region.
               </p>
             </div>
           </div>
