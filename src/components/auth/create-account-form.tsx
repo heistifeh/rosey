@@ -161,12 +161,7 @@ export function CreateAccountForm() {
           router.push(`/enter-otp?email=${encodeURIComponent(submittedEmail)}`);
         }}
       />
-      <RoleSelectionModal
-        isOpen={showRoleModal}
-        onClose={() => setShowRoleModal(false)}
-        onSelectRole={handleRoleSelect}
-      />
-      <UnclaimedProfileModal
+<UnclaimedProfileModal
         isOpen={showUnclaimedModal}
         email={claimEmail}
         onClose={() => setShowUnclaimedModal(false)}
@@ -212,34 +207,6 @@ export function CreateAccountForm() {
                 <p className="text-text-gray text-sm font-normal">
                   Enter your details to create an account.
                 </p>
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="default"
-                className="w-full justify-center rounded-[200px] bg-input-bg text-sm font-normal h-10"
-                onClick={() => setShowRoleModal(true)}
-              >
-                <Image
-                  src="/svg/google.svg"
-                  alt="Google"
-                  width={18}
-                  height={18}
-                  className="h-5 w-5 mr-2"
-                />
-                Continue with Google
-              </Button>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border-gray"></div>
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="px-2 bg-primary-bg text-text-gray">
-                    or sign up with
-                  </span>
-                </div>
               </div>
 
               <form

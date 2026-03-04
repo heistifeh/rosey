@@ -22,10 +22,6 @@ export function ProfileDetailsSection({ details }: ProfileDetailsSectionProps) {
       <h2 className="text-xl font-semibold text-primary-text mb-4">Details</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
-          <p className="text-xs text-text-gray-opacity mb-1">Based In</p>
-          <p className="text-sm text-primary-text">{details.basedIn}</p>
-        </div>
-        <div>
           <p className="text-xs text-text-gray-opacity mb-1">
             {details.catersTo ? "Caters to" : "Colors To"}
           </p>
