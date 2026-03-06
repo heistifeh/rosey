@@ -118,6 +118,11 @@ export function LoginForm() {
       try {
         const user = await apiBuilder.auth.getCurrentUser();
         const roleFromMetadata = (user?.user_metadata?.role ?? "").toLowerCase();
+        if (roleFromMetadata === "admin") {
+          router.push("/admin");
+          return;
+        }
+
         const requiresPasswordSetup = Boolean(
           user?.user_metadata?.password_setup_required,
         );

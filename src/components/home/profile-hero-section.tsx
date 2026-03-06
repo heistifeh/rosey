@@ -115,12 +115,6 @@ export function ProfileHeroSection({
             <Circle className="h-2 w-2 fill-current text-emerald-400" />
             <span>{profile.status}</span>
           </div> */}
-            <div className="flex items-center gap-1 text-primary-text font-normal text-sm md:text-base">
-              <MapPin className="h-4 w-4" />
-              <span className="text-primary-text font-normal">
-                {profile.location}
-              </span>
-            </div>
             <div className="flex items-center gap-1">
               <Venus className="h-4 w-4  text-primary-text" />
               <span className="text-primary-text font-normal text-sm md:text-base">

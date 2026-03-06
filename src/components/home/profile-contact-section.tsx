@@ -154,20 +154,6 @@ export function ProfileContactSection({
           </div>
         )}
 
-        <div className="flex items-center justify-between bg-primary-bg rounded-xl p-3 border border-dark-border">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-input-bg">
-              <MapPin className="h-4 w-4 text-primary-text" />
-            </div>
-            <div>
-              <p className="text-xs text-text-gray-opacity mb-1">Location</p>
-              <p className="text-sm text-primary-text">{contact.location}</p>
-            </div>
-          </div>
-          <button className="p-2 rounded-full bg-primary text-primary-text hover:bg-primary/90 transition-colors">
-            <ArrowRightIcon className="h-4 w-4" />
-          </button>
-        </div>
       </div>
     </section>
   );

@@ -2,8 +2,13 @@
 @import "tw-animate-css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #111112;
+  --foreground: #fcfcfd;
+}
+
+html,
+body {
+  background-color: #111112;
 }
 
 @theme {

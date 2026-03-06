@@ -93,6 +93,8 @@ export default function TransactionsPage() {
                   const isCredit = transaction.direction === "credit";
                   const label = isPending
                     ? "Top up (pending)"
+                    : transaction.type === "adjustment"
+                    ? (transaction.reference || "")
                     : typeLabelMap[transaction.type] ||
                       transaction.type?.replace(/_/g, " ") ||
                       "Transaction";
