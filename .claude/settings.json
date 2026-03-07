@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(cat /Users/tife/source-code/rosey/tailwind.config.*)",
-      "Bash(grep -n \"await fetch\\\\|await adminFetch\" /Users/tife/source-code/rosey/src/app/admin/**/*.tsx)"
+      "Bash(grep -n \"await fetch\\\\|await adminFetch\" /Users/tife/source-code/rosey/src/app/admin/**/*.tsx)",
+      "Bash(ls /Users/tife/source-code/rosey/public/favicon* /Users/tife/source-code/rosey/public/icon*)",
+      "Bash(ls /Users/tife/source-code/rosey/src/app/icon* /Users/tife/source-code/rosey/src/app/favicon*)"
     ]
   }
 }

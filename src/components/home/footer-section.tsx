@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Globe } from "lucide-react";
 import {
@@ -205,9 +206,13 @@ export function FooterSection({
       <div className="px-4 py-8 md:px-[60px] md:py-12">
         <div className="flex flex-col gap-8 pb-8 md:gap-12 md:pb-12 lg:flex-row">
           <div className="flex flex-col gap-6">
-            <h2 className="petemoss text-4xl font-normal text-primary md:text-5xl">
-              Rosey
-            </h2>
+            <Image
+              src="/site-logos/Rosey white.png"
+              alt="Rosey"
+              width={160}
+              height={54}
+              className="h-12 w-auto object-contain"
+            />
 
             <div className="flex items-center gap-2">
               <Globe className="h-5 w-5 text-primary-text" />

@@ -87,8 +87,8 @@ const providerFeatures = [
 const pricingTiers = [
   {
     name: "Starter",
-    price: "$49",
-    period: "/month",
+    price: "100",
+    period: " credits",
     description: "Perfect for individual providers",
     features: [
       "Profile boost in your city",
@@ -99,8 +99,8 @@ const pricingTiers = [
   },
   {
     name: "Professional",
-    price: "$149",
-    period: "/month",
+    price: "250",
+    period: " credits",
     description: "For providers who want maximum visibility",
     features: [
       "Top of search results",
@@ -113,8 +113,8 @@ const pricingTiers = [
   },
   {
     name: "Business",
-    price: "Custom",
-    period: "",
+    price: "500",
+    period: " credits",
     description: "For brands and businesses",
     features: [
       "Banner ads across the site",

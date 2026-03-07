@@ -92,7 +92,8 @@ export const metadata: Metadata = {
     google: "bYfaU3gCdtyqmYFK8BsVCOeaAgzTxr8ciGWTCEMDm8s",
   },
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    icon: [{ url: "/favicon.png", type: "image/png" }],
+    apple: [{ url: "/favicon.png" }],
   },
 };
 

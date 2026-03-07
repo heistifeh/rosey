@@ -60,15 +60,12 @@ export function Header() {
       <div className="w-full md:hidden">
         <section className="flex w-full items-center justify-between rounded-[200px] bg-primary-text px-4 py-3">
           <Link href="/" className="inline-flex items-center">
-            <span className="petemoss text-3xl font-normal text-primary md:hidden">
-              Rosey
-            </span>
             <Image
-              src="/images/logo.svg"
+              src="/site-logos/Rosey.png"
               alt="Rosey"
-              width={47}
-              height={25}
-              className="hidden md:block"
+              width={100}
+              height={36}
+              className="h-8 w-auto object-contain"
               priority
             />
           </Link>
@@ -130,10 +127,15 @@ export function Header() {
       </div>
 
       <section className="hidden w-full items-center justify-between gap-2 rounded-[200px] bg-primary-text p-3 md:flex md:p-4 lg:gap-4">
-        <Link href="/" className="inline-flex flex-shrink-0 items-center">
-          <span className="petemoss text-2xl font-normal text-primary lg:text-3xl xl:text-[32px]">
-            Rosey
-          </span>
+        <Link href="/" className="inline-flex shrink-0 items-center">
+          <Image
+            src="/site-logos/Rosey.png"
+            alt="Rosey"
+            width={120}
+            height={40}
+            className="h-9 w-auto object-contain"
+            priority
+          />
         </Link>
 
         <div className="flex items-center gap-4 lg:gap-10">
