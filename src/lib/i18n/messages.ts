@@ -23,8 +23,8 @@ export const messages = {
       searchPlaceholder: "Search",
     },
     hero: {
-      titleLine1: "Find Independent Escorts",
-      titleLine2: "Near You Right Now",
+      titleLine1: "Independent Escorts Near You",
+      titleLine2: "– Local Escort Directory",
       subtitle:
         "Rosey is an escort directory for adult providers to advertise services, show rates and availability, and connect with paying clients.",
       findCompanions: "Find Escorts",

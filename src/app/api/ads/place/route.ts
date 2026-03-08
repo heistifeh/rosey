@@ -8,7 +8,7 @@ import {
   SERVICE_ROLE_KEY,
 } from "@/server/supabase-client";
 
-const CITY_COST = 3;
+const CITY_COST = 1;
 const LOW_BALANCE_THRESHOLD = 50;
 
 type PlaceAdBody = {

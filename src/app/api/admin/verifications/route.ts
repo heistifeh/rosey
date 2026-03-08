@@ -22,7 +22,10 @@ export async function GET(req: Request) {
     .limit(100);
 
   if (filter === "pending") {
-    query = query.eq("is_fully_verified", false).not("user_id", "is", null);
+    query = query
+      .eq("is_fully_verified", false)
+      .not("user_id", "is", null)
+      .neq("approval_status", "rejected");
   }
 
   if (search) {

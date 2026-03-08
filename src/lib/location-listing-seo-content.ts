@@ -210,7 +210,7 @@ export function buildLocationListingSeoContent(
       : null;
 
   const introParagraphs = [
-    `Searching for escorts near me in ${vars.cityName}? This guide is built to help you find independent escorts in ${vars.cityName} who appear active, clearly listed, and easier to verify before booking.`,
+    `Searching for escorts near me in ${vars.cityName}? This guide is built to help you find independent escorts near you in ${vars.cityName} who appear active, clearly listed, and easier to verify before booking.`,
     introOverride ||
       `${vars.cityName} is a high-intent market for independent escorts, and the best results usually come from listings with recent activity, clear communication rules, and transparent availability.`,
     `Use this page to compare verified profiles, review rates and preferences, and narrow down your options before making contact. ${sourceLine}`,

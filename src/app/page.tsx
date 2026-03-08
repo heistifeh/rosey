@@ -21,7 +21,7 @@ import { createServiceRoleClient, SERVICE_ROLE_KEY } from "@/server/supabase-cli
 import { dedupeProfilesByIdentity, type HomepageProfile } from "@/lib/profile-identity";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Rosey | Find Independent Escorts",
+  title: "Rosey | Independent Escorts Near You – Local Escort Directory",
   description:
     "Find verified independent escorts on Rosey.link. Browse local escort listings by city, rates, and real-time availability. Discreet profiles and direct contact options. 18+ only.",
   path: "/",
@@ -71,7 +71,7 @@ export default async function Home() {
         "@type": "WebPage",
         "@id": `${SITE_URL}/#homepage`,
         url: SITE_URL,
-        name: "Rosey | Find Independent Escorts",
+        name: "Rosey | Independent Escorts Near You – Local Escort Directory",
         description: metadata.description,
         isPartOf: {
           "@id": `${SITE_URL}/#website`,

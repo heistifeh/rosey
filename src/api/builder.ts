@@ -677,7 +677,7 @@ export const apiBuilder = {
       const params = new URLSearchParams();
       params.append(
         "select",
-        `profile:profiles(${PROFILE_SELECT}),ad_city_targets!inner(city_slug,state_slug,country_slug)`,
+        `id,profile:profiles(${PROFILE_SELECT}),ad_city_targets!inner(city_slug,state_slug,country_slug)`,
       );
       params.append("status", "eq.active");
       params.append("ad_city_targets.city_slug", `eq.${paramsIn.citySlug}`);
@@ -691,6 +691,7 @@ export const apiBuilder = {
 
       return API.get<
         Array<{
+          id: string;
           profile?: Profile | null;
           ad_city_targets?: {
             city_slug?: string | null;
@@ -716,6 +717,7 @@ export const apiBuilder = {
 
             unique.set(identityKey, {
               ...profile,
+              sponsored_ad_id: row.id,
               city_slug: citySlug || profile.city_slug,
               ...(stateSlug ? { state_slug: stateSlug } : {}),
               country_slug: countrySlug || profile.country_slug,

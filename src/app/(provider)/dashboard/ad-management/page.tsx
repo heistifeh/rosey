@@ -190,7 +190,7 @@ export default function AdManagementPage() {
     },
     {
       title: "Profile Views from Ad",
-      value: adsLoading || statsLoading ? null : 0,
+      value: adsLoading || statsLoading ? null : totalClicks,
       suffix: "",
     },
     {

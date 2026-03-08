@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { BadgeCheck } from "lucide-react";
 import type { Profile } from "@/types/types";
 import { SafeImage } from "@/components/ui/safe-image";
@@ -11,7 +12,37 @@ interface ProfileCardProps {
   isSponsored?: boolean;
 }
 
+function trackAdEvent(adId: string, event: "impression" | "click") {
+  fetch("/api/ads/track", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ adId, event }),
+  }).catch(() => {});
+}
+
 export function ProfileCard({ profile, isSponsored = false }: ProfileCardProps) {
+  const adId = profile.sponsored_ad_id as string | undefined;
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const impressionFired = useRef(false);
+
+  useEffect(() => {
+    if (!adId || impressionFired.current) return;
+    const el = cardRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !impressionFired.current) {
+          impressionFired.current = true;
+          trackAdEvent(adId, "impression");
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [adId]);
+
   const images = profile.images ?? [];
   const primaryImage = images.find((img) => img.is_primary) ?? images[0];
   const imageUrl = primaryImage?.public_url || "/placeholder.png";
@@ -22,7 +53,9 @@ export function ProfileCard({ profile, isSponsored = false }: ProfileCardProps) 
 
   return (
     <Link
+      ref={cardRef}
       href={`/profile/${profile.username || profile.id}`}
+      onClick={() => adId && trackAdEvent(adId, "click")}
       className="group relative flex h-full flex-col overflow-hidden rounded-[24px] border border-[#26262a] bg-primary-bg p-2 shadow-sm transition-opacity hover:opacity-90 md:p-3"
     >
       <div className="relative aspect-square w-full overflow-hidden rounded-[14px] md:aspect-[4/5] md:rounded-[16px]">

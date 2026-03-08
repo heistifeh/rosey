@@ -726,18 +726,18 @@ export function SearchResultsClient({
           <div className="mb-2 flex flex-col gap-1 md:gap-2 text-center">
             <h1 className="text-2xl font-bold text-primary-text md:text-4xl">
               {params.citySlug
-                ? `Find independent escorts in ${formatLocationLabel(
+                ? `Independent Escorts in ${formatLocationLabel(
                     params.citySlug,
                     params.stateSlug,
-                  )}`
+                  )} – Local Escort Directory`
                 : params.stateSlug
-                  ? `Find independent escorts in ${formatLocationLabel(
+                  ? `Independent Escorts in ${formatLocationLabel(
                       params.stateSlug,
                       params.countrySlug,
-                    )}`
+                    )} – Local Escort Directory`
                 : params.countrySlug
-                  ? `Find independent escorts in ${formatSlug(params.countrySlug)}`
-                  : "Find independent escorts"}
+                  ? `Independent Escorts in ${formatSlug(params.countrySlug)} – Local Escort Directory`
+                  : "Independent Escorts Near You – Local Escort Directory"}
             </h1>
             <p className="text-xs font-normal text-white md:text-sm">
               {params.citySlug
