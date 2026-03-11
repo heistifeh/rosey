@@ -30,14 +30,14 @@ export async function getUserId(supabase: SupabaseClient) {
     const accessToken = cookieAuth?.access_token;
     const refreshToken = cookieAuth?.refresh_token;
 
-    if (accessToken) {
-      authResult = await supabase.auth.getUser(accessToken);
-    } else if (accessToken && refreshToken) {
+    if (accessToken && refreshToken) {
       await supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken,
       });
       authResult = await supabase.auth.getUser();
+    } else if (accessToken) {
+      authResult = await supabase.auth.getUser(accessToken);
     }
   }
 

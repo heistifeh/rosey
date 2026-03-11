@@ -13,7 +13,7 @@ import { ProfileCard } from "@/components/profile-card";
 import { LocationListingSeoAccordion } from "@/components/seo/location-listing-seo-accordion";
 import type { Profile } from "@/types/types";
 import { slugifyLocation } from "@/lib/google-places";
-import { dedupeProfilesByIdentity, getProfileIdentityKey } from "@/lib/profile-identity";
+import { dedupeProfilesByIdentity, getProfileIdentityKey, interleaveSponsored } from "@/lib/profile-identity";
 import { cn } from "@/lib/utils";
 
 export type CityPageClientProps = {
@@ -216,7 +216,8 @@ export function CityPageClient({
     Number.isFinite(initialPage) && initialPage > 0 ? initialPage : 1,
   );
 
-  const invalidParams = !citySlug || !countrySlug;
+  const isStatePage = Boolean(stateSlug && !citySlug);
+  const invalidParams = !countrySlug || (!citySlug && !stateSlug);
   const cityLine = formatLocationLabel(citySlug, stateSlug, countrySlug);
 
   const {
@@ -228,7 +229,7 @@ export function CityPageClient({
       invalidParams
         ? Promise.resolve([])
         : apiBuilder.profiles.searchProfiles({
-          citySlug: citySlug!,
+          citySlug,
           countrySlug: countrySlug!,
           stateSlug,
         }),
@@ -241,14 +242,14 @@ export function CityPageClient({
   } = useQuery<Profile[]>({
     queryKey: ["city-sponsored", countrySlug, stateSlug, citySlug],
     queryFn: () =>
-      invalidParams
+      invalidParams || isStatePage
         ? Promise.resolve([])
         : apiBuilder.ads.getSponsoredProfilesForCity({
           citySlug: citySlug!,
           countrySlug: countrySlug!,
           stateSlug,
         }),
-    enabled: !invalidParams,
+    enabled: !invalidParams && !isStatePage,
   });
 
   const sponsoredIdentityKeys = useMemo(
@@ -263,7 +264,7 @@ export function CityPageClient({
     [organicProfiles, sponsoredIdentityKeys],
   );
   const finalProfiles = useMemo(
-    () => dedupeProfilesByIdentity([...sponsoredProfiles, ...organicWithoutSponsored]),
+    () => dedupeProfilesByIdentity(interleaveSponsored(organicWithoutSponsored, sponsoredProfiles)),
     [organicWithoutSponsored, sponsoredProfiles],
   );
   const isLoading = loadingOrganic || loadingSponsored;

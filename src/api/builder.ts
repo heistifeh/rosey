@@ -361,7 +361,10 @@ export const apiBuilder = {
       if (paramsIn.citySlug) {
         params.append("city_slug", `eq.${paramsIn.citySlug}`);
       }
-      if (paramsIn.stateSlug) {
+      // Only filter by state when there is no city — city_slug is specific enough on its
+      // own, and many scraped profiles don't have the state field populated, which would
+      // cause a stateSlug filter to incorrectly return 0 results on city pages.
+      if (paramsIn.stateSlug && !paramsIn.citySlug) {
         const stateName =
           humanizeSlug(paramsIn.stateSlug) ?? paramsIn.stateSlug.replace(/-/g, " ");
         params.append("state", `ilike.*${stateName}*`);
@@ -677,7 +680,7 @@ export const apiBuilder = {
       const params = new URLSearchParams();
       params.append(
         "select",
-        `id,profile:profiles(${PROFILE_SELECT}),ad_city_targets!inner(city_slug,state_slug,country_slug)`,
+        `id,created_at,profile:profiles(${PROFILE_SELECT}),ad_city_targets!inner(city_slug,state_slug,country_slug)`,
       );
       params.append("status", "eq.active");
       params.append("ad_city_targets.city_slug", `eq.${paramsIn.citySlug}`);
@@ -692,6 +695,7 @@ export const apiBuilder = {
       return API.get<
         Array<{
           id: string;
+          created_at: string;
           profile?: Profile | null;
           ad_city_targets?: {
             city_slug?: string | null;
@@ -718,6 +722,7 @@ export const apiBuilder = {
             unique.set(identityKey, {
               ...profile,
               sponsored_ad_id: row.id,
+              sponsored_ad_created_at: row.created_at,
               city_slug: citySlug || profile.city_slug,
               ...(stateSlug ? { state_slug: stateSlug } : {}),
               country_slug: countrySlug || profile.country_slug,

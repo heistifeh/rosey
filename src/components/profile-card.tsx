@@ -12,6 +12,15 @@ interface ProfileCardProps {
   isSponsored?: boolean;
 }
 
+function timeAgo(isoString: string): string {
+  const diff = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 2592000) return `${Math.floor(diff / 86400)}d ago`;
+  return `${Math.floor(diff / 2592000)}mo ago`;
+}
+
 function trackAdEvent(adId: string, event: "impression" | "click") {
   fetch("/api/ads/track", {
     method: "POST",
@@ -22,6 +31,7 @@ function trackAdEvent(adId: string, event: "impression" | "click") {
 
 export function ProfileCard({ profile, isSponsored = false }: ProfileCardProps) {
   const adId = profile.sponsored_ad_id as string | undefined;
+  const adCreatedAt = profile.sponsored_ad_created_at as string | undefined;
   const cardRef = useRef<HTMLAnchorElement>(null);
   const impressionFired = useRef(false);
 
@@ -91,8 +101,11 @@ export function ProfileCard({ profile, isSponsored = false }: ProfileCardProps) 
             )}
           </div>
           {isSponsored && (
-            <span className="rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[9px] font-medium text-primary/80">
+            <span className="flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[9px] font-medium text-primary/80">
               Sponsored
+              {adCreatedAt && (
+                <span className="text-text-gray-opacity">· {timeAgo(adCreatedAt)}</span>
+              )}
             </span>
           )}
         </div>

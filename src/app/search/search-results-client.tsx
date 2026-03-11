@@ -21,7 +21,7 @@ import { FooterSection } from "@/components/home/footer-section";
 import { useLocationAutocomplete } from "@/hooks/use-location-autocomplete";
 import { cn } from "@/lib/utils";
 import { slugifyLocation } from "@/lib/google-places";
-import { dedupeProfilesByIdentity, getProfileIdentityKey } from "@/lib/profile-identity";
+import { dedupeProfilesByIdentity, getProfileIdentityKey, interleaveSponsored } from "@/lib/profile-identity";
 
 const formatSlug = (slug: string) =>
   slug
@@ -373,7 +373,7 @@ export function SearchResultsClient({
     [organicProfiles, sponsoredIdentityKeys],
   );
   const finalProfiles = useMemo(
-    () => dedupeProfilesByIdentity([...sponsoredProfiles, ...organicWithoutSponsored]),
+    () => dedupeProfilesByIdentity(interleaveSponsored(organicWithoutSponsored, sponsoredProfiles)),
     [organicWithoutSponsored, sponsoredProfiles],
   );
   const totalPages = Math.max(
@@ -656,10 +656,10 @@ export function SearchResultsClient({
           <section className="flex w-full items-center justify-between rounded-[200px] bg-primary-text px-4 py-3">
             <Link href="/" className="inline-flex items-center">
               <Image
-                src="/images/logo.svg"
+                src="/site-logos/Rosey.png"
                 alt="Rosey"
-                width={47}
-                height={25}
+                width={80}
+                height={30}
                 priority
               />
             </Link>
@@ -695,10 +695,10 @@ export function SearchResultsClient({
         <section className="hidden w-full items-center justify-between md:flex">
           <Link href="/" className="inline-flex items-center">
             <Image
-              src="/images/logo.svg"
+              src="/site-logos/Rosey.png"
               alt="Rosey"
               width={121}
-              height={35}
+              height={45}
               className="h-auto"
               priority
             />

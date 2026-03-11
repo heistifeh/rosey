@@ -85,3 +85,30 @@ export const dedupeProfilesByIdentity = <T extends ProfileIdentityShape>(
 
   return deduped;
 };
+
+// Interleaves sponsored profiles into organic at regular intervals.
+// e.g. with interval=4: [o, o, o, o, S, o, o, o, o, S, ...]
+export const interleaveSponsored = <T extends ProfileIdentityShape>(
+  organic: T[],
+  sponsored: T[],
+  interval = 4,
+): T[] => {
+  if (sponsored.length === 0) return organic;
+
+  const result: T[] = [];
+  let sIdx = 0;
+
+  for (let i = 0; i < organic.length; i++) {
+    result.push(organic[i]);
+    if ((i + 1) % interval === 0 && sIdx < sponsored.length) {
+      result.push(sponsored[sIdx++]);
+    }
+  }
+
+  // Append any remaining sponsored profiles at the end
+  while (sIdx < sponsored.length) {
+    result.push(sponsored[sIdx++]);
+  }
+
+  return result;
+};

@@ -4,6 +4,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Camera } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 import Webcam from "react-webcam";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import {
@@ -91,6 +92,7 @@ export function TakePhotoForm() {
       router.push("/setup-profile");
     } catch (error) {
       console.error("Failed to upload selfie:", error);
+      toast.error("Failed to upload selfie, please try again");
     } finally {
       setIsUploading(false);
     }

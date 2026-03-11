@@ -85,6 +85,17 @@ const US_CITY_STATE_PREFERENCE: Record<string, string> = {
   atlanta: "georgia",
 };
 
+const isStateSlugForCountry = (countrySlug: string, segment: string): boolean => {
+  const isoCode = getCountryIsoCode(countrySlug);
+  if (!isoCode) return false;
+  const normalizedSegment = slugifyValue(segment);
+  return State.getStatesOfCountry(isoCode).some(
+    (state) =>
+      slugifyValue(state.name) === normalizedSegment ||
+      state.isoCode.toLowerCase() === normalizedSegment,
+  );
+};
+
 const inferStateSlugFromCity = (countrySlug: string, citySlug?: string) => {
   if (!citySlug) return undefined;
 
@@ -146,13 +157,22 @@ const toLocationParams = (
   const segments = params.locationSegments ?? [];
 
   if (segments.length === 1) {
-    const [citySlug] = segments;
+    const [segment] = segments;
+    if (isStateSlugForCountry(params.countrySlug, segment)) {
+      return {
+        rawCountrySlug: params.countrySlug,
+        countrySlug: canonicalCountrySlug,
+        citySlug: undefined,
+        stateSlug: segment,
+        valid: true,
+      };
+    }
     return {
       rawCountrySlug: params.countrySlug,
       countrySlug: canonicalCountrySlug,
-      citySlug,
+      citySlug: segment,
       stateSlug: stateFromQuery,
-      valid: Boolean(citySlug),
+      valid: Boolean(segment),
     };
   }
 
