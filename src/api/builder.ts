@@ -733,7 +733,13 @@ export const apiBuilder = {
           }
         });
 
-        return Array.from(unique.values());
+        const result = Array.from(unique.values());
+        // Most recently placed ad appears first
+        result.sort((a, b) =>
+          new Date(b.sponsored_ad_created_at as string).getTime() -
+          new Date(a.sponsored_ad_created_at as string).getTime()
+        );
+        return result;
       });
     },
     placeAd: (payload: {
