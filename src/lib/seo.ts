@@ -118,11 +118,11 @@ export const buildPageMetadata = ({
     robots: noIndex
       ? {
           index: false,
-          follow: false,
+          follow: true,
           nocache: true,
           googleBot: {
             index: false,
-            follow: false,
+            follow: true,
             noimageindex: true,
             nosnippet: true,
           },

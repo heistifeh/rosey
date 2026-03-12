@@ -22,7 +22,12 @@ export async function verifyAdmin(req: Request): Promise<
   | { admin: { id: string; email?: string }; supabase: SupabaseClient; error?: never }
   | { error: NextResponse; admin?: never; supabase?: never }
 > {
-  const supabase = createServiceRoleClient();
+  let supabase: SupabaseClient;
+  try {
+    supabase = createServiceRoleClient();
+  } catch {
+    return { error: NextResponse.json({ error: "Server misconfiguration" }, { status: 500 }) };
+  }
 
   // Try Authorization header first, then fall back to next/headers cookies
   const token = getAccessTokenFromRequest(req) ?? (await getTokenFromCookies());

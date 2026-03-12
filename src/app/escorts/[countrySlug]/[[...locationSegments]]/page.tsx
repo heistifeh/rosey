@@ -216,8 +216,8 @@ export async function generateMetadata({
     parsed.citySlug,
     preferredStateSlug,
   );
-
-  if (!parsed.valid || !parsed.citySlug) {
+    
+  if (!parsed.valid) {
     return buildPageMetadata({
       title: "Escorts by Location | Rosey",
       description:
@@ -227,6 +227,34 @@ export async function generateMetadata({
       keywords: [...CORE_SEO_KEYWORDS, "escorts by location", "city escorts"],
     });
   }
+
+  // State-level page (e.g. /escorts/united-states/florida)
+  if (!parsed.citySlug && parsed.stateSlug) {
+    const stateName = humanizeLocationSlug(parsed.stateSlug);
+    const countryName = humanizeLocationSlug(parsed.countrySlug);
+    return buildPageMetadata({
+      title: `Escorts in ${stateName}, ${countryName} | Rosey`,
+      description: `Browse verified escort profiles in ${stateName}, ${countryName} on Rosey. Find independent escorts near you.`,
+      path: `/escorts/${parsed.countrySlug}/${parsed.stateSlug}`,
+      keywords: [
+        ...CORE_SEO_KEYWORDS,
+        `${stateName} escorts`,
+        `${countryName} escorts`,
+      ],
+    });
+  }
+
+  if (!parsed.citySlug) {
+    return buildPageMetadata({
+      title: "Escorts by Location | Rosey",
+      description:
+        "Browse verified escort profiles on Rosey by country, state, and city.",
+      path: buildEscortsPath(parsed.countrySlug),
+      noIndex: true,
+      keywords: [...CORE_SEO_KEYWORDS, "escorts by location", "city escorts"],
+    });
+  }
+
 
   const cityLine = [
     humanizeLocationSlug(parsed.citySlug),

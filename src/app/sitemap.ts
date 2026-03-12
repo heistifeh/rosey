@@ -161,14 +161,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         continue;
       }
 
-      const path = stateSlug
+      const entryDate = toDate(row.updated_at || row.created_at, now);
+
+      // City-level path
+      const cityPath = stateSlug
         ? `/escorts/${countrySlug}/${stateSlug}/${citySlug}`
         : `/escorts/${countrySlug}/${citySlug}`;
-      const entryDate = toDate(row.updated_at || row.created_at, now);
-      const existingDate = locationLatest.get(path);
+      const existingCity = locationLatest.get(cityPath);
+      if (!existingCity || entryDate > existingCity) {
+        locationLatest.set(cityPath, entryDate);
+      }
 
-      if (!existingDate || entryDate > existingDate) {
-        locationLatest.set(path, entryDate);
+      // State-level path (e.g. /escorts/united-states/florida)
+      if (stateSlug) {
+        const statePath = `/escorts/${countrySlug}/${stateSlug}`;
+        const existingState = locationLatest.get(statePath);
+        if (!existingState || entryDate > existingState) {
+          locationLatest.set(statePath, entryDate);
+        }
       }
     }
 
@@ -178,7 +188,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: absoluteUrl(path),
         lastModified,
         changeFrequency: "daily",
-        priority: 0.85,
+        priority: path.split("/").length === 4 ? 0.8 : 0.85, // state pages slightly lower than city pages
       }));
   } catch {
     locationEntries = [];

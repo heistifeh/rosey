@@ -10,25 +10,29 @@ export const metadata: Metadata = {
 };
 
 async function getAdminUser() {
-  const cookieStore = await cookies();
-  const raw = cookieStore.get("rosey-auth")?.value;
-  if (!raw) return null;
-
-  let accessToken: string | null = null;
   try {
-    const parsed = JSON.parse(decodeURIComponent(raw));
-    accessToken = parsed?.access_token ?? null;
+    const cookieStore = await cookies();
+    const raw = cookieStore.get("rosey-auth")?.value;
+    if (!raw) return null;
+
+    let accessToken: string | null = null;
+    try {
+      const parsed = JSON.parse(decodeURIComponent(raw));
+      accessToken = parsed?.access_token ?? null;
+    } catch {
+      return null;
+    }
+
+    if (!accessToken) return null;
+
+    const supabase = createServiceRoleClient();
+    const { data, error } = await supabase.auth.getUser(accessToken);
+    if (error || !data?.user) return null;
+
+    return data.user.user_metadata?.role === "admin" ? data.user : null;
   } catch {
     return null;
   }
-
-  if (!accessToken) return null;
-
-  const supabase = createServiceRoleClient();
-  const { data, error } = await supabase.auth.getUser(accessToken);
-  if (error || !data?.user) return null;
-
-  return data.user.user_metadata?.role === "admin" ? data.user : null;
 }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
