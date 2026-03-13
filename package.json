@@ -24,7 +24,7 @@
     "country-state-city": "^3.2.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.555.0",
-    "next": "^16.1.4",
+    "next": "15",
     "next-sanity": "^11.6.12",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
