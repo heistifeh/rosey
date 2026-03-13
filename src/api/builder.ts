@@ -713,7 +713,13 @@ export const apiBuilder = {
           const profile = row?.profile;
           if (!profile) return;
           const identityKey = getProfileIdentityKey(profile);
-          if (!unique.has(identityKey)) {
+          const existing = unique.get(identityKey);
+          const rowDate = new Date(row.created_at as string).getTime();
+          const existingDate = existing
+            ? new Date(existing.sponsored_ad_created_at as string).getTime()
+            : 0;
+
+          if (!existing || rowDate > existingDate) {
             const target = row.ad_city_targets?.[0];
             const citySlug = target?.city_slug ?? paramsIn.citySlug;
             const stateSlug = target?.state_slug ?? paramsIn.stateSlug ?? null;
