@@ -17,6 +17,7 @@ interface AdminProfile {
   is_active: boolean;
   claim_status?: string;
   profile_type?: string;
+  contact_email?: string;
   created_at: string;
 }
 
@@ -112,7 +113,7 @@ export default function AdminProfilesPage() {
       <div className="flex gap-3 flex-wrap">
         <input
           type="text"
-          placeholder="Search name, username, city..."
+          placeholder="Search name, username, city, email, ID..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           className="rounded-xl border border-dark-border bg-input-bg px-4 py-2 text-sm text-primary-text placeholder:text-text-gray-opacity outline-none focus:border-primary w-64"

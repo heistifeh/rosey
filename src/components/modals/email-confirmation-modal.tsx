@@ -56,7 +56,7 @@ export function EmailConfirmationModal({
         aria-hidden="true"
       />
       <div
-        className="relative z-50 w-full max-w-md rounded-[24px] bg-dark-surface px-6 pb-6 pt-4 shadow-lg"
+        className="relative z-50 w-full max-w-md rounded-3xl bg-dark-surface px-6 pb-6 pt-4 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -76,12 +76,12 @@ export function EmailConfirmationModal({
             priority
           />
 
-          <div className="flex flex-col  text-center pb-6">
+          <div className="flex flex-col text-center pb-6 gap-2">
             <p className="text-white text-base font-normal leading-relaxed">
-              A confirmation email has been sent. Please open
+              A confirmation email has been sent. Please open it and use the code to activate your account.
             </p>
-            <p className="text-white text-base font-normal leading-relaxed">
-              and use the codes to activate your account.
+            <p className="text-text-gray-opacity text-sm font-normal">
+              Can't find it? Check your <span className="text-white font-medium">spam or junk</span> folder.
             </p>
           </div>
 

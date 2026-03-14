@@ -90,7 +90,7 @@ export async function POST(req: Request) {
     }
 
     const now = new Date();
-    const durationDays = 30;
+    const durationDays = 90;
     const end = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
 
     const { data: ad, error: adError } = await supabase

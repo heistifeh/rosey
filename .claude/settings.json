@@ -8,7 +8,12 @@
       "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
       "Bash(grep -E \"page\\\\.\\(tsx|ts\\)$\")",
       "Bash(ls /Users/tife/source-code/rosey/.env*)",
-      "Bash(grep -n '\"\"use server\"\"' src/app/api/ads/place/route.ts src/app/api/verification/pay/route.ts)"
+      "Bash(grep -n '\"\"use server\"\"' src/app/api/ads/place/route.ts src/app/api/verification/pay/route.ts)",
+      "Bash(head -50 /Users/tife/source-code/rosey/src/app/escorts/[countrySlug]/[[...locationSegments]]/page.tsx)",
+      "Bash(git -C /Users/tife/source-code/rosey log --oneline -20)",
+      "Bash(grep -A 30 \"const finalProfiles\" /Users/tife/source-code/rosey/src/app/escorts/[countrySlug]/[[...locationSegments]]/city-page-client.tsx)",
+      "Bash(grep -r \"CREATE TABLE.*ads\\\\|CREATE TABLE.*ad_city_targets\" /Users/tife/source-code/rosey --include=*.sql)",
+      "Bash(grep -E \"\\\\.\\(sql|ts|js\\)$\")"
     ]
   }
 }

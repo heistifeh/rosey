@@ -60,6 +60,10 @@ type PlaceAdPayload = {
 const CREDITS_PER_CITY = 2;
 const PRIORITY_COUNTRY_ISO_CODES = ["US", "CA"] as const;
 const DEFAULT_AD_TITLE = "Featured Campaign";
+const MAX_TITLE_WORDS = 12;
+
+const countWords = (value: string) =>
+  value.trim() === "" ? 0 : value.trim().split(/\s+/).length;
 
 const slugify = (value: string) =>
   value
@@ -211,6 +215,8 @@ export default function PlaceAdPage() {
   );
   const trimmedTitle = adTitle.trim();
   const resolvedAdTitle = trimmedTitle || DEFAULT_AD_TITLE;
+  const titleWordCount = countWords(adTitle);
+  const titleOverLimit = titleWordCount > MAX_TITLE_WORDS;
   const hasInsufficientCredits = creditsUsed > availableCredits;
 
   const isAllSelected = useMemo(
@@ -310,11 +316,15 @@ export default function PlaceAdPage() {
     });
   }, [isAllSelected, stateOptions]);
 
-  const canPlaceAd = citiesSelected > 0;
+  const canPlaceAd = citiesSelected > 0 && !titleOverLimit;
 
   const handlePlaceAd = useCallback(async () => {
     if (citiesSelected === 0) {
       toast.error("Select at least one city.");
+      return;
+    }
+    if (titleOverLimit) {
+      toast.error(`Ad title must be ${MAX_TITLE_WORDS} words or fewer.`);
       return;
     }
     if (hasInsufficientCredits) {
@@ -363,17 +373,24 @@ export default function PlaceAdPage() {
 
         <div className="mx-auto mt-8 max-w-lg space-y-4">
           <div className="flex flex-col gap-2 text-left">
-            <label className="text-sm font-semibold text-primary-text">
-              Ad title
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-semibold text-primary-text">
+                Ad title
+              </label>
+              {adTitle.trim() && (
+                <span className={`text-xs ${titleOverLimit ? "text-rose-400" : "text-text-gray-opacity"}`}>
+                  {titleWordCount}/{MAX_TITLE_WORDS} words
+                </span>
+              )}
+            </div>
             <Input
               value={adTitle}
               onChange={(event) => setAdTitle(event.target.value)}
               placeholder="Optional: Holiday Promo"
-              className="bg-input-bg text-primary-text"
+              className={`bg-input-bg text-primary-text ${titleOverLimit ? "border-rose-500 focus-visible:ring-rose-500" : ""}`}
             />
             <p className="text-xs text-text-gray-opacity">
-              Leave blank to use the default title: "{DEFAULT_AD_TITLE}".
+              Leave blank to use the default title: "{DEFAULT_AD_TITLE}". Max {MAX_TITLE_WORDS} words.
             </p>
           </div>
           <label className="flex items-start gap-3 text-sm text-primary-text">

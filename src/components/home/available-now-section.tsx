@@ -95,7 +95,7 @@ export async function AvailableNowSection({ profiles: rawProfiles = [] }: { prof
       }
     : null;
 
-  const AD_INDEX = 4;
+  const AD_INDEX = 0;
   let finalItems = normalizedProfiles.slice(0, AVAILABLE_NOW_RENDER_LIMIT);
   if (adItem && !adItem.identityKeys.some((k) => seenIdentityKeys.has(k))) {
     finalItems.splice(Math.min(AD_INDEX, finalItems.length), 0, adItem);

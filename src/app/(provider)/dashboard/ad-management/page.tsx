@@ -9,7 +9,7 @@ const AdViewsChart = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[320px] rounded-2xl bg-slate-900/50 animate-pulse" />
+      <div className="h-80 rounded-2xl bg-slate-900/50 animate-pulse" />
     ),
   }
 );
@@ -77,13 +77,20 @@ export default function AdManagementPage() {
   const selectedAd =
     ads.find((ad: { id: string }) => ad.id === selectedAdId) ?? ads[0];
 
+  const [statsDays, setStatsDays] = useState<7 | 14 | 30>(7);
+
   const {
     points,
     totalImpressions,
     totalClicks,
     isLoading: statsLoading,
     error: statsError,
-  } = useAdStats({ adId: selectedAdId, days: 7 });
+  } = useAdStats({ adId: selectedAdId, days: statsDays });
+
+  const ctr =
+    totalImpressions > 0
+      ? ((totalClicks / totalImpressions) * 100).toFixed(1)
+      : "0.0";
 
   const chartPoints = useMemo(
     () =>
@@ -94,6 +101,7 @@ export default function AdManagementPage() {
         .map((point) => ({
           day: formatLineChartDay(point.day),
           views: point.impressions,
+          clicks: point.clicks,
         })),
     [points]
   );
@@ -107,22 +115,24 @@ export default function AdManagementPage() {
       ? "1 location"
       : "No locations added";
 
-  const expiresInDays = selectedAd?.end_at
-    ? Math.max(
-        0,
-        Math.ceil(
-          (new Date(selectedAd.end_at).getTime() - Date.now()) /
-            (1000 * 60 * 60 * 24)
-        )
-      )
-    : null;
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
 
-  const expiresLabel =
-    expiresInDays === null
-      ? "No end date"
-      : expiresInDays === 0
-      ? "Ends today"
-      : `${expiresInDays} day${expiresInDays === 1 ? "" : "s"} left`;
+  const expiresLabel = (() => {
+    if (!selectedAd?.end_at) return "No end date";
+    const msLeft = new Date(selectedAd.end_at).getTime() - now;
+    if (msLeft <= 0) return "Expired";
+    const totalMinutes = Math.floor(msLeft / 60_000);
+    const days = Math.floor(totalMinutes / (60 * 24));
+    const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+    if (days === 0 && hours === 0) return "Ends in less than an hour";
+    if (days === 0) return `${hours}h left`;
+    if (hours === 0) return `${days}d left`;
+    return `${days}d ${hours}h left`;
+  })();
 
   const badge = selectedAd ? statusBadge(selectedAd.status) : null;
 
@@ -184,19 +194,19 @@ export default function AdManagementPage() {
 
   const summaryStats = [
     {
-      title: "Total Ad Views",
+      title: "Impressions",
       value: adsLoading || statsLoading ? null : totalImpressions,
-      suffix: "",
-    },
-    {
-      title: "Profile Views from Ad",
-      value: adsLoading || statsLoading ? null : totalClicks,
       suffix: "",
     },
     {
       title: "Clicks",
       value: adsLoading || statsLoading ? null : totalClicks,
       suffix: "",
+    },
+    {
+      title: "Click-Through Rate",
+      value: adsLoading || statsLoading ? null : ctr,
+      suffix: "%",
     },
   ];
 
@@ -225,10 +235,10 @@ export default function AdManagementPage() {
                   <p className="text-text-gray-opacity text-sm mb-2">{stat.title}</p>
                   {stat.value !== null && stat.value !== undefined ? (
                     <p className="text-3xl md:text-4xl font-semibold text-primary-text mb-2">
-                      {stat.value.toLocaleString?.()
+                      {typeof stat.value === "number"
                         ? stat.value.toLocaleString()
                         : stat.value}
-                      {stat.suffix && ` ${stat.suffix}`}
+                      {stat.suffix && `${stat.suffix}`}
                     </p>
                   ) : (
                     <div className="flex items-center gap-2 mt-4">
@@ -370,16 +380,25 @@ export default function AdManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl md:text-2xl font-semibold text-primary-text">
-                    Ad Views
+                    Performance
                   </h2>
                   <p className="text-sm text-text-gray-opacity">
-                    Last 7 days
+                    Impressions &amp; clicks over time
                   </p>
                 </div>
+                <select
+                  value={statsDays}
+                  onChange={(e) => setStatsDays(Number(e.target.value) as 7 | 14 | 30)}
+                  className="rounded-xl border border-dark-border bg-input-bg px-3 py-1.5 text-sm text-primary-text outline-none focus:border-primary"
+                >
+                  <option value={7}>Last 7 days</option>
+                  <option value={14}>Last 14 days</option>
+                  <option value={30}>Last 30 days</option>
+                </select>
               </div>
               <div className="bg-input-bg rounded-2xl p-6 min-h-[400px]">
                 {statsLoading ? (
-                  <div className="h-[320px] rounded-2xl bg-slate-900/50 animate-pulse" />
+                  <div className="h-80 rounded-2xl bg-slate-900/50 animate-pulse" />
                 ) : chartPoints.length === 0 ? (
                   <p className="text-sm text-text-gray-opacity text-center py-6">
                     No stats available for this ad.

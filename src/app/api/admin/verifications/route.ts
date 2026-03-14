@@ -61,11 +61,11 @@ export async function POST(req: Request) {
   const body = await req.json();
   const { profileId, action, notes } = body as {
     profileId: string;
-    action: "approve" | "reject";
+    action: "approve" | "reject" | "revoke";
     notes?: string;
   };
 
-  if (!profileId || !["approve", "reject"].includes(action)) {
+  if (!profileId || !["approve", "reject", "revoke"].includes(action)) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
@@ -76,6 +76,21 @@ export async function POST(req: Request) {
           verified_at: new Date().toISOString(),
           approval_status: "approved",
           verification_notes: notes ?? null,
+          verification_photo_verified: true,
+          id_verified: true,
+          min_photos_verified: true,
+          profile_fields_verified: true,
+        }
+      : action === "revoke"
+      ? {
+          is_fully_verified: false,
+          verified_at: null,
+          approval_status: null,
+          verification_notes: notes ?? "Approval revoked by admin",
+          verification_photo_verified: false,
+          id_verified: false,
+          min_photos_verified: false,
+          profile_fields_verified: false,
         }
       : {
           is_fully_verified: false,
@@ -89,7 +104,7 @@ export async function POST(req: Request) {
   await logAdminAction(supabase, {
     adminId: admin.id,
     adminEmail: admin.email,
-    action: `verification_${action}`,
+    action: `verification_${action}` as string,
     entityType: "profile",
     entityId: profileId,
     metadata: { notes },

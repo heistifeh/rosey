@@ -111,6 +111,9 @@ function EnterOtpFormContent() {
               Enter the 6-digit code that was sent to{" "}
               <span className="text-primary-text">{email}</span>
             </p>
+            <p className="text-text-gray text-xs sm:text-sm font-normal">
+              Can't find it? Check your <span className="text-primary-text font-medium">spam or junk</span> folder.
+            </p>
           </div>
         </div>
 

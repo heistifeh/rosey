@@ -56,7 +56,7 @@ export default function AdminVerificationsPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleVerdict = async (profileId: string, action: "approve" | "reject", notes?: string) => {
+  const handleVerdict = async (profileId: string, action: "approve" | "reject" | "revoke", notes?: string) => {
     setActing(profileId);
     try {
       const res = await adminFetch("/api/admin/verifications", {
@@ -65,7 +65,7 @@ export default function AdminVerificationsPage() {
         body: JSON.stringify({ profileId, action, notes }),
       });
       if (!res.ok) throw new Error("Failed");
-      toast.success(action === "approve" ? "Profile approved" : "Profile rejected");
+      toast.success(action === "approve" ? "Profile approved" : action === "revoke" ? "Approval revoked" : "Profile rejected");
       setRejectModal(null);
       setRejectNotes("");
       await fetchData();
@@ -159,24 +159,34 @@ export default function AdminVerificationsPage() {
                     {p.verification_notes ?? "—"}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    {!p.is_fully_verified && (
-                      <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-2">
+                      {p.is_fully_verified ? (
                         <button
-                          onClick={() => handleVerdict(p.id, "approve")}
+                          onClick={() => handleVerdict(p.id, "revoke")}
                           disabled={acting === p.id}
-                          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-green-900/30 text-green-400 hover:bg-green-900/50 transition-colors disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-yellow-900/30 text-yellow-400 hover:bg-yellow-900/50 transition-colors disabled:opacity-50"
                         >
-                          <CheckCircle className="h-3.5 w-3.5" /> Approve
+                          <XCircle className="h-3.5 w-3.5" /> Revoke
                         </button>
-                        <button
-                          onClick={() => setRejectModal({ profileId: p.id, name: p.working_name ?? p.id })}
-                          disabled={acting === p.id}
-                          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-rose-900/30 text-rose-400 hover:bg-rose-900/50 transition-colors disabled:opacity-50"
-                        >
-                          <XCircle className="h-3.5 w-3.5" /> Reject
-                        </button>
-                      </div>
-                    )}
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handleVerdict(p.id, "approve")}
+                            disabled={acting === p.id}
+                            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-green-900/30 text-green-400 hover:bg-green-900/50 transition-colors disabled:opacity-50"
+                          >
+                            <CheckCircle className="h-3.5 w-3.5" /> Approve
+                          </button>
+                          <button
+                            onClick={() => setRejectModal({ profileId: p.id, name: p.working_name ?? p.id })}
+                            disabled={acting === p.id}
+                            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-rose-900/30 text-rose-400 hover:bg-rose-900/50 transition-colors disabled:opacity-50"
+                          >
+                            <XCircle className="h-3.5 w-3.5" /> Reject
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
