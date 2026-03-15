@@ -60,7 +60,7 @@ type PlaceAdPayload = {
 const CREDITS_PER_CITY = 2;
 const PRIORITY_COUNTRY_ISO_CODES = ["US", "CA"] as const;
 const DEFAULT_AD_TITLE = "Featured Campaign";
-const MAX_TITLE_WORDS = 12;
+const MAX_TITLE_WORDS = 15;
 
 const countWords = (value: string) =>
   value.trim() === "" ? 0 : value.trim().split(/\s+/).length;
@@ -387,6 +387,7 @@ export default function PlaceAdPage() {
               value={adTitle}
               onChange={(event) => setAdTitle(event.target.value)}
               placeholder="Optional: Holiday Promo"
+              maxLength={40}
               className={`bg-input-bg text-primary-text ${titleOverLimit ? "border-rose-500 focus-visible:ring-rose-500" : ""}`}
             />
             <p className="text-xs text-text-gray-opacity">

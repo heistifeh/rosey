@@ -13,7 +13,8 @@
       "Bash(git -C /Users/tife/source-code/rosey log --oneline -20)",
       "Bash(grep -A 30 \"const finalProfiles\" /Users/tife/source-code/rosey/src/app/escorts/[countrySlug]/[[...locationSegments]]/city-page-client.tsx)",
       "Bash(grep -r \"CREATE TABLE.*ads\\\\|CREATE TABLE.*ad_city_targets\" /Users/tife/source-code/rosey --include=*.sql)",
-      "Bash(grep -E \"\\\\.\\(sql|ts|js\\)$\")"
+      "Bash(grep -E \"\\\\.\\(sql|ts|js\\)$\")",
+      "Bash(grep -r \"90.*day\\\\|expir\\\\|boost\" /Users/tife/source-code/rosey/src/app --include=*.ts --include=*.tsx)"
     ]
   }
 }
