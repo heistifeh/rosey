@@ -6,8 +6,9 @@ import { usePathname } from "next/navigation";
 export function SmartSuppScript() {
   const pathname = usePathname();
 
-  // Skip the chat widget on dashboard and auth/onboarding routes
+  // Skip the chat widget on dashboard, admin, and auth/onboarding routes
   if (
+    pathname.startsWith("/admin") ||
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/create-account") ||

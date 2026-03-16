@@ -218,12 +218,14 @@ export async function generateMetadata({
   );
     
   if (!parsed.valid) {
+    const countryName = parsed.countrySlug ? humanizeLocationSlug(parsed.countrySlug) : null;
     return buildPageMetadata({
-      title: "Escorts by Location | Rosey",
-      description:
-        "Browse verified escort profiles on Rosey by country, state, and city.",
+      title: countryName ? `Escorts in ${countryName} | Rosey` : "Escorts by Location | Rosey",
+      description: countryName
+        ? `Browse verified escort profiles in ${countryName} on Rosey. Find independent escorts near you.`
+        : "Browse verified escort profiles on Rosey by country, state, and city.",
       path: buildEscortsPath(parsed.countrySlug),
-      noIndex: true,
+      noIndex: !parsed.countrySlug,
       keywords: [...CORE_SEO_KEYWORDS, "escorts by location", "city escorts"],
     });
   }
@@ -245,13 +247,12 @@ export async function generateMetadata({
   }
 
   if (!parsed.citySlug) {
+    const countryName = humanizeLocationSlug(parsed.countrySlug);
     return buildPageMetadata({
-      title: "Escorts by Location | Rosey",
-      description:
-        "Browse verified escort profiles on Rosey by country, state, and city.",
+      title: `Escorts in ${countryName} | Rosey`,
+      description: `Browse verified escort profiles in ${countryName} on Rosey. Find independent escorts near you.`,
       path: buildEscortsPath(parsed.countrySlug),
-      noIndex: true,
-      keywords: [...CORE_SEO_KEYWORDS, "escorts by location", "city escorts"],
+      keywords: [...CORE_SEO_KEYWORDS, `${countryName} escorts`, "escorts by location"],
     });
   }
 

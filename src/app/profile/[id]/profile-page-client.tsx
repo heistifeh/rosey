@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Search, Loader2 } from "lucide-react";
+import { Menu, Search, Loader2, BadgeCheck } from "lucide-react";
 
 import Link from "next/link";
 import { useState, use, useMemo, useEffect } from "react";
@@ -351,7 +351,7 @@ type SupabaseProfile = {
   contact_email?: string | null;
   contact_phone?: string | null;
   socials?: string[];
-
+  is_fully_verified?: boolean | null;
   available_days?: AvailabilityEntry[];
 };
 
@@ -825,6 +825,7 @@ export default function ProfilePage({
               gender: profile.gender,
               lastActive: profile.lastActive,
               price: profile.price,
+              isVerified: Boolean(supabaseProfile.is_fully_verified),
             }}
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -836,6 +837,17 @@ export default function ProfilePage({
           {activeTab === "Overview" && (
             <div className="space-y-8">
               <ProfileBioSection bio={profile.bio} />
+              {supabaseProfile.is_fully_verified && (
+                <div className="flex items-center gap-4 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-5 py-4">
+                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
+                    <BadgeCheck className="h-6 w-6 text-emerald-400" />
+                  </span>
+                  <div>
+                    <p className="text-base font-semibold text-emerald-400">Verified Profile</p>
+                    <p className="text-sm text-text-gray-opacity">This provider has been verified by the Rosey team.</p>
+                  </div>
+                </div>
+              )}
               <ProfilePhotosSection
                 photos={profile.photos}
                 name={profile.name}

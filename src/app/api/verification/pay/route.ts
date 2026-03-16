@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (profile.is_fully_verified || profile.is_verified) {
+    if (profile.is_fully_verified) {
       return NextResponse.json(
         { ok: false, error: "ALREADY_VERIFIED" },
         { status: 400 },
@@ -92,12 +92,11 @@ export async function POST(req: Request) {
       currentBalance = newWallet.balance_credits ?? 0;
     }
 
-    const reference = `verification:${profile.id}`;
     const { data: existingPayment, error: existingPaymentError } = await supabase
       .from("wallet_transactions")
       .select("id")
       .eq("wallet_id", walletId)
-      .eq("reference", reference)
+      .eq("reference", "Verification fee")
       .eq("direction", "debit")
       .limit(1)
       .maybeSingle<{ id: string }>();
@@ -167,20 +166,13 @@ export async function POST(req: Request) {
       .from("wallet_transactions")
       .insert({
         wallet_id: walletId,
-        type: "verification_fee",
+        type: "adjustment",
         direction: "debit",
         amount: VERIFICATION_FEE_CREDITS,
-        reference,
-        metadata: {
-          kind: "verification_fee",
-          profile_id: profile.id,
-        },
+        reference: "Verification fee",
       });
     if (transactionError) {
-      return NextResponse.json(
-        { ok: false, error: "TRANSACTION_FAILED" },
-        { status: 500 },
-      );
+      console.error("Transaction log failed (non-blocking):", transactionError);
     }
 
     const { error: verifyError } = await supabase

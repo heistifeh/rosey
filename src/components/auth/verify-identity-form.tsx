@@ -162,7 +162,7 @@ export function VerifyIdentityForm() {
             onClick={handleSkipVerification}
             className="w-full rounded-[200px] border-border-gray bg-transparent text-primary-text font-semibold text-sm sm:text-base h-11 sm:h-12 lg:h-14 hover:bg-input-bg"
           >
-            Start Ads without Verification
+            Post Your Ads without Verification
           </Button>
           <p className="text-text-gray text-xs text-center">
             By continuing, you agree to our verification process and privacy

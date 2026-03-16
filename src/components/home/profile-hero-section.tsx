@@ -7,6 +7,7 @@ import {
   Share2,
   Venus,
   MessageSquare,
+  BadgeCheck,
 } from "lucide-react";
 import { Circle } from "lucide-react";
 import { useState } from "react";
@@ -23,6 +24,7 @@ interface ProfileHeroSectionProps {
     gender: string;
     lastActive: string;
     price: string;
+    isVerified?: boolean;
   };
   activeTab: string;
   onTabChange: (tab: string) => void;
@@ -103,6 +105,9 @@ export function ProfileHeroSection({
             <h1 className="text-2xl font-semibold text-primary-text md:text-4xl">
               {profile.name}
             </h1>
+            {profile.isVerified && (
+              <BadgeCheck className="h-6 w-6 text-emerald-400 md:h-7 md:w-7" />
+            )}
             <div className="flex items-center gap-1 rounded-full bg-input-bg px-3 py-1.5 text-sm md:py-2">
               <Circle className="h-2 w-2 fill-current text-emerald-400" />
               <span className="text-primary-text font-normal md:text-base">

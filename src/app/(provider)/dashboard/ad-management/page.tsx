@@ -1,18 +1,7 @@
 "use client";
 import Link from "next/link";
-import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-
-const AdViewsChart = dynamic(
-  () => import("./AdViewsChart").then((m) => m.AdViewsChart),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-80 rounded-2xl bg-slate-900/50 animate-pulse" />
-    ),
-  }
-);
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -24,7 +13,6 @@ import {
 import { MapPin, Calendar } from "lucide-react";
 import { apiBuilder } from "@/api/builder";
 import { useMyAds } from "@/hooks/use-my-ads";
-import { useAdStats } from "@/hooks/use-ad-stats";
 import { DashboardCardSkeleton } from "@/components/skeletons/dashboard-card-skeleton";
 
 type AdCityTarget = {
@@ -50,14 +38,6 @@ const statusBadge = (status?: string) => {
   }
 };
 
-const formatLineChartDay = (day: string) => {
-  const parsed = new Date(day);
-  if (Number.isNaN(parsed.getTime())) {
-    return day;
-  }
-  return parsed.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-};
-
 export default function AdManagementPage() {
   const { ads, isLoading: adsLoading, error: adsError } = useMyAds();
   const [selectedAdId, setSelectedAdId] = useState<string | undefined>();
@@ -76,35 +56,6 @@ export default function AdManagementPage() {
 
   const selectedAd =
     ads.find((ad: { id: string }) => ad.id === selectedAdId) ?? ads[0];
-
-  const [statsDays, setStatsDays] = useState<7 | 14 | 30>(7);
-
-  const {
-    points,
-    totalImpressions,
-    totalClicks,
-    isLoading: statsLoading,
-    error: statsError,
-  } = useAdStats({ adId: selectedAdId, days: statsDays });
-
-  const ctr =
-    totalImpressions > 0
-      ? ((totalClicks / totalImpressions) * 100).toFixed(1)
-      : "0.0";
-
-  const chartPoints = useMemo(
-    () =>
-      [...points]
-        .sort(
-          (a, b) => new Date(a.day).getTime() - new Date(b.day).getTime()
-        )
-        .map((point) => ({
-          day: formatLineChartDay(point.day),
-          views: point.impressions,
-          clicks: point.clicks,
-        })),
-    [points]
-  );
 
   const selectedAdTargets: AdCityTarget[] = selectedAd?.ad_city_targets ?? [];
   const coverageCount = selectedAdTargets.length;
@@ -148,8 +99,6 @@ export default function AdManagementPage() {
     queryClient.invalidateQueries({ queryKey: ["ads"] });
   }, [queryClient, selectedAd]);
 
-  const statsErrorMessage = adsError || statsError;
-
   const toggleExpandedAdCities = useCallback(
     (adId: string) => {
       setExpandedAdId((prev) => (prev === adId ? null : adId));
@@ -176,7 +125,7 @@ export default function AdManagementPage() {
       <div className="w-full flex justify-center px-4 md:px-[180px] pt-8 bg-primary-bg">
         <div className="max-w-[840px] mx-auto bg-input-bg rounded-2xl p-10 text-center">
           <h1 className="text-2xl font-semibold text-primary-text mb-4">
-            You don’t have any ads yet.
+            You don't have any ads yet.
           </h1>
           <p className="text-sm text-text-gray-opacity mb-6">
             Create your first ad to reach more clients and grow your booking
@@ -192,69 +141,20 @@ export default function AdManagementPage() {
     );
   }
 
-  const summaryStats = [
-    {
-      title: "Impressions",
-      value: adsLoading || statsLoading ? null : totalImpressions,
-      suffix: "",
-    },
-    {
-      title: "Clicks",
-      value: adsLoading || statsLoading ? null : totalClicks,
-      suffix: "",
-    },
-    {
-      title: "Click-Through Rate",
-      value: adsLoading || statsLoading ? null : ctr,
-      suffix: "%",
-    },
-  ];
-
   return (
     <div className="w-full flex justify-center md:-mx-8 lg:-mx-12 px-4 md:px-[180px] pt-8 bg-primary-bg">
-      <div className="max-w-[1200px] mx-auto w-full min-w-0">
-        <div className="flex flex-col gap-6 md:gap-[70px]">
-          {statsErrorMessage && (
+      <div className="max-w-[840px] mx-auto w-full min-w-0">
+        <div className="flex flex-col gap-6">
+          {adsError && (
             <div className="bg-rose-400/10 text-rose-400 rounded-2xl p-4 text-sm">
               Unable to load ad data. Please try again.
             </div>
           )}
-          {adsLoading || statsLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <DashboardCardSkeleton key={index} />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 bg-input-bg rounded-2xl p-2">
-              {summaryStats.map((stat) => (
-                <div
-                  key={stat.title}
-                  className="bg-primary-bg rounded-2xl p-4 md:p-6 min-w-0"
-                >
-                  <p className="text-text-gray-opacity text-sm mb-2">{stat.title}</p>
-                  {stat.value !== null && stat.value !== undefined ? (
-                    <p className="text-3xl md:text-4xl font-semibold text-primary-text mb-2">
-                      {typeof stat.value === "number"
-                        ? stat.value.toLocaleString()
-                        : stat.value}
-                      {stat.suffix && `${stat.suffix}`}
-                    </p>
-                  ) : (
-                    <div className="flex items-center gap-2 mt-4">
-                      <div className="w-8 h-8 bg-input-bg rounded flex items-center justify-center">
-                        <div className="w-4 h-4 bg-text-gray-opacity rounded" />
-                      </div>
-                      <div className="h-4 bg-input-bg rounded flex-1"></div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-            <section className="flex flex-col gap-4">
+          {adsLoading ? (
+            <DashboardCardSkeleton />
+          ) : (
+            <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h2 className="text-xl md:text-2xl font-semibold text-primary-text">
@@ -273,7 +173,7 @@ export default function AdManagementPage() {
                     <SelectValue placeholder="Choose your ad" />
                   </SelectTrigger>
                   <SelectContent>
-                  {ads.map((ad: { id: string; title?: string }) => (
+                    {ads.map((ad: { id: string; title?: string }) => (
                       <SelectItem key={ad.id} value={ad.id}>
                         {ad.title || "Untitled Ad"}
                       </SelectItem>
@@ -281,7 +181,8 @@ export default function AdManagementPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="bg-input-bg rounded-2xl p-6 flex flex-col gap-6 h-[400px]">
+
+              <div className="bg-input-bg rounded-2xl p-6 flex flex-col gap-6">
                 {!selectedAd ? (
                   <p className="text-sm text-text-gray-opacity">
                     Loading ad details...
@@ -292,22 +193,20 @@ export default function AdManagementPage() {
                       <div>
                         <p className="text-sm text-text-gray-opacity">Status</p>
                         <span
-                          className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${badge?.bg ?? ""
-                            } ${badge?.text ?? ""}`}
+                          className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${badge?.bg ?? ""} ${badge?.text ?? ""}`}
                         >
                           {badge?.label ?? "Draft"}
                         </span>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-text-gray-opacity">
-                          Budget
-                        </p>
+                        <p className="text-sm text-text-gray-opacity">Budget</p>
                         <p className="text-base font-semibold text-primary-text">
                           {selectedAd.budget_credits?.toLocaleString() ?? "—"}{" "}
                           credits
                         </p>
                       </div>
                     </div>
+
                     <div className="flex flex-col gap-3">
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-primary" />
@@ -319,6 +218,7 @@ export default function AdManagementPage() {
                         {coverageLabel}
                       </span>
                     </div>
+
                     {selectedAdTargets.length > 0 && (
                       <div className="flex flex-col gap-2">
                         <button
@@ -343,6 +243,7 @@ export default function AdManagementPage() {
                         )}
                       </div>
                     )}
+
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-primary" />
@@ -354,6 +255,7 @@ export default function AdManagementPage() {
                         {expiresLabel}
                       </p>
                     </div>
+
                     <div className="flex flex-col gap-3">
                       <Button
                         variant="default"
@@ -374,41 +276,8 @@ export default function AdManagementPage() {
                   </div>
                 )}
               </div>
-            </section>
-
-            <section className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl md:text-2xl font-semibold text-primary-text">
-                    Performance
-                  </h2>
-                  <p className="text-sm text-text-gray-opacity">
-                    Impressions &amp; clicks over time
-                  </p>
-                </div>
-                <select
-                  value={statsDays}
-                  onChange={(e) => setStatsDays(Number(e.target.value) as 7 | 14 | 30)}
-                  className="rounded-xl border border-dark-border bg-input-bg px-3 py-1.5 text-sm text-primary-text outline-none focus:border-primary"
-                >
-                  <option value={7}>Last 7 days</option>
-                  <option value={14}>Last 14 days</option>
-                  <option value={30}>Last 30 days</option>
-                </select>
-              </div>
-              <div className="bg-input-bg rounded-2xl p-6 min-h-[400px]">
-                {statsLoading ? (
-                  <div className="h-80 rounded-2xl bg-slate-900/50 animate-pulse" />
-                ) : chartPoints.length === 0 ? (
-                  <p className="text-sm text-text-gray-opacity text-center py-6">
-                    No stats available for this ad.
-                  </p>
-                ) : (
-                  <AdViewsChart points={chartPoints} />
-                )}
-              </div>
-            </section>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
