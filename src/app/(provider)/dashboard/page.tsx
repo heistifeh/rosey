@@ -40,14 +40,6 @@ export default function DashboardPage() {
     );
   }
 
-  const links = [
-    "Getting Verified on Rosey",
-    "Profile photo guidelines",
-    "Promoting yourself",
-    "Code of Conduct",
-    "Advertising Policy",
-  ];
-
   const profileDetails = profile
     ? [
         { label: "Name", value: profile.working_name || "Not set" },
@@ -146,33 +138,37 @@ export default function DashboardPage() {
             Back to home
           </Link>
         </div>
-        <p className="text-sm md:text-base text-text-gray-opacity mb-6 max-w-3xl">
-          Before we publish your profile, our team needs to verify a few things.
-          Use these links to get started:
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 mb-10">
-          {links.map((link, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-input-bg flex items-center justify-center shrink-0">
-                <span className="text-primary-text text-sm font-medium">
-                  {index + 1}.
-                </span>
+        <div className="mb-8 rounded-2xl border border-dark-border bg-input-bg overflow-hidden">
+          <div className="grid grid-cols-3 text-center text-xs font-semibold uppercase tracking-wide border-b border-dark-border">
+            <div className="py-3 px-4 text-left text-text-gray-opacity">Feature</div>
+            <div className="py-3 px-4 border-l border-dark-border text-text-gray-opacity">No Badge</div>
+            <div className="py-3 px-4 border-l border-dark-border text-primary">Verified</div>
+          </div>
+          {[
+            { label: "Post and list ads freely", noBadge: true, verified: true },
+            { label: "Visible verification badge", noBadge: false, verified: true },
+            { label: "Priority in search results", noBadge: false, verified: true },
+            { label: "Buyer trust signal on every ad", noBadge: false, verified: true },
+            { label: "Identity confirmed by rosey.link", noBadge: false, verified: true },
+          ].map((row, i) => (
+            <div key={i} className="grid grid-cols-3 text-center border-b border-dark-border last:border-b-0 text-sm">
+              <div className="py-3 px-4 text-left text-primary-text">{row.label}</div>
+              <div className="py-3 px-4 border-l border-dark-border text-text-gray-opacity">
+                {row.noBadge ? <span className="text-emerald-400 font-semibold">✓ Yes</span> : <span className="text-text-gray-opacity">—</span>}
               </div>
-              <Link
-                href="#"
-                className="text-primary hover:text-primary/80 text-sm md:text-base font-medium transition-colors underline"
-              >
-                {link}
-              </Link>
+              <div className="py-3 px-4 border-l border-dark-border">
+                {row.verified ? <span className="text-emerald-400 font-semibold">✓ Yes</span> : <span className="text-text-gray-opacity">—</span>}
+              </div>
             </div>
           ))}
+          <div className="p-4 bg-primary-bg border-t border-dark-border flex items-start gap-3">
+            <BadgeCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-primary-text">You can post without verifying</p>
+              <p className="text-xs text-text-gray-opacity mt-0.5">Verification is optional but recommended. Verified profiles build more trust and get better visibility in search results.</p>
+            </div>
+          </div>
         </div>
-
-        <p className="text-sm md:text-base text-text-gray-opacity mb-6 max-w-3xl">
-          Once you've completed the tasks below, you can submit your profile for
-          review and publication. Please ensure you have:
-        </p>
 
         {profile && (
           <section className="mb-8 rounded-2xl border border-dark-border bg-primary-bg p-4 md:p-5">
