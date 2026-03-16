@@ -16,7 +16,8 @@
       "Bash(grep -E \"\\\\.\\(sql|ts|js\\)$\")",
       "Bash(grep -r \"90.*day\\\\|expir\\\\|boost\" /Users/tife/source-code/rosey/src/app --include=*.ts --include=*.tsx)",
       "Bash(grep -n \"robots\" /Users/tife/source-code/rosey/src/app/profile/[id]/page.tsx -A 8)",
-      "Bash(grep -n \"noIndex\\\\|robots\" /Users/tife/source-code/rosey/src/app/escorts/[countrySlug]/[[...locationSegments]]/page.tsx -A 5)"
+      "Bash(grep -n \"noIndex\\\\|robots\" /Users/tife/source-code/rosey/src/app/escorts/[countrySlug]/[[...locationSegments]]/page.tsx -A 5)",
+      "Bash(npm run:*)"
     ]
   }
 }
