@@ -2,16 +2,22 @@
 
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { Shield, FileText, Camera, CheckCircle2 } from "lucide-react";
+import { Shield, FileText, Camera, CheckCircle2, AlertTriangle } from "lucide-react";
+import { useState } from "react";
 
 export function VerifyIdentityForm() {
   const router = useRouter();
+  const [showSkipWarning, setShowSkipWarning] = useState(false);
 
   const handleGetStarted = () => {
     router.push("/upload-id");
   };
 
   const handleSkipVerification = () => {
+    setShowSkipWarning(true);
+  };
+
+  const handleConfirmSkip = () => {
     router.push("/general-information?tab=general");
   };
 
@@ -41,6 +47,46 @@ export function VerifyIdentityForm() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full px-4 py-6 sm:py-8">
+      {showSkipWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-md bg-input-bg border border-orange-500/50 rounded-2xl p-6 flex flex-col gap-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-orange-500/15 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5 text-orange-400" />
+              </div>
+              <h2 className="text-lg font-semibold text-primary-text">Before you continue</h2>
+            </div>
+            <div className="flex flex-col gap-3 text-sm text-text-gray leading-relaxed">
+              <p className="text-primary-text font-medium">
+                ⚠️ You must complete your profile details on the next page or your account will not be registered.
+              </p>
+              <p>
+                Do <span className="text-white font-semibold">not</span> close the tab or navigate away before finishing. Fill in all required fields and submit — this is what creates your listing on Rosey.
+              </p>
+              <p>
+                You can always add your verification badge later from your dashboard.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                onClick={handleConfirmSkip}
+                className="w-full rounded-[200px] bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm h-11"
+              >
+                I understand — take me to my profile
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowSkipWarning(false)}
+                className="w-full rounded-[200px] border-border-gray bg-transparent text-primary-text font-semibold text-sm h-11 hover:bg-primary-bg"
+              >
+                Go back and get verified instead
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="w-full max-w-[320px] md:max-w-2xl lg:max-w-4xl flex flex-col gap-6 sm:gap-8">
         {/* Header */}
         <div className="flex flex-col items-center gap-3 text-center">

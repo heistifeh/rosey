@@ -62,10 +62,6 @@ export default function DashboardPage() {
           value: profile.ethnicity_category || "Not set",
         },
         {
-          label: "Approval status",
-          value: profile.approval_status || "Pending",
-        },
-        {
           label: "Verified",
           value: profile.is_fully_verified ? "Yes" : "No",
         },
@@ -196,15 +192,14 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2 mb-4">
               <ShieldAlert className="h-4 w-4 text-primary" />
               <span className="text-xs font-semibold text-primary uppercase tracking-wide">
-                Verification Pending
+                Optional — Builds Trust
               </span>
             </div>
             <h2 className="text-lg font-semibold text-primary-text md:text-xl mb-1">
-              Get Verified to Publish Your Profile
+              Get Our Verification Badge to Build More Trust
             </h2>
             <p className="text-sm text-text-gray-opacity mb-6 max-w-2xl">
-              Verified profiles build trust and stand out in listings. Choose the
-              path that works best for you.
+              You can post ads right now without being verified. Adding a verification badge builds client trust and significantly increases ad conversions. Choose the path that works best for you.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

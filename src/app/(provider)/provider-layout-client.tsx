@@ -10,6 +10,7 @@ import {
   Menu,
   Plus,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -172,9 +173,13 @@ export default function ProviderLayout({
                 >
                   <SheetHeader className="p-6 border-b border-dark-border">
                     <SheetTitle className="text-left">
-                      <span className="text-primary text-3xl font-normal petemoss">
-                        Rosey
-                      </span>
+                      <Image
+                        src="/site-logos/Rosey white.png"
+                        alt="Rosey"
+                        width={90}
+                        height={32}
+                        className="h-auto"
+                      />
                     </SheetTitle>
                   </SheetHeader>
                   <nav className="flex flex-col p-4 gap-2">
@@ -205,36 +210,35 @@ export default function ProviderLayout({
                 </SheetContent>
               </Sheet>
               <Link href="/" className="inline-flex items-center">
-                <span className="text-primary text-3xl md:text-[32px] font-normal petemoss">
-                  Rosey
-                </span>
+                <Image
+                  src="/site-logos/Rosey white.png"
+                  alt="Rosey"
+                  width={100}
+                  height={36}
+                  className="h-auto"
+                  priority
+                />
               </Link>
             </div>
 
-            <nav className="hidden md:flex items-center gap-10 h-full">
+            <nav className="hidden md:flex items-center gap-2 h-full">
               {navItems.map((item) => {
                 const isActive =
                   item.href === "/dashboard"
                     ? pathname === "/dashboard"
                     : pathname?.startsWith(item.href);
                 return (
-                  <div
+                  <Link
                     key={item.href}
-                    className="relative h-full flex items-center"
+                    href={item.href}
+                    className={`relative px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? "text-primary-text bg-primary shadow-[0_0_12px_rgba(246,61,104,0.35)]"
+                        : "text-[#8E8E93] hover:text-primary-text hover:bg-white/5"
+                    }`}
                   >
-                    <Link
-                      href={item.href}
-                      className={`text-sm font-medium transition-colors ${isActive
-                        ? "text-primary"
-                        : "text-[#8E8E93] hover:text-primary-text"
-                        }`}
-                    >
-                      {item.label}
-                    </Link>
-                    {isActive && (
-                      <span className="absolute bottom-[-40px] left-0 right-0 h-0.5 bg-primary"></span>
-                    )}
-                  </div>
+                    {item.label}
+                  </Link>
                 );
               })}
             </nav>

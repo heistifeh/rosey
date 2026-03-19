@@ -312,11 +312,9 @@ export function CityPageClient({
     const randomSeedBase = `${countrySlug || ""}:${stateSlug || ""}:${citySlug || ""}`;
 
     const buildHref = (city?: string, country?: string, state?: string) => {
-      const search = new URLSearchParams();
-      if (country) search.set("country", country);
-      if (state) search.set("state", state);
-      if (city) search.set("city", city);
-      return `/search${search.toString() ? `?${search.toString()}` : ""}`;
+      if (!country || !city) return `/escorts`;
+      if (state) return `/escorts/${country}/${state}/${city}`;
+      return `/escorts/${country}/${city}`;
     };
 
     const addLocation = (

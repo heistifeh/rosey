@@ -505,8 +505,6 @@ export function SearchResultsClient({
   const relatedCities = useMemo(() => {
     const seen = new Set<string>();
     const locations: { label: string; href: string }[] = [];
-    const genderQuery =
-      params.gender && params.gender !== "All" ? params.gender : undefined;
     const mergedProfiles = [...sponsoredProfiles, ...organicProfiles];
     const randomSeedBase = `${params.countrySlug || ""}:${params.stateSlug || ""}:${params.citySlug || ""}:${params.ethnicity || ""}:${params.gender || ""}`;
 
@@ -515,13 +513,9 @@ export function SearchResultsClient({
       countrySlug?: string,
       stateSlug?: string,
     ) => {
-      const search = new URLSearchParams();
-      if (countrySlug) search.set("country", countrySlug);
-      if (stateSlug) search.set("state", stateSlug);
-      if (citySlug) search.set("city", citySlug);
-      if (params.ethnicity) search.set("ethnicity", params.ethnicity);
-      if (genderQuery) search.set("gender", genderQuery);
-      return `/search${search.toString() ? `?${search.toString()}` : ""}`;
+      if (!countrySlug || !citySlug) return `/escorts`;
+      if (stateSlug) return `/escorts/${countrySlug}/${stateSlug}/${citySlug}`;
+      return `/escorts/${countrySlug}/${citySlug}`;
     };
 
     const addLocation = (
