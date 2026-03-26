@@ -9,6 +9,14 @@ import {
 const CITY_COST = 2;
 const LOW_BALANCE_THRESHOLD = 50;
 
+// The country-state-city library uses different city names than Google Places.
+// Normalize known mismatches so ad targets match escort profile city slugs.
+const CITY_SLUG_CANONICAL: Record<string, string> = {
+  "new-york-city": "new-york",
+};
+
+const normalizeCitySlug = (slug: string) => CITY_SLUG_CANONICAL[slug] ?? slug;
+
 type PlaceAdBody = {
   title: string;
   placement_available_now: boolean;
@@ -115,7 +123,7 @@ export async function POST(req: Request) {
       ad_id: ad.id,
       country_slug: city.country_slug,
       state_slug: city.state_slug,
-      city_slug: city.city_slug,
+      city_slug: normalizeCitySlug(city.city_slug),
     }));
 
     const { error: targetsError } = await supabase

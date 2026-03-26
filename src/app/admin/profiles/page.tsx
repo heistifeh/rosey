@@ -15,7 +15,6 @@ interface AdminProfile {
   approval_status?: string;
   is_fully_verified: boolean;
   is_active: boolean;
-  claim_status?: string;
   profile_type?: string;
   contact_email?: string;
   created_at: string;
@@ -137,7 +136,6 @@ export default function AdminProfilesPage() {
               <th className="px-4 py-3 text-left text-xs font-medium text-text-gray-opacity">Type</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-text-gray-opacity">Status</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-text-gray-opacity">Verified</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-text-gray-opacity">Claimed</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-text-gray-opacity">Active</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-text-gray-opacity">Joined</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-text-gray-opacity">Actions</th>
@@ -147,7 +145,7 @@ export default function AdminProfilesPage() {
             {isLoading ? (
               Array.from({ length: 10 }).map((_, i) => (
                 <tr key={i}>
-                  {Array.from({ length: 8 }).map((_, j) => (
+                  {Array.from({ length: 7 }).map((_, j) => (
                     <td key={j} className="px-4 py-3">
                       <div className="h-4 rounded bg-dark-surface animate-pulse w-20" />
                     </td>
@@ -156,7 +154,7 @@ export default function AdminProfilesPage() {
               ))
             ) : profiles.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-text-gray-opacity">No profiles found</td>
+                <td colSpan={7} className="px-4 py-8 text-center text-text-gray-opacity">No profiles found</td>
               </tr>
             ) : (
               profiles.map((p) => (
@@ -172,11 +170,6 @@ export default function AdminProfilesPage() {
                   <td className="px-4 py-3">
                     <Badge variant={p.is_fully_verified ? "success" : "default"}>
                       {p.is_fully_verified ? "Verified" : "Pending"}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge variant={p.claim_status === "claimed" ? "info" : "default"}>
-                      {p.claim_status ?? "unclaimed"}
                     </Badge>
                   </td>
                   <td className="px-4 py-3">

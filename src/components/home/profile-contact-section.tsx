@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, Phone, MapPin, ArrowRight as ArrowRightIcon, Eye, EyeOff } from "lucide-react";
+import { Mail, Phone, MapPin, ArrowRight as ArrowRightIcon, Eye, EyeOff, Lightbulb } from "lucide-react";
 import { Instagram } from "lucide-react";
 import { EmailProviderButton } from "@/components/email-provider-button";
 import { TextProviderButton } from "@/components/text-provider-button";
@@ -66,6 +66,16 @@ export function ProfileContactSection({
     <section>
       <h2 className="text-xl font-semibold text-primary-text mb-4">Contact</h2>
       <div className="space-y-3">
+
+        {/* Tip: mention Rosey.link */}
+        <div className="flex items-start gap-2.5 rounded-xl border border-primary/30 bg-primary/10 px-3.5 py-3">
+          <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <p className="text-xs leading-relaxed text-primary-text">
+            <span className="font-semibold text-primary">Pro tip:</span> Tell this provider you found them on{" "}
+            <span className="font-semibold">Rosey.link</span> — providers respond faster to clients who come through the platform.
+          </p>
+        </div>
+
         <div className="flex items-center justify-between bg-primary-bg rounded-xl p-3 border border-dark-border">
           <div className="flex items-center gap-3 flex-1">
             <div className="p-2 rounded-full bg-input-bg">
@@ -120,6 +130,17 @@ export function ProfileContactSection({
             </div>
           </div>
           <TextProviderButton providerPhone={contact.phone} />
+        </div>
+
+        {/* Trust warning below phone */}
+        <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/10 px-3.5 py-3">
+          <p className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 mb-1">
+            ⚠️ Don&apos;t delete the default message
+          </p>
+          <p className="text-xs leading-relaxed text-primary-text">
+            Escorts on Rosey.link are trained to trust clients who mention the platform. If you remove{" "}
+            <span className="font-semibold">&quot;Hi, I found you on Rosey.link&quot;</span> from your first message, providers are less likely to respond — or may ignore you entirely.
+          </p>
         </div>
 
         {contact.instagram && contact.instagram !== "N/A" && contact.instagram !== "undefined" && (

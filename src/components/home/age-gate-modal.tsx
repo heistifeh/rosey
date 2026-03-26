@@ -12,8 +12,13 @@ export function AgeGateModal() {
 
   useEffect(() => {
     setMounted(true);
-    const hasVerified = window.localStorage.getItem(AGE_GATE_KEY) === "true";
-    if (!hasVerified) {
+    try {
+      const hasVerified = window.localStorage.getItem(AGE_GATE_KEY) === "true";
+      if (!hasVerified) {
+        setIsOpen(true);
+      }
+    } catch {
+      // localStorage unavailable — show the gate
       setIsOpen(true);
     }
   }, []);
@@ -34,7 +39,11 @@ export function AgeGateModal() {
   }, [isOpen, mounted]);
 
   const handleConfirm = () => {
-    window.localStorage.setItem(AGE_GATE_KEY, "true");
+    try {
+      window.localStorage.setItem(AGE_GATE_KEY, "true");
+    } catch {
+      // localStorage unavailable — proceed anyway
+    }
     setIsOpen(false);
   };
 
@@ -45,7 +54,7 @@ export function AgeGateModal() {
   if (!mounted || !isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 p-4">
+    <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/80 p-4">
       <div className="w-full max-w-md rounded-3xl border border-dark-border bg-primary-bg p-6 shadow-2xl md:p-7">
         <h2 className="text-xl font-semibold text-primary-text md:text-2xl">
           {t("ageGate.title")}

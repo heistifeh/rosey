@@ -17,7 +17,6 @@ export default function robots(): MetadataRoute.Robots {
           "/manage-pictures",
           "/manage-pictures/*",
           "/setup-account",
-          "/claim-profile",
           "/verify-identity",
           "/general-information",
           "/upload-pictures",

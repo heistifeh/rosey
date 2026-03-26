@@ -5,14 +5,14 @@ import { slugifyLocation } from "@/lib/google-places";
 import { SearchCountryShortcuts } from "./search-country-shortcuts";
 
 const ETHNICITY_OPTIONS = [
-  "Asian",
-  "Black",
-  "White",
-  "Hispanic",
-  "Latino",
-  "Middle Eastern",
-  "Native American",
-  "Mixed",
+  { label: "Asian", slug: "asian" },
+  { label: "Black", slug: "black" },
+  { label: "White", slug: "white" },
+  { label: "Hispanic", slug: "hispanic" },
+  { label: "Latino", slug: "latino" },
+  { label: "Middle Eastern", slug: "middle-eastern" },
+  { label: "Native American", slug: "native-american" },
+  { label: "Mixed", slug: "mixed" },
 ];
 
 const HOMEPAGE_COUNTRY_ISO_CODES = [
@@ -83,13 +83,13 @@ export async function SearchShortcutsSection() {
             {t("searchShortcuts.ethnicity")}
           </p>
           <div className="flex flex-wrap gap-2">
-            {ETHNICITY_OPTIONS.map((ethnicity) => (
+            {ETHNICITY_OPTIONS.map(({ label, slug }) => (
               <Link
-                key={ethnicity}
-                href={`/search?ethnicity=${encodeURIComponent(ethnicity)}`}
+                key={slug}
+                href={`/escorts/ethnicity/${slug}`}
                 className="rounded-full border border-dark-border bg-input-bg px-3 py-1.5 text-xs text-primary-text transition-colors hover:border-primary hover:text-primary md:text-sm"
               >
-                {ethnicity}
+                {label}
               </Link>
             ))}
           </div>

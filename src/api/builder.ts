@@ -453,45 +453,6 @@ export const apiBuilder = {
         (response) => response.data?.[0] ?? null,
       );
     },
-    verifyProfileContact: (
-      email: string,
-      phone: string,
-      options?: { onlyUnclaimed?: boolean },
-    ) => {
-      const params = new URLSearchParams();
-      params.append("select", "id,username,working_name,contact_email,contact_phone");
-
-      const emailToCheck = email?.trim().toLowerCase();
-      const phoneToCheck = phone?.trim();
-
-
-      if (emailToCheck && phoneToCheck) {
-
-        params.append(
-          "or",
-          `(contact_email.eq.${emailToCheck},contact_phone.eq.${phoneToCheck})`,
-        );
-      } else if (emailToCheck) {
-        params.append("contact_email", `eq.${emailToCheck}`);
-      } else if (phoneToCheck) {
-        params.append("contact_phone", `eq.${phoneToCheck}`);
-      } else {
-        return Promise.resolve(null);
-      }
-
-      if (options?.onlyUnclaimed) {
-        params.append("user_id", "is.null");
-      }
-
-      params.append("limit", "1");
-
-      return API.get<Profile[]>("/profiles", { params }).then(
-        (response) => response.data?.[0] ?? null
-      ).catch(err => {
-        console.error("Error verifying profile contact:", err);
-        throw err;
-      });
-    },
     getProfileByUserId: (userId: string) => {
       if (!userId) return Promise.resolve(null);
       const params = new URLSearchParams();
@@ -677,13 +638,29 @@ export const apiBuilder = {
       countrySlug: string;
       stateSlug?: string;
     }) => {
+      // Aliases handle library mismatches (e.g. "new-york-city" stored for ads placed
+      // before normalization was applied, while profiles use "new-york").
+      const CITY_SLUG_ALIASES: Record<string, string> = {
+        "new-york": "new-york-city",
+      };
+
       const params = new URLSearchParams();
       params.append(
         "select",
         `id,created_at,profile:profiles(${PROFILE_SELECT}),ad_city_targets!inner(city_slug,state_slug,country_slug)`,
       );
       params.append("status", "eq.active");
-      params.append("ad_city_targets.city_slug", `eq.${paramsIn.citySlug}`);
+
+      const cityAlias = CITY_SLUG_ALIASES[paramsIn.citySlug];
+      if (cityAlias) {
+        params.append(
+          "ad_city_targets.or",
+          `(city_slug.eq.${paramsIn.citySlug},city_slug.eq.${cityAlias})`,
+        );
+      } else {
+        params.append("ad_city_targets.city_slug", `eq.${paramsIn.citySlug}`);
+      }
+
       params.append(
         "ad_city_targets.country_slug",
         `eq.${paramsIn.countrySlug}`,

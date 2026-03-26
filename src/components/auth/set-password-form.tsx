@@ -133,7 +133,7 @@ export function SetPasswordForm() {
             Set Your Password
           </h1>
           <p className="text-text-gray text-base font-normal">
-            Before continuing, create a password for your claimed profile.
+            Before continuing, create a password for your account.
           </p>
         </div>
 

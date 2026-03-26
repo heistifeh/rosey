@@ -4,6 +4,7 @@ import { postsQuery } from "@/sanity/lib/queries";
 import type { Post } from "@/sanity/lib/types";
 import { absoluteUrl } from "@/lib/seo";
 import { canonicalizeCountrySlug } from "@/lib/location-slugs";
+import { ETHNICITY_META } from "@/lib/ethnicity-meta";
 
 type SitemapProfileRow = {
   username?: string | null;
@@ -195,5 +196,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     profileEntries = [];
   }
 
-  return [...staticEntries, ...locationEntries, ...profileEntries, ...blogEntries];
+  const ethnicityEntries: MetadataRoute.Sitemap = Object.keys(ETHNICITY_META).map((slug) => ({
+    url: absoluteUrl(`/escorts/ethnicity/${slug}`),
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.8,
+  }));
+
+  return [...staticEntries, ...ethnicityEntries, ...locationEntries, ...profileEntries, ...blogEntries];
 }

@@ -3,13 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EmailConfirmationModal } from "@/components/modals/email-confirmation-modal";
-import { RoleSelectionModal } from "@/components/modals/role-selection-modal";
-import { UnclaimedProfileModal } from "@/components/modals/unclaimed-profile-modal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiBuilder } from "@/api/builder";
 import { errorMessageHandler, type ErrorType } from "@/utils/error-handler";
-import { getPublicSiteOrigin } from "@/lib/public-site-origin";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -45,9 +42,6 @@ export function CreateAccountForm() {
 
   const [showModal, setShowModal] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
-  const [showRoleModal, setShowRoleModal] = useState(false);
-  const [showUnclaimedModal, setShowUnclaimedModal] = useState(false);
-  const [claimEmail, setClaimEmail] = useState("");
 
   const { mutate, isPending: isLoading } = useMutation({
     mutationFn: (values: CreateAccountValues & { role?: string }) =>
@@ -86,66 +80,14 @@ export function CreateAccountForm() {
     },
   });
 
-  const routeToClaimProfile = () => {
-    const params = new URLSearchParams();
-    if (claimEmail) {
-      params.set("email", claimEmail);
-    }
-    router.push(`/claim-profile${params.toString() ? `?${params.toString()}` : ""}`);
-  };
-
-  const checkForUnclaimedProfile = async (email: string) => {
-    const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail) return false;
-
-    try {
-      const profile = await apiBuilder.profiles.verifyProfileContact(
-        normalizedEmail,
-        "",
-        { onlyUnclaimed: true },
-      );
-
-      if (profile) {
-        setClaimEmail(normalizedEmail);
-        setShowUnclaimedModal(true);
-        return true;
-      }
-    } catch (error) {
-      console.error("Failed checking unclaimed profile:", error);
-    }
-
-    return false;
-  };
-
   const onSubmit = async (values: CreateAccountValues) => {
     const normalizedEmail = values.email.trim().toLowerCase();
-    const hasUnclaimedProfile = await checkForUnclaimedProfile(normalizedEmail);
-    if (hasUnclaimedProfile) return;
-
     mutate({ ...values, email: normalizedEmail, role: "escort" });
   };
 
   const onClientSubmit = async (values: CreateAccountValues) => {
     const normalizedEmail = values.email.trim().toLowerCase();
-    const hasUnclaimedProfile = await checkForUnclaimedProfile(normalizedEmail);
-    if (hasUnclaimedProfile) return;
-
     mutate({ ...values, email: normalizedEmail, role: "client" });
-  };
-
-  const handleRoleSelect = async (role: 'escort' | 'client') => {
-    // Store the selected role in localStorage
-    localStorage.setItem('oauth_intended_role', role);
-    setShowRoleModal(false);
-
-    // Initiate Google OAuth
-    const redirectUrl = `${getPublicSiteOrigin()}/auth/callback`;
-    try {
-      await apiBuilder.auth.signInWithGoogle(redirectUrl);
-    } catch (error) {
-      console.error("Google sign-up failed:", error);
-      toast.error("Unable to continue with Google. Please try again.");
-    }
   };
 
   const [showPassword, setShowPassword] = useState(false);
@@ -161,13 +103,7 @@ export function CreateAccountForm() {
           router.push(`/enter-otp?email=${encodeURIComponent(submittedEmail)}`);
         }}
       />
-<UnclaimedProfileModal
-        isOpen={showUnclaimedModal}
-        email={claimEmail}
-        onClose={() => setShowUnclaimedModal(false)}
-        onClaim={routeToClaimProfile}
-      />
-      <div className="w-full min-h-screen bg-primary-bg flex flex-col lg:flex-row">
+<div className="w-full min-h-screen bg-primary-bg flex flex-col lg:flex-row">
         {/* Left Side - Form */}
         <div className="w-full lg:w-1/2 flex flex-col justify-center px-4 md:px-[60px] py-6 lg:py-4 h-screen overflow-y-auto">
           <div className="flex flex-col gap-6 max-w-md mx-auto w-full">
@@ -392,13 +328,6 @@ export function CreateAccountForm() {
                   className="text-primary hover:underline font-medium"
                 >
                   Login
-                </Link>
-                <span className="text-text-gray">or</span>
-                <Link
-                  href="/claim-profile"
-                  className="text-primary hover:underline font-medium"
-                >
-                  Claim Profile
                 </Link>
               </div>
             </div>

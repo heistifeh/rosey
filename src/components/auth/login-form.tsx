@@ -4,7 +4,6 @@ import { apiBuilder } from "@/api/builder";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UnclaimedProfileModal } from "@/components/modals/unclaimed-profile-modal";
 import { errorMessageHandler, type ErrorType } from "@/utils/error-handler";
 import { getPublicSiteOrigin } from "@/lib/public-site-origin";
 import { useMutation } from "@tanstack/react-query";
@@ -20,37 +19,6 @@ import { useAuthStore } from "@/stores/auth-store";
 type LoginValues = {
   email: string;
   password: string;
-};
-
-const isInvalidLoginError = (error: unknown) => {
-  const payload = error as {
-    response?: {
-      status?: number;
-      data?: {
-        message?: string;
-        msg?: string;
-        error?: string;
-        error_description?: string;
-      };
-    };
-    message?: string;
-  };
-
-  const status = payload?.response?.status;
-  if (status !== 400 && status !== 401) return false;
-
-  const text = [
-    payload?.message,
-    payload?.response?.data?.message,
-    payload?.response?.data?.msg,
-    payload?.response?.data?.error,
-    payload?.response?.data?.error_description,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  return text.includes("invalid") || text.includes("credential");
 };
 
 const resolveOnboardingRedirect = (params: {
@@ -90,8 +58,6 @@ const resolveOnboardingRedirect = (params: {
 export function LoginForm() {
   const router = useRouter();
   const setAuthUser = useAuthStore((state) => state.setUser);
-  const [showUnclaimedModal, setShowUnclaimedModal] = useState(false);
-  const [claimEmail, setClaimEmail] = useState("");
   const {
     register,
     handleSubmit,
@@ -218,50 +184,10 @@ export function LoginForm() {
         router.push("/");
       }
     },
-    onError: async (error, variables) => {
-      const attemptedEmail = variables?.email?.trim().toLowerCase() ?? "";
-
-      // Only suggest profile claiming when login credentials are invalid.
-      // Successful/valid accounts should never be interrupted by claim prompts.
-      if (attemptedEmail && isInvalidLoginError(error)) {
-        const hasUnclaimedProfile = await checkForUnclaimedProfile(attemptedEmail);
-        if (hasUnclaimedProfile) return;
-      }
-
+    onError: (error) => {
       errorMessageHandler(error as ErrorType);
     },
   });
-
-  const routeToClaimProfile = () => {
-    const params = new URLSearchParams();
-    if (claimEmail) {
-      params.set("email", claimEmail);
-    }
-    router.push(`/claim-profile${params.toString() ? `?${params.toString()}` : ""}`);
-  };
-
-  const checkForUnclaimedProfile = async (email: string) => {
-    const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail) return false;
-
-    try {
-      const profile = await apiBuilder.profiles.verifyProfileContact(
-        normalizedEmail,
-        "",
-        { onlyUnclaimed: true },
-      );
-
-      if (profile) {
-        setClaimEmail(normalizedEmail);
-        setShowUnclaimedModal(true);
-        return true;
-      }
-    } catch (error) {
-      console.error("Failed checking unclaimed profile:", error);
-    }
-
-    return false;
-  };
 
   const onSubmit = async (values: LoginValues) => {
     const normalizedEmail = values.email.trim().toLowerCase();
@@ -282,12 +208,6 @@ export function LoginForm() {
 
   return (
     <>
-      <UnclaimedProfileModal
-        isOpen={showUnclaimedModal}
-        email={claimEmail}
-        onClose={() => setShowUnclaimedModal(false)}
-        onClaim={routeToClaimProfile}
-      />
       <div className="flex flex-col items-center justify-center">
         <div className="w-full max-w-md flex flex-col gap-10">
         <div className="flex flex-col gap-2 text-center">

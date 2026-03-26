@@ -20,7 +20,7 @@ export async function GET(req: Request) {
   let query = supabase
     .from("profiles")
     .select(
-      "id,user_id,working_name,username,city,country,approval_status,is_fully_verified,is_active,claim_status,profile_type,contact_email,created_at",
+      "id,user_id,working_name,username,city,country,approval_status,is_fully_verified,is_active,profile_type,contact_email,created_at",
       { count: "exact" }
     )
     .order("created_at", { ascending: false })

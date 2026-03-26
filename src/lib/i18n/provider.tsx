@@ -44,7 +44,11 @@ export function I18nProvider({
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+    try {
+      window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+    } catch {
+      // localStorage unavailable (private browsing, storage quota, etc.)
+    }
     persistLocale(locale);
   }, [locale]);
 
