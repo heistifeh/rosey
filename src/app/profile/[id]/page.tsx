@@ -68,15 +68,18 @@ const fetchProfileSeoData = cache(async (
     limit: "1",
   });
 
+  // Prefer service role key to bypass RLS; fall back to anon key
+  const apiKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!apiKey) return null;
+
   const headers: HeadersInit = {
     Accept: "application/json",
+    apikey: apiKey,
+    Authorization: `Bearer ${apiKey}`,
   };
-
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (anonKey) {
-    headers.apikey = anonKey;
-    headers.Authorization = `Bearer ${anonKey}`;
-  }
 
   try {
     const response = await fetch(`${SUPABASE_REST_URL}/profiles?${params}`, {
@@ -84,9 +87,7 @@ const fetchProfileSeoData = cache(async (
       next: { revalidate: 300 },
     });
 
-    if (!response.ok) {
-      return null;
-    }
+    if (!response.ok) return null;
 
     const data = (await response.json()) as ProfileSeoData[];
     return data?.[0] ?? null;
