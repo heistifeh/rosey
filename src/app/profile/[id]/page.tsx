@@ -18,6 +18,7 @@ type ProfileSeoData = {
   working_name?: string;
   tagline?: string;
   about?: string;
+  gender?: string;
   city?: string;
   state?: string;
   country?: string;
@@ -64,7 +65,7 @@ const fetchProfileSeoData = cache(async (
 
   const params = new URLSearchParams({
     select:
-      "username,working_name,tagline,about,city,state,country,city_slug,state_slug,country_slug,approval_status,onboarding_completed,images(public_url,is_primary)",
+      "username,working_name,tagline,about,gender,city,state,country,city_slug,state_slug,country_slug,approval_status,onboarding_completed,images(public_url,is_primary)",
     username: `eq.${username}`,
     approval_status: "eq.approved",
     onboarding_completed: "eq.true",
@@ -128,15 +129,20 @@ export async function generateMetadata({
   const location = [profile.city, profile.state, profile.country]
     .filter(Boolean)
     .join(", ");
-  const title = location
-    ? `${displayName} in ${location} | Rosey`
-    : `${displayName} | Rosey`;
-  const description =
-    profile.tagline ||
-    profile.about ||
-    (location
-      ? `View ${displayName}'s profile in ${location}, including availability, rates, and contact details.`
-      : `View ${displayName}'s profile, rates, and availability on Rosey.`);
+
+  const title = `${displayName} | Rosey.link: Find Independent Escorts`;
+
+  const genderLabel = profile.gender
+    ? profile.gender.charAt(0).toUpperCase() + profile.gender.slice(1).toLowerCase()
+    : null;
+  const intro = location
+    ? `${displayName} is ${genderLabel ? `a ${genderLabel} escort` : "an escort"} from ${location}.`
+    : `${displayName} is ${genderLabel ? `a ${genderLabel} escort` : "an independent escort"}.`;
+  const snippet = profile.tagline || profile.about || "";
+  const truncated = snippet.length > 120 ? snippet.slice(0, 117).trimEnd() + "..." : snippet;
+  const description = truncated
+    ? `${intro} ♥ "${truncated}"`
+    : `${intro} Browse ${displayName}'s photos, rates, and availability on Rosey.link.`;
 
   return buildPageMetadata({
     title,
