@@ -30,7 +30,8 @@ interface ReviewData {
     username?: string;
     city?: string;
     country?: string;
-    email?: string;
+    contact_email?: string;
+    auth_email?: string;
     displayed_age?: number;
     ethnicity_category?: string;
     gender?: string;
@@ -110,9 +111,15 @@ export default function AdminVerificationsPage() {
     try {
       const res = await adminFetch(`/api/admin/verifications/review?profileId=${profile.id}`);
       const data = await res.json();
+      if (!res.ok) {
+        toast.error(data?.error ?? "Failed to load review data");
+        setReviewProfile(null);
+        return;
+      }
       setReviewData(data);
     } catch {
       toast.error("Failed to load review data");
+      setReviewProfile(null);
     } finally {
       setReviewLoading(false);
     }
@@ -264,10 +271,23 @@ export default function AdminVerificationsPage() {
                   Review: {reviewProfile.working_name ?? reviewProfile.username ?? reviewProfile.id}
                 </h2>
                 {reviewData && (
-                  <p className="text-sm text-text-gray-opacity mt-0.5">
-                    @{reviewData.profile.username ?? "—"} · {reviewData.profile.city}, {reviewData.profile.country}
-                    {reviewData.profile.email && <> · {reviewData.profile.email}</>}
-                  </p>
+                  <div className="mt-0.5 space-y-0.5">
+                    <p className="text-sm text-text-gray-opacity">
+                      @{reviewData.profile.username ?? "—"} · {reviewData.profile.city ?? "—"}, {reviewData.profile.country ?? "—"}
+                      {reviewData.profile.gender && <> · {reviewData.profile.gender}</>}
+                      {reviewData.profile.displayed_age && <>, age {reviewData.profile.displayed_age}</>}
+                    </p>
+                    {reviewData.profile.auth_email && (
+                      <p className="text-xs text-text-gray-opacity">
+                        Login: <span className="text-primary-text">{reviewData.profile.auth_email}</span>
+                      </p>
+                    )}
+                    {reviewData.profile.contact_email && (
+                      <p className="text-xs text-text-gray-opacity">
+                        Contact: <span className="text-primary-text">{reviewData.profile.contact_email}</span>
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
               <div className="flex items-center gap-2">

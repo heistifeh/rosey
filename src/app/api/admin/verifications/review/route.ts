@@ -18,18 +18,27 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "profileId required" }, { status: 400 });
   }
 
-  // 1. Get profile user_id and basic info
+  // 1. Get profile basic info
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("id,user_id,working_name,username,city,country,email,displayed_age,ethnicity_category,gender")
+    .select(
+      "id,user_id,working_name,username,city,country,contact_email,displayed_age,ethnicity_category,gender"
+    )
     .eq("id", profileId)
     .single();
 
   if (profileError || !profile) {
-    return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+    return NextResponse.json({ error: "Profile not found", detail: profileError?.message }, { status: 404 });
   }
 
-  // 2. Get identity verification record
+  // 2. Get auth email from user record (different from contact_email)
+  let authEmail: string | null = null;
+  if (profile.user_id) {
+    const { data: userData } = await supabase.auth.admin.getUserById(profile.user_id);
+    authEmail = userData?.user?.email ?? null;
+  }
+
+  // 3. Get identity verification documents
   let idDocUrl: string | null = null;
   let selfieUrl: string | null = null;
   let idStatus: string | null = null;
@@ -58,12 +67,11 @@ export async function GET(req: Request) {
     idStatus = idVerification?.status ?? null;
   }
 
-  // 3. Get profile photos
+  // 4. Get profile photos
   const { data: images } = await supabase
     .from("images")
     .select("id,public_url,is_primary,created_at")
     .eq("profile_id", profileId)
-    .order("is_primary", { ascending: false })
     .order("created_at", { ascending: true })
     .limit(9);
 
@@ -74,7 +82,8 @@ export async function GET(req: Request) {
       username: profile.username,
       city: profile.city,
       country: profile.country,
-      email: profile.email,
+      contact_email: profile.contact_email,
+      auth_email: authEmail,
       displayed_age: profile.displayed_age,
       ethnicity_category: profile.ethnicity_category,
       gender: profile.gender,
