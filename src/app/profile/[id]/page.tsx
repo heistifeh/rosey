@@ -25,8 +25,6 @@ type ProfileSeoData = {
   city_slug?: string;
   state_slug?: string;
   country_slug?: string;
-  approval_status?: string;
-  onboarding_completed?: boolean;
   images?: { public_url?: string; is_primary?: boolean }[];
 };
 
@@ -65,9 +63,8 @@ const fetchProfileSeoData = cache(async (
 
   const params = new URLSearchParams({
     select:
-      "username,working_name,tagline,about,gender,city,state,country,city_slug,state_slug,country_slug,approval_status,onboarding_completed,images(public_url,is_primary)",
+      "username,working_name,tagline,about,gender,city,state,country,city_slug,state_slug,country_slug,images(public_url,is_primary)",
     username: `eq.${username}`,
-    approval_status: "eq.approved",
     limit: "1",
   });
 
@@ -116,10 +113,9 @@ export async function generateMetadata({
 
   if (!profile) {
     return buildPageMetadata({
-      title: "Profile Not Found | Rosey",
-      description: "The profile you are looking for is unavailable or does not exist.",
+      title: "Independent Escort Profile | Rosey.link",
+      description: "Browse verified independent escort profiles on Rosey.link — discreet, fast, and trusted.",
       path: `/profile/${normalizedUsername || id}`,
-      noIndex: true,
     });
   }
 
