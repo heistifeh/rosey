@@ -68,7 +68,6 @@ const fetchProfileSeoData = cache(async (
       "username,working_name,tagline,about,gender,city,state,country,city_slug,state_slug,country_slug,approval_status,onboarding_completed,images(public_url,is_primary)",
     username: `eq.${username}`,
     approval_status: "eq.approved",
-    onboarding_completed: "eq.true",
     limit: "1",
   });
 
