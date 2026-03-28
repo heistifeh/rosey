@@ -81,11 +81,10 @@ export async function generateMetadata({
       }${locationSuffix} on Rosey with flexible filters for rate, availability, and preferences.`
     : "Browse escort profiles on Rosey using filters for city, rates, availability, gender, and preferences.";
 
-  const metadata = buildPageMetadata({
+  return buildPageMetadata({
     title,
     description,
     path: "/search",
-    noIndex: true,
     keywords: [
       ...CORE_SEO_KEYWORDS,
       "escort search",
@@ -93,21 +92,6 @@ export async function generateMetadata({
       "city escort search",
     ],
   });
-
-  return {
-    ...metadata,
-    robots: {
-      index: false,
-      follow: true,
-      nocache: true,
-      googleBot: {
-        index: false,
-        follow: true,
-        noimageindex: true,
-        "max-snippet": 0,
-      },
-    },
-  };
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {

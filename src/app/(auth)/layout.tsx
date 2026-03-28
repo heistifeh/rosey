@@ -8,17 +8,6 @@ export const metadata: Metadata = {
     template: "%s | Rosey",
   },
   description: "Secure authentication and account onboarding on Rosey.",
-  robots: {
-    index: false,
-    follow: false,
-    nocache: true,
-    googleBot: {
-      index: false,
-      follow: false,
-      noimageindex: true,
-      nosnippet: true,
-    },
-  },
 };
 
 export default function AuthLayout({
