@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { EthnicityPageClient } from "./ethnicity-page-client";
 import { absoluteUrl } from "@/lib/seo";
 import { ETHNICITY_META } from "@/lib/ethnicity-meta";
@@ -47,5 +48,9 @@ export default async function EthnicityPage({
   const meta = ETHNICITY_META[ethnicity];
   if (!meta) notFound();
 
-  return <EthnicityPageClient ethnicity={ethnicity} label={meta.label} />;
+  return (
+    <Suspense fallback={null}>
+      <EthnicityPageClient ethnicity={ethnicity} label={meta.label} />
+    </Suspense>
+  );
 }

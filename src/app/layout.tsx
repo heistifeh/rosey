@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Manrope, Petemoss } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AuthHandler } from "@/components/auth/auth-handler";
@@ -141,7 +142,9 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} ${petemoss.variable} antialiased`}
       >
         <Providers initialLocale={locale}>
-          <AuthHandler />
+          <Suspense fallback={null}>
+            <AuthHandler />
+          </Suspense>
           {children}
         </Providers>
         <script

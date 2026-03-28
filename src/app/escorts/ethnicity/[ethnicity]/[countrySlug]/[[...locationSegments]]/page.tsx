@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
+import { Suspense } from "react";
 import { City, Country, State } from "country-state-city";
 import {
   CORE_SEO_KEYWORDS,
@@ -396,14 +397,16 @@ export default async function EthnicityLocationPage({
 
   return (
     <>
-      <EthnicityLocationPageClient
-        ethnicitySlug={resolvedParams.ethnicity}
-        ethnicityLabel={meta.label}
-        countrySlug={loc.countrySlug}
-        citySlug={loc.citySlug}
-        stateSlug={preferredState}
-        initialPage={initialPage}
-      />
+      <Suspense fallback={null}>
+        <EthnicityLocationPageClient
+          ethnicitySlug={resolvedParams.ethnicity}
+          ethnicityLabel={meta.label}
+          countrySlug={loc.countrySlug}
+          citySlug={loc.citySlug}
+          stateSlug={preferredState}
+          initialPage={initialPage}
+        />
+      </Suspense>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

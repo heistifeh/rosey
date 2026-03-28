@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { permanentRedirect } from "next/navigation";
+import { Suspense } from "react";
 import { City, Country, State } from "country-state-city";
 import { CityPageClient } from "./city-page-client";
 import {
@@ -402,14 +403,16 @@ export default async function CityPage({
 
   return (
     <>
-      <CityPageClient
-        params={{
-          countrySlug: parsed.countrySlug,
-          citySlug: parsed.citySlug,
-          stateSlug: parsed.stateSlug,
-        }}
-        initialPage={initialPage}
-      />
+      <Suspense fallback={null}>
+        <CityPageClient
+          params={{
+            countrySlug: parsed.countrySlug,
+            citySlug: parsed.citySlug,
+            stateSlug: parsed.stateSlug,
+          }}
+          initialPage={initialPage}
+        />
+      </Suspense>
       {cityPageJsonLd ? (
         <script
           type="application/ld+json"

@@ -2,7 +2,7 @@
 
 import { EyeOff, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useWallet } from "@/hooks/use-wallet";
@@ -43,7 +43,7 @@ const formatRelativeTime = (value: string) => {
   return "Just now";
 };
 
-export default function WalletPage() {
+function WalletPageContent() {
   const [showBalance, setShowBalance] = useState(true);
   const [isBuyOpen, setIsBuyOpen] = useState(false);
   const [buyModalInitialPackageId, setBuyModalInitialPackageId] = useState<
@@ -67,6 +67,12 @@ export default function WalletPage() {
         const response = await fetch(
           `/api/wallet/topup/recheck?invoiceId=${encodeURIComponent(invoiceId)}`
         );
+
+        if (!response.ok) {
+          toast.error("Unable to verify payment.");
+          return;
+        }
+
         const data = (await response.json()) as {
           ok?: boolean;
           settled?: boolean;
@@ -74,7 +80,7 @@ export default function WalletPage() {
           error?: string;
         };
 
-        if (!response.ok || data.error) {
+        if (data.error) {
           toast.error(data.error || "Unable to verify payment.");
         } else if (data.settled) {
           toast.success("Payment confirmed, credits added.");
@@ -383,5 +389,13 @@ export default function WalletPage() {
         }}
       />
     </div>
+  );
+}
+
+export default function WalletPage() {
+  return (
+    <Suspense fallback={null}>
+      <WalletPageContent />
+    </Suspense>
   );
 }
