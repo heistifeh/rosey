@@ -9,6 +9,7 @@ import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
 import { FooterSection } from "@/components/home/footer-section";
 import { Header } from "@/components/layout/header";
 import { ProfileCard } from "@/components/profile-card";
+import { EthnicityLocationSeoContent } from "@/components/seo/ethnicity-location-seo-content";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/types/types";
 
@@ -189,11 +190,11 @@ export function EthnicityLocationPageClient({
           </nav>
 
           <h1 className="text-xl font-semibold text-primary-text md:text-2xl lg:text-[36px]">
-            {ethnicityLabel} Escorts in {locationLine}
+            {ethnicityLabel} Escorts in {locationLine} – Verified Independent Listings
           </h1>
-          <p className="mt-1 text-sm text-text-gray-opacity md:text-base">
+          <p className="mt-2 text-sm leading-6 text-text-gray-opacity md:text-base">
             Browse verified independent {ethnicityLabel.toLowerCase()} escort profiles in{" "}
-            {locationLine}.
+            {locationLine} — filtered by ethnicity and location so every result is relevant to your search.
           </p>
           {!isLoading && (
             <p className="mt-3 text-xs text-text-gray-opacity md:text-sm">
@@ -268,6 +269,18 @@ export function EthnicityLocationPageClient({
             </button>
           </div>
         )}
+
+        {/* ── SEO content + FAQ ── */}
+        <EthnicityLocationSeoContent
+          label={ethnicityLabel}
+          ethnicitySlug={ethnicitySlug}
+          countrySlug={countrySlug}
+          countryName={formatSlug(countrySlug)}
+          stateSlug={stateSlug}
+          stateName={stateSlug ? formatSlug(stateSlug) : undefined}
+          citySlug={citySlug}
+          cityName={citySlug ? formatSlug(citySlug) : undefined}
+        />
 
       </div>
 
