@@ -8,6 +8,7 @@ import { ProfileCard } from "@/components/profile-card";
 import { BaseCardSkeleton } from "@/components/skeletons/base-card-skeleton";
 import { Header } from "@/components/layout/header";
 import { FooterSection } from "@/components/home/footer-section";
+import { EthnicitySeoContent } from "@/components/seo/ethnicity-seo-content";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/types/types";
 
@@ -63,12 +64,17 @@ export function EthnicityPageClient({ ethnicity, label }: Props) {
     <section className="relative z-10 w-full bg-input-bg pb-12 md:pb-16">
       <Header />
       <div className="mx-auto flex w-full flex-col gap-4 px-4 pt-8 md:px-[60px] md:gap-10 md:pt-12">
+
+        {/* ── Header card ── */}
         <div className="rounded-[20px] border border-dark-border bg-primary-bg/70 p-4 md:rounded-[24px] md:p-6">
           <h1 className="text-xl font-semibold text-primary-text md:text-2xl lg:text-[36px]">
-            {label} Escorts
+            {label} Escorts Near You – Verified {label} Escort Directory
           </h1>
-          <p className="mt-1 text-sm text-text-gray-opacity md:text-base">
-            Browse verified independent {label.toLowerCase()} escort profiles worldwide.
+          <p className="mt-2 text-sm leading-6 text-text-gray-opacity md:text-base">
+            Looking for {label.toLowerCase()} escorts near you or browsing verified{" "}
+            {label.toLowerCase()} call girl listings with updated profiles? Browse
+            independent {label.toLowerCase()} escorts worldwide — filtered by location,
+            availability, and recent activity.
           </p>
           {!isLoading && (
             <p className="mt-3 text-xs text-text-gray-opacity md:text-sm">
@@ -77,6 +83,7 @@ export function EthnicityPageClient({ ethnicity, label }: Props) {
           )}
         </div>
 
+        {/* ── Profile grid ── */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {isLoading
             ? Array.from({ length: 8 }).map((_, i) => <BaseCardSkeleton key={i} />)
@@ -91,6 +98,7 @@ export function EthnicityPageClient({ ethnicity, label }: Props) {
           )}
         </div>
 
+        {/* ── Pagination ── */}
         {!isLoading && totalPages > 1 && (
           <div className="mt-2 flex items-center justify-center gap-2">
             <button
@@ -141,6 +149,10 @@ export function EthnicityPageClient({ ethnicity, label }: Props) {
             </button>
           </div>
         )}
+
+        {/* ── SEO content + FAQ ── */}
+        <EthnicitySeoContent label={label} ethnicitySlug={ethnicity} />
+
       </div>
       <FooterSection />
     </section>
