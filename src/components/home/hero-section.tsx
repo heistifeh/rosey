@@ -6,6 +6,7 @@ import {
   SlidersHorizontal,
   Venus,
 } from "lucide-react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Select,
@@ -19,11 +20,16 @@ import {
   type LocationValue,
 } from "@/components/location-filter";
 import { useI18n } from "@/lib/i18n/provider";
+import { cn } from "@/lib/utils";
+import { ETHNICITY_META } from "@/lib/ethnicity-meta";
+
+const ETHNICITIES = Object.entries(ETHNICITY_META).map(([, meta]) => meta.label);
 
 interface HeroSectionProps {
   filters: {
     gender: string;
     priceRange: string;
+    ethnicity: string;
     location?: {
       city: string;
       state?: string;
@@ -37,6 +43,7 @@ interface HeroSectionProps {
     React.SetStateAction<{
       gender: string;
       priceRange: string;
+      ethnicity: string;
       location?: {
         city: string;
         state?: string;
@@ -51,6 +58,9 @@ interface HeroSectionProps {
 
 export function HeroSection({ filters, setFilters }: HeroSectionProps) {
   const { t } = useI18n();
+  const router = useRouter();
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
+
   const genders = [
     { value: "All", label: t("hero.gender.all") },
     { value: "Male", label: t("hero.gender.male") },
@@ -58,7 +68,6 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
     { value: "Transgender", label: t("hero.gender.transgender") },
     { value: "Non-binary", label: t("hero.gender.nonBinary") },
   ];
-  const router = useRouter();
 
   const priceRanges = [
     "$0 - $100",
@@ -85,6 +94,10 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
       params.set("gender", filters.gender);
     }
 
+    if (filters.ethnicity) {
+      params.set("ethnicity", filters.ethnicity);
+    }
+
     if (filters.priceRange) {
       const clean = filters.priceRange.replace(/[\$\s]/g, "");
       if (clean.includes("-")) {
@@ -101,14 +114,17 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
     router.push(queryString ? `/search?${queryString}` : "/search");
   };
 
-  const handleFilter = () => {
-    handleSearch();
-  };
-
   const handleLocationChange = (location: LocationValue | null) => {
     setFilters((prev) => ({
       ...prev,
       location: location ?? undefined,
+    }));
+  };
+
+  const handleEthnicityToggle = (label: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      ethnicity: prev.ethnicity === label ? "" : label,
     }));
   };
 
@@ -126,9 +142,8 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
           </p>
         </section>
 
-        {/* Mobile Search Area - Trendy & Cute Design */}
+        {/* Mobile Search Area */}
         <div className="flex md:hidden w-full flex-col gap-3 rounded-3xl bg-[#2C2C2E] backdrop-blur-xl p-5 shadow-2xl shadow-black/20 z-20">
-          {/* Location Input - Clean & Modern */}
           <div className="relative">
             <LocationFilter
               value={filters.location}
@@ -138,7 +153,6 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
             />
           </div>
 
-          {/* Gender & Price in a Row - Compact & Cute */}
           <div className="grid grid-cols-2 gap-3">
             <Select
               value={filters.gender}
@@ -184,12 +198,37 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
             </Select>
           </div>
 
-          {/* Filter & Search Buttons in a Row */}
+          {/* More Filters panel — mobile */}
+          {showMoreFilters && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {ETHNICITIES.map((label) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => handleEthnicityToggle(label)}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
+                    filters.ethnicity === label
+                      ? "border-primary bg-primary text-white"
+                      : "border-gray-600 bg-[#1C1C1E] text-gray-300 hover:border-gray-400",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="grid grid-cols-[auto_1fr] gap-3">
             <button
-              onClick={handleFilter}
-              className="h-14 w-14 rounded-2xl bg-[#1C1C1E] hover:bg-[#2a2a2d] text-white transition-all flex items-center justify-center flex-shrink-0"
-              aria-label="Filter"
+              onClick={() => setShowMoreFilters((v) => !v)}
+              className={cn(
+                "h-14 w-14 rounded-2xl text-white transition-all flex items-center justify-center flex-shrink-0",
+                showMoreFilters || filters.ethnicity
+                  ? "bg-primary hover:bg-primary/90"
+                  : "bg-[#1C1C1E] hover:bg-[#2a2a2d]",
+              )}
+              aria-label="More filters"
             >
               <SlidersHorizontal className="h-5 w-5" />
             </button>
@@ -204,80 +243,109 @@ export function HeroSection({ filters, setFilters }: HeroSectionProps) {
           </div>
         </div>
 
-        {/* Desktop Search Area - Horizontal Layout */}
-        <div className="hidden md:flex w-auto flex-row items-center justify-center gap-3 rounded-full bg-input-bg px-4 py-3 backdrop-blur-md z-20">
-          <div className="w-auto min-w-[180px]">
-            <LocationFilter
-              value={filters.location}
-              onChange={handleLocationChange}
-              placeholder={t("hero.locationPlaceholder")}
-              className="w-full"
-            />
+        {/* Desktop Search Area */}
+        <div className="hidden md:flex flex-col items-center gap-3 z-20">
+          <div className="flex w-auto flex-row items-center justify-center gap-3 rounded-full bg-input-bg px-4 py-3 backdrop-blur-md">
+            <div className="w-auto min-w-[180px]">
+              <LocationFilter
+                value={filters.location}
+                onChange={handleLocationChange}
+                placeholder={t("hero.locationPlaceholder")}
+                className="w-full"
+              />
+            </div>
+
+            <Select
+              value={filters.gender}
+              onValueChange={(val) =>
+                setFilters((prev) => ({ ...prev, gender: val }))
+              }
+            >
+              <SelectTrigger className="h-auto w-auto rounded-full bg-[#575757] px-5 py-2 text-base font-normal text-white border-0 hover:bg-[#6a6a6a] focus:ring-0 focus:ring-offset-0 min-w-[140px] justify-between gap-1">
+                <div className="flex items-center gap-1 pr-1 text-base font-normal whitespace-nowrap">
+                  <Venus className="h-4 w-4 text-white" />
+                  <SelectValue placeholder={t("hero.selectGender")} />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {genders.map((gen) => (
+                  <SelectItem key={gen.value} value={gen.value}>
+                    {gen.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              key={`price-select-${filters.priceRange || "empty"}`}
+              value={filters.priceRange || undefined}
+              onValueChange={(val) =>
+                setFilters((prev) => ({ ...prev, priceRange: val }))
+              }
+            >
+              <SelectTrigger className="h-auto w-auto rounded-full bg-[#575757] px-5 py-2 text-white border-0 hover:bg-[#6a6a6a] focus:ring-0 focus:ring-offset-0 min-w-[160px] justify-between gap-1">
+                <div className="flex items-center gap-1 text-base font-normal pr-1 whitespace-nowrap">
+                  <CircleDollarSign className="h-4 w-4 text-white" />
+                  <SelectValue
+                    placeholder="Select price range"
+                    className="text-base font-normal"
+                  />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {priceRanges.map((range) => (
+                  <SelectItem key={range} value={range}>
+                    {range}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowMoreFilters((v) => !v)}
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-full text-white transition",
+                  showMoreFilters || filters.ethnicity
+                    ? "bg-primary hover:bg-primary/90"
+                    : "bg-[#1f1f21] hover:bg-[#2a2a2d]",
+                )}
+                aria-label="More filters"
+              >
+                <SlidersHorizontal className="h-5 w-5" />
+              </button>
+
+              <button
+                onClick={handleSearch}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white text-base font-semibold transition hover:bg-primary/90 shadow-lg"
+                aria-label="Search"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
-          <Select
-            value={filters.gender}
-            onValueChange={(val) =>
-              setFilters((prev) => ({ ...prev, gender: val }))
-            }
-          >
-            <SelectTrigger className="h-auto w-auto rounded-full bg-[#575757] px-5 py-2 text-base font-normal text-white border-0 hover:bg-[#6a6a6a] focus:ring-0 focus:ring-offset-0 min-w-[140px] justify-between gap-1">
-              <div className="flex items-center gap-1 pr-1 text-base font-normal whitespace-nowrap">
-                <Venus className="h-4 w-4 text-white" />
-                <SelectValue placeholder={t("hero.selectGender")} />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {genders.map((gen) => (
-                <SelectItem key={gen.value} value={gen.value}>
-                  {gen.label}
-                </SelectItem>
+          {/* More Filters panel — desktop */}
+          {showMoreFilters && (
+            <div className="flex flex-wrap items-center justify-center gap-2 rounded-2xl bg-input-bg px-4 py-3">
+              <span className="text-xs font-medium text-text-gray-opacity mr-1">Ethnicity:</span>
+              {ETHNICITIES.map((label) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => handleEthnicityToggle(label)}
+                  className={cn(
+                    "rounded-full border px-4 py-1.5 text-sm font-medium transition-all",
+                    filters.ethnicity === label
+                      ? "border-primary bg-primary text-white"
+                      : "border-dark-border bg-[#1f1f21] text-primary-text hover:border-gray-500",
+                  )}
+                >
+                  {label}
+                </button>
               ))}
-            </SelectContent>
-          </Select>
-
-          <Select
-            key={`price-select-${filters.priceRange || "empty"}`}
-            value={filters.priceRange || undefined}
-            onValueChange={(val) =>
-              setFilters((prev) => ({ ...prev, priceRange: val }))
-            }
-          >
-            <SelectTrigger className="h-auto w-auto rounded-full bg-[#575757] px-5 py-2 text-white border-0 hover:bg-[#6a6a6a] focus:ring-0 focus:ring-offset-0 min-w-[160px] justify-between gap-1">
-              <div className="flex items-center gap-1 text-base font-normal pr-1 whitespace-nowrap">
-                <CircleDollarSign className="h-4 w-4 text-white" />
-                <SelectValue
-                  placeholder="Select price range"
-                  className="text-base font-normal"
-                />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {priceRanges.map((range) => (
-                <SelectItem key={range} value={range}>
-                  {range}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleFilter}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1f1f21] text-white transition hover:bg-[#2a2a2d]"
-              aria-label="Filter"
-            >
-              <SlidersHorizontal className="h-5 w-5" />
-            </button>
-
-            <button
-              onClick={handleSearch}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white text-base font-semibold transition hover:bg-primary/90 shadow-lg"
-              aria-label="Search"
-            >
-              <Search className="h-5 w-5" />
-            </button>
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </section>

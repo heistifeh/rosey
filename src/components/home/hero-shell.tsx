@@ -6,6 +6,7 @@ import { HeroSection } from "@/components/home/hero-section";
 type Filters = {
   gender: string;
   priceRange: string;
+  ethnicity: string;
   location?: {
     city: string;
     state?: string;
@@ -20,6 +21,7 @@ export function HeroShell() {
   const [filters, setFilters] = useState<Filters>({
     gender: "All",
     priceRange: "",
+    ethnicity: "",
   });
 
   return <HeroSection filters={filters} setFilters={setFilters} />;
